@@ -52,7 +52,7 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         string rarityName = suffixParts[0]; // e.g., "Prototype"
                         string hash = suffixParts.Length > 1 ? suffixParts[1] : null; // "1234567890"
-                                                                                     
+
                         // Try to parse the rarity name into the enum
                         if (Enum.TryParse(rarityName, true, out RarityClass rarityClass))
                         {
@@ -82,14 +82,15 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Access to MagnumProjects instance class.
-        [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.Update))]
-        public static class MagnumDevelopmentSystem_Update_Patch
+        [HarmonyPatch(typeof(ComponentsLayout), nameof(ComponentsLayout.CreateGlobalComponents))]
+        public static class ComponentsLayout_CreateGlobalComponents_Patch
         {
-            public static void Postfix(MagnumProjects magnumProjects, SpaceTime time)
+            public static void Postfix(ref ComponentsLayout __instance)
             {
                 if (magnumProjectsController == null)
                 {
                     Plugin.Logger.LogWarning("MagnumPoQProjectsController missing. Creating one.");
+                    MagnumProjects magnumProjects = __instance._state.Get<MagnumProjects>(); // Assuming _state stores it
                     magnumProjectsController = new MagnumPoQProjectsController(magnumProjects);
                     Plugin.Logger.Log($"\t\t test: {magnumProjectsController.magnumProjects.Values.Count}"); // What projects we made in-game.
                 }
