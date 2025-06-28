@@ -26,44 +26,7 @@ namespace QM_PathOfQuasimorph.Core
 
         * Name project cleanedDevId: devID_custom_poq_prototype_rndhash
        */
-        public enum RarityClass
-        {
-            Standard,
-            Enchanced,
-            Advanced,
-            Premium,
-            Prototype,
-            Quantum
-        }
-
-        public RarityClass GetRarity(string itemId)
-        {
-            if (itemId.Contains("_poq_"))
-            {
-                // Example: "pmc_shotgun_1_poq_e_1234567890"
-
-                var newResult = itemId.Split(new string[] { "_poq_" }, 2, StringSplitOptions.None);
-                var realBaseId = newResult[0]; // Real Base item ID
-
-                if (newResult.Length > 1)
-                {
-                    var suffixParts = newResult[1].Split(new string[] { "_" }, 2, StringSplitOptions.None);
-                    if (suffixParts.Length > 0)
-                    {
-                        string rarityName = suffixParts[0]; // e.g., "Prototype"
-                        string hash = suffixParts.Length > 1 ? suffixParts[1] : null; // "1234567890"
-
-                        // Try to parse the rarity name into the enum
-                        if (Enum.TryParse(rarityName, true, out RarityClass rarityClass))
-                        {
-                            return rarityClass;
-                        }
-                    }
-                }
-            }
-
-            return RarityClass.Standard; // Default
-        }
+       
 
         /*
          * Our naming structure is different, so we check for the presence of "_poq_" and split the string to get the base.Id without our additions on top of default method.
