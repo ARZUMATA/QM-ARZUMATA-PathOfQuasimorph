@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEngine;
 using System.Security.Cryptography;
+using Random = System.Random;
 
 internal static class Helpers
 {
@@ -24,4 +25,21 @@ internal static class Helpers
             return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
         }
     }
+
+    public static class UniqueIDGenerator
+    {
+        public static ulong GetRandomUInt64()
+        {
+            byte[] bytes = new byte[sizeof(ulong)];
+            Random random = new Random();
+            random.NextBytes(bytes);
+            return BitConverter.ToUInt64(bytes, 0);
+        }
+
+        public static string GetRandomUInt64AsString()
+        {
+            return GetRandomUInt64().ToString();
+        }
+    }
+
 }
