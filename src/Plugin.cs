@@ -90,7 +90,7 @@ namespace QM_PathOfQuasimorph
              * New MCM will have the support so gotta wait. */
 
             // Handle embedded config.ini
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("QM_ColorTuner.config.ini");
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("QM_PathOfQuasimorph.config.ini");
             StreamReader reader = new StreamReader(stream);
 
             // Check MD5 of config.ini to determine if we need to replace with with new version.
