@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -39,8 +40,13 @@ namespace QM_PathOfQuasimorph.Core
             Localization.DuplicateKey("item." + project.DevelopId + ".name", "item." + text + ".name");
             Localization.DuplicateKey("item." + project.DevelopId + ".shortdesc", "item." + text + ".shortdesc");
 
-            UpdateKey("item." + text + ".name", "SupaDupa", "T-800");
-            UpdateKey("item." + text + ".shortdesc", "Power", "of Doom");
+            //TEST
+
+            DigitInfo digits = DigitInfo.GetDigits(project.FinishTime.Ticks);
+            var rarstr = (ItemRarity)digits.D6_Rarity;
+
+            UpdateKey("item." + text + ".name", "Mod: ", $" {rarstr.ToString()}");
+            //UpdateKey("item." + text + ".shortdesc", "Power", "of Doom");
 
 
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(project.DevelopId, true) as CompositeItemRecord;

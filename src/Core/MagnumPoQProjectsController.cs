@@ -117,7 +117,7 @@ namespace QM_PathOfQuasimorph.Core
                 string rarityName = suffixParts[0]; // e.g., "Prototype"
                 long hash = Int64.Parse(suffixParts.Length > 1 ? suffixParts[1] : "0"); // "1234567890"
 
-                ItemRarity rarityClass = (ItemRarity)Enum.Parse(typeof(ItemRarity), rarityName);
+                ItemRarity rarityClass = (ItemRarity)Enum.Parse(typeof(ItemRarity), rarityName, true);
 
                 return new MagnumProjectWrapper
                 {

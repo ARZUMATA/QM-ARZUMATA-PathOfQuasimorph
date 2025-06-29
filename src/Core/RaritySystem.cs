@@ -49,6 +49,23 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum, 0.85f }        // 85%
         };
 
+        public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
+        {
+            { ItemRarity.Standard,    "#FFFFFF" },         // #FFFFFF (White - common items)
+            { ItemRarity.Enhanced,    "#8888FF" },         // #8888FF (Blue - magical items)
+            { ItemRarity.Advanced,    "#FFFF77" },         // #FFFF77 // #FFD700 (Gold - legendary items)
+            { ItemRarity.Premium,     "#AF6025" },         // ##AF6025 (Brown - rare items) 
+            { ItemRarity.Prototype,   "#800080" },         // #FF0000 (Purple - set items or special tier)
+            { ItemRarity.Quantum,     "#FF0000" },         // #800080 (Red - elite/unique items)
+        };
+
+        public Color RarityToUnityColor(ItemRarity rarity)
+        {
+            var color = Helpers.HexStringToUnityColor(Colors[rarity]);
+            color.a = 0.25f;
+            return color;
+        }
+
         public ItemRarity SelectRarity()
         {
             int totalWeight = 0;
