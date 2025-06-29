@@ -7,44 +7,42 @@ using MGSC;
 using QM_PathOfQuasimorph.Core;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
-using static QM_PathOfQuasimorph.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
-namespace QM_PathOfQuasimorph
+namespace QM_PathOfQuasimorph.Core
 {
     internal partial class MagnumPoQProjectsController
     {
         public MagnumProjects magnumProjects;
-
+        public RaritySystem raritySystem = new RaritySystem();
+        
         public MagnumPoQProjectsController(MagnumProjects magnumProjects)
         {
             this.magnumProjects = magnumProjects;
         }
 
-        public class MagnumProjectWrapper
-        {
-            public string id { get; set; }
-            public string customId { get; set; }
-            public string rarity { get; set; }
-            public RarityClass rarityClass { get; set; }
-            public long uid { get; set; }
-            public DateTime finishTime { get; set; }
-            public string fullstring { get; set; }
-        }
-
         public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId)
         {
+            // Determine if we ever need to create a new project
+            var itemRarity = raritySystem.SelectRarity();
+
+            // We don't need to do anything.
+            // That way we just return the project ID and it goes as defined by game design.
+            if (itemRarity == ItemRarity.Standard)
+            {
+                return projectId;
+            }
+
+            var rarityString = itemRarity.ToString().ToLower();
+
+            // Create a new project
             MagnumProject newProject = new MagnumProject(projectType, projectId);
-            newProject.AppliedModifications.Add("rangeweapon_damage", "999");
-            newProject.AppliedModifications.Add("rangeweapon_crit_damage", "999");
-            newProject.AppliedModifications.Add("rangeweapon_max_durability", "999");
-            newProject.AppliedModifications.Add("rangeweapon_weight", "0.1");
 
             // Generate a new UID
             var randomUid = Helpers.UniqueIDGenerator.GenerateRandomID();
             DigitInfo digits = DigitInfo.GetDigits(randomUid);
             digits.FillZeroes();
-            digits.D6_Rarity = (int)RarityClass.Quantum;
-
+            digits.D6_Rarity = (int)itemRarity;
             var randomUidInjected = digits.ReturnUID();
 
             // New finish project time
@@ -53,8 +51,11 @@ namespace QM_PathOfQuasimorph
             newProject.FinishTime = finishTimeTemp;
             magnumProjects.Values.Add(newProject);
 
-            var rarity = RarityClass.Quantum.ToString().ToLower();
-            var newId = $"{projectId}_custom_poq_{rarity}_{randomUidInjected}";
+            // Apply various project related parameters
+            raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
+
+            // Resulting Uid
+            var newId = $"{projectId}_custom_poq_{rarityString}_{randomUidInjected}";
 
             PathOfQuasimorph.InjectItemRecord(newProject, newId);
             Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId}");
@@ -89,22 +90,13 @@ namespace QM_PathOfQuasimorph
             return null; // Return null if no project is found
         }
 
-        public enum RarityClass
-        {
-            Standard,
-            Enchanced,
-            Advanced,
-            Premium,
-            Prototype,
-            Quantum,
-        }
 
         public string WrapProjectDateTime(MagnumProject newProject)
         {
             var finishTimeTemp = newProject.FinishTime.Ticks;
             DigitInfo digits = DigitInfo.GetDigits(finishTimeTemp);
 
-            var rarityClass = ((RarityClass)digits.D6_Rarity).ToString().ToLower();
+            var rarityClass = ((ItemRarity)digits.D6_Rarity).ToString().ToLower();
 
             var newId =
                 $"{newProject.DevelopId}_custom_poq_{rarityClass}_{finishTimeTemp.ToString()}";
@@ -125,7 +117,7 @@ namespace QM_PathOfQuasimorph
                 string rarityName = suffixParts[0]; // e.g., "Prototype"
                 long hash = Int64.Parse(suffixParts.Length > 1 ? suffixParts[1] : "0"); // "1234567890"
 
-                RarityClass rarityClass = (RarityClass)Enum.Parse(typeof(RarityClass), rarityName);
+                ItemRarity rarityClass = (ItemRarity)Enum.Parse(typeof(ItemRarity), rarityName);
 
                 return new MagnumProjectWrapper
                 {
@@ -147,10 +139,21 @@ namespace QM_PathOfQuasimorph
                 id = realBaseId2,
                 customId = customId2,
                 rarity = "Standard",
-                rarityClass = RarityClass.Standard,
+                rarityClass = ItemRarity.Standard,
                 uid = 0,
                 fullstring = itemId,
             };
+        }
+
+        public class MagnumProjectWrapper
+        {
+            public string id { get; set; }
+            public string customId { get; set; }
+            public string rarity { get; set; }
+            public ItemRarity rarityClass { get; set; }
+            public long uid { get; set; }
+            public DateTime finishTime { get; set; }
+            public string fullstring { get; set; }
         }
 
         public class DigitInfo
@@ -173,7 +176,7 @@ namespace QM_PathOfQuasimorph
                 D3 = d3; // 0
                 D4 = d4; // 0
                 D5 = d5; // 0
-                D6_Rarity = d6; // Rarity
+                D6_Rarity = d6; // ItemRarity
             }
 
             public void FillZeroes()
