@@ -1,17 +1,17 @@
-﻿using MGSC;
-using QM_PathOfQuasimorph.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
+using MGSC;
+using QM_PathOfQuasimorph.Core;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
 using static QM_PathOfQuasimorph.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph
 {
-    internal class MagnumPoQProjectsController
+    internal partial class MagnumPoQProjectsController
     {
         public MagnumProjects magnumProjects;
 
@@ -40,54 +40,25 @@ namespace QM_PathOfQuasimorph
             newProject.AppliedModifications.Add("rangeweapon_weight", "0.1");
 
             // Generate a new UID
-            var uid = Helpers.UniqueIDGenerator.GenerateRandomID();
-            string uidStr;
-            int d1, d2;
+            var randomUid = Helpers.UniqueIDGenerator.GenerateRandomID();
+            DigitInfo digits = DigitInfo.GetDigits(randomUid);
+            digits.FillZeroes();
+            digits.D6_Rarity = (int)RarityClass.Quantum;
 
-            GetDigits(uid, out uidStr, out d1, out d2);
-
-            d1 = 0;
-            d2 = (int)RarityClass.Quantum;
-
-            // Rebuild the last two digits as a string
-            string modifiedLastTwo = $"{d1}{d2}";
-
-            // Replace in the original UID string
-            string modifiedUidStr = uidStr.Substring(0, uidStr.Length - 2) + modifiedLastTwo;
+            var randomUidInjected = digits.ReturnUID();
 
             // New finish project time
-            var finishTimeTemp = DateTime.FromBinary(long.Parse(modifiedUidStr)); // Convert uint64 to DateTime and this is our unique ID for item
-
+            var finishTimeTemp = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
             newProject.StartTime = DateTime.MinValue;
             newProject.FinishTime = finishTimeTemp;
-
             magnumProjects.Values.Add(newProject);
 
-            var rarity = RarityClass.Quantum.ToString().ToLower(); ; // TODO
-            var newId = $"{projectId}_custom_poq_{rarity}_{uid}";
-            //MagnumDevelopmentSystem.InjectItemRecord(newProject);
+            var rarity = RarityClass.Quantum.ToString().ToLower();
+            var newId = $"{projectId}_custom_poq_{rarity}_{randomUidInjected}";
+
             PathOfQuasimorph.InjectItemRecord(newProject, newId);
             Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId}");
-
             return newId;
-        }
-
-        private static void GetDigits(long uid, out string uidStr, out int d1, out int d2)
-        {
-            // Convert to string
-            uidStr = uid.ToString();
-
-            // Use last two digits of as identifier
-            // [0] = nothing
-            // [1] = rarity
-
-            // Extract last two digits as individual characters
-            char digitOne = uidStr[uidStr.Length - 2]; // just for now
-            char digitTwo = uidStr[uidStr.Length - 1];
-
-            // Convert to integers
-            d1 = int.Parse(digitOne.ToString());
-            d2 = int.Parse(digitTwo.ToString());
         }
 
         internal MagnumProject GetProjectById(string itemId)
@@ -125,20 +96,18 @@ namespace QM_PathOfQuasimorph
             Advanced,
             Premium,
             Prototype,
-            Quantum
+            Quantum,
         }
 
         public string WrapProjectDateTime(MagnumProject newProject)
         {
-            var finishTimeTemp = newProject.FinishTime;
-            long finishTimeAsLong = finishTimeTemp.Ticks;
-            string uidStr;
-            int d1, d2;
-            GetDigits(finishTimeAsLong, out uidStr, out d1, out d2);
+            var finishTimeTemp = newProject.FinishTime.Ticks;
+            DigitInfo digits = DigitInfo.GetDigits(finishTimeTemp);
 
-            var rarityClass = ((RarityClass)d2).ToString().ToLower();
+            var rarityClass = ((RarityClass)digits.D6_Rarity).ToString().ToLower();
 
-            var newId = $"{newProject.DevelopId}_custom_poq_{rarityClass}_{uidStr}";
+            var newId =
+                $"{newProject.DevelopId}_custom_poq_{rarityClass}_{finishTimeTemp.ToString()}";
             return newId;
         }
 
@@ -151,7 +120,8 @@ namespace QM_PathOfQuasimorph
                 var realBaseId = newResult[0].Replace("_custom", string.Empty); // Real Base item ID
                 var customId = realBaseId + "_custom"; // Custom ID
 
-                var suffixParts = newResult[1].Split(new string[] { "_" }, 2, StringSplitOptions.None);
+                var suffixParts = newResult[1]
+                    .Split(new string[] { "_" }, 2, StringSplitOptions.None);
                 string rarityName = suffixParts[0]; // e.g., "Prototype"
                 long hash = Int64.Parse(suffixParts.Length > 1 ? suffixParts[1] : "0"); // "1234567890"
 
@@ -165,7 +135,7 @@ namespace QM_PathOfQuasimorph
                     rarityClass = rarityClass,
                     finishTime = DateTime.FromBinary((long)hash),
                     uid = hash,
-                    fullstring = itemId
+                    fullstring = itemId,
                 };
             }
 
@@ -183,128 +153,71 @@ namespace QM_PathOfQuasimorph
             };
         }
 
-        // itemId: pmc_shotgun_1
-        public void CreateRangeWeaponProjectStraightAway(string itemdId)
+        public class DigitInfo
         {
-            /*
-             * See:
-             * MagnumCreateProjectWindow
-             * private void StartDevelopmentButtonOnClick
-             */
-            var projectType = MagnumProjectType.RangeWeapon;
-            var projectCustomId = "_custom_mod_1";
+            public string LeftPart { get; set; }
+            public int D1 { get; set; }
+            public int D2 { get; set; }
+            public int D3 { get; set; }
+            public int D4 { get; set; }
+            public int D5 { get; set; }
+            public int D6_Rarity { get; set; }
+            public string UID { get; set; }
 
-            var project = new MagnumProject(projectType, projectCustomId)
+            public DigitInfo(string leftPart, int d1, int d2, int d3, int d4, int d5, int d6)
             {
-                //project.InitRecord(); // constructor already calls InitRecord
-
-                StartTime = DateTime.MinValue,
-                FinishTime = DateTime.MinValue.AddDays(1),
-                IsInDevelopment = false
-            };
-
-            MagnumDevelopmentSystem.InjectProjectRecord(project);
-
-            //project.CustomRecord.TrimId(); // Maybe it works for initializing custom record manually.
-
-            //var damageInfo = ((WeaponRecord)project._customRecord).Damage;
-            //damageInfo.damage = "0";
-
-            // = ((WeaponRecord)project.DefaultRecord).Damage * 2;
-
-            //WeaponRecord weaponRecord = (WeaponRecord)project.con;
-
-
-
-
-            Dictionary<string, string> dictionary = new Dictionary<string, string>();
-
-
-
-            // Add range weapon parameters with default values if not already in the dictionary
-            string[] rangeWeaponParams = {
-                "rangeweapon_damage",
-                "rangeweapon_crit_damage",
-                "rangeweapon_max_durability",
-                "rangeweapon_accuracy",
-                "rangeweapon_scatter_angle",
-                "rangeweapon_weight",
-                "rangeweapon_reload_duration",
-                "rangeweapon_magazine_capacity",
-                "rangeweapon_special_ability"
-            };
-
-            Dictionary<string, string> defaultWeaponParameters = new Dictionary<string, string>
-                {
-                    {"Id", "default_id"},
-                    {"Categories", "default_categories"},
-                    {"TechLevel", "default_techlevel"},
-                    {"Price", "0"},
-                    {"Weight", "0"},
-                    {"InventoryWidthSize", "0"},
-                    {"ItemClass", "default_itemclass"},
-                    {"WeaponClass", "default_weaponclass"},
-                    {"WeaponSubClass", "default_weaponsubclass"},
-                    {"IsImplicit", "False"},
-                    {"RequiredAmmo", "default_requiredammo"},
-                    {"OverrideAmmo", "False"},
-                    {"DefaultAmmoId", "default_ammo_id"},
-                    {"DefaultGrenadeId", "default_grenade_id"},
-                    {"Damage", "0"},
-                    {"BonusScatterAngle", "0"},
-                    {"Firemodes", "default_firemodes"},
-                    {"BonusAccuracy", "0"},
-                    {"Range", "0"},
-                    {"Falloff", "0"},
-                    {"MagazineCapacity", "0"},
-                    {"MinRandomAmmoCount", "0"},
-                    {"ReloadDuration", "0"},
-                    {"MaxDurability", "0"},
-                    {"MinDurabilityAfterRepair", "0"},
-                    {"Unbreakable", "False"},
-                    {"RepairItemIds", "default_repair_ids"},
-                    {"AllowedGrenadeIds", "default_allowed_grenade_ids"},
-                    {"Traits", "default_traits"},
-                    {"OverrideProjectileId", "default_projectile_id"}
-                };
-
-
-            foreach (string param in rangeWeaponParams)
-            {
-                if (!dictionary.ContainsKey(param))
-                {
-                    //dictionary[param] = Data.Items.GetSimpleRecord<WeaponRecord>(itemdId).Damage
-
-                    //GetDefaultValue(param); // Assumes a method GetDefaultValue exists
-                }
+                // Use last 6 digits of as identifier
+                LeftPart = leftPart;
+                D1 = d1; // 0
+                D2 = d2; // 0
+                D3 = d3; // 0
+                D4 = d4; // 0
+                D5 = d5; // 0
+                D6_Rarity = d6; // Rarity
             }
 
+            public void FillZeroes()
+            {
+                D1 = 0;
+                D2 = 0;
+                D3 = 0;
+                D4 = 0;
+                D5 = 0;
+                D6_Rarity = 0;
+            }
 
+            public string ReturnUID()
+            {
+                // Rebuild the six digits as a string
+                string modifiedSixDigits = $"{D1}{D2}{D3}{D4}{D5}{D6_Rarity}";
 
-            //case MagnumProjectParameterType.CritDamage:
-            //return ((DmgInfo)this.GetPropertyValue(record, projectParameter.ParameterName)).critDmg;
+                // Reconstruct the full UID using the left part and the modified six digits
+                string modifiedUidStr = LeftPart + modifiedSixDigits;
 
-            // config_magnum.txt
-            // | Id                           | ParameterName      | ParameterType      | ProjectType | ViewType | MinValue | MaxValue | Step | TooltipTag             |
-            // |------------------------------|--------------------|--------------------|-------------|----------|----------|----------|------|------------------------|
-            // | rangeweapon_damage           | Damage             | Damage             | RangeWeapon | Damage   | 1        | 999      | 2    | tooltip.Damage         |
-            // | rangeweapon_crit_damage      | CritDamage         | Damage             | RangeWeapon | Percent  | 1        | 999      | 0.1  | tooltip.CritDamage     |
-            // | rangeweapon_max_durability   | MaxDurability      | Integer            | RangeWeapon | Integer  | 1        | 999      | 10   | tooltip.Condition      |
-            // | rangeweapon_accuracy         | BonusAccuracy      | WeaponAccuracy     | RangeWeapon | Percent  | -1       | 1        | 0.03 | tooltip.RangeAccuracy  |
-            // | rangeweapon_scatter_angle    | BonusScatterAngle  | WeaponScatterAngle |RangeWeapon  | Angle    | 0        | 180      | -0.2 | tooltip.ScatterAngle   |
-            // | rangeweapon_weight           | Weight             | Float              | RangeWeapon | Float0_0 | 0.1      | 999      | -0.2 | tooltip.ItemWeight     |
-            // | rangeweapon_reload_duration  | ReloadDuration     | Integer            | RangeWeapon | Integer  | 1        | 999      | -1   | tooltip.ReloadDuration |
-            // | rangeweapon_magazine_capacity| MagazineCapacity   | Integer            | RangeWeapon | Integer  | 1        | 999      | 3    | tooltip.AmmoCapacity   |
-            // | rangeweapon_special_ability  | SpecialAbility     | RangeWeaponTrait   |RangeWeapon  | None     |          |          |      |                        |
+                return modifiedUidStr;
+            }
 
+            public static DigitInfo GetDigits(long uid)
+            {
+                // Convert to string
+                string uidStr = uid.ToString();
 
+                // Extract the left part (all digits except the last six)
+                string leftPart = uidStr.Substring(0, uidStr.Length - 6);
 
+                // Extract last six digits as a substring
+                string lastSixDigits = uidStr.Substring(uidStr.Length - 6);
 
+                // Parse each digit into integers
+                int d1 = int.Parse(lastSixDigits[0].ToString());
+                int d2 = int.Parse(lastSixDigits[1].ToString());
+                int d3 = int.Parse(lastSixDigits[2].ToString());
+                int d4 = int.Parse(lastSixDigits[3].ToString());
+                int d5 = int.Parse(lastSixDigits[4].ToString());
+                int d6 = int.Parse(lastSixDigits[5].ToString());
 
-
-
+                return new DigitInfo(leftPart, d1, d2, d3, d4, d5, d6);
+            }
         }
-
     }
-
 }
