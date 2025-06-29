@@ -5,120 +5,185 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
-        // We reuse original method. We can do IL-patch but I'm not that smart.
-        [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
-        public static class MagnumDevelopmentSystem_InjectItemRecord_Patch
+
+        public static void UpdateKey(string lookupstr, string prefix, string suffix)
         {
-            public static bool Prefix(MagnumProject project)
+            foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
             {
-                // Default method copied here.
-                // Plugin.Logger.Log($"\t MagnumDevelopmentSystem_InjectItemRecord_Patch Start");
-                Plugin.Logger.Log($"MagnumDevelopmentSystems_InjectItemRecord_Patch :: Prefix :: Start");
-
-                string text = project.DevelopId + "_custom";
-                Plugin.Logger.Log($"\t _InjectItemRecord project.DevelopId {project.DevelopId}");
-                Plugin.Logger.Log($"\t _InjectItemRecord text {text}");
-
-                Localization.DuplicateKey("item." + project.DevelopId + ".name", "item." + text + ".name");
-                Localization.DuplicateKey("item." + project.DevelopId + ".shortdesc", "item." + text + ".shortdesc");
-                CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(project.DevelopId, true) as CompositeItemRecord;
-
-                // PathOfQuasimorph ADD Start
-                Plugin.Logger.Log($"\t compositeItemRecord == null {compositeItemRecord == null}");
-                // PathOfQuasimorph ADD End
-
-                Data.Items.RemoveRecord(text);
-                Data.ItemTransformation.RemoveRecord(text);
-                ItemTransformationRecord record = Data.ItemTransformation.GetRecord(project.DevelopId, true);
-
-                // PathOfQuasimorph ADD Start
-                Plugin.Logger.Log($"\t ItemTransformationRecord == null {record == null}");
-                if (record == null)
+                if (languageToDict.Value.ContainsKey(lookupstr))
                 {
-                    Plugin.Logger.Log($"\t ItemTransformationRecord null. Need add placeholder.");
-                    record = Data.ItemTransformation.GetRecord("broken_weapon", true); //Rusty Parts //We won't use it anyway. Don't care.
-                    Plugin.Logger.Log($"\t ItemTransformationRecord text: {text}");
-                    Plugin.Logger.Log($"\t ItemTransformationRecord record: {record}");
+                    languageToDict.Value[lookupstr] = prefix + languageToDict.Value[lookupstr] + suffix;
                 }
-                // PathOfQuasimorph ADD End
+            }
+        }
 
-                Data.ItemTransformation.AddRecord(text, record.Clone(text));
-                foreach (BasePickupItemRecord basePickupItemRecord in compositeItemRecord.Records)
+        // Other mods compatibility issue.
+        // We created our own method using original one to avoid this.
+        public static void InjectItemRecord(MagnumProject project, string newId)
+        {
+            // Default method copied here.
+            // Plugin.Logger.Log($"\t MagnumDevelopmentSystem_InjectItemRecord_Patch Start");
+            //Plugin.Logger.Log($"InjectItemRecord :: Prefix :: Start");
+
+            string text = newId;//project.DevelopId + "_custom";
+            //string text = project.DevelopId + "_custom";
+            //Plugin.Logger.Log($"\t _InjectItemRecord project.DevelopId {project.DevelopId}");
+            //Plugin.Logger.Log($"\t _InjectItemRecord text {text}");
+
+            Localization.DuplicateKey("item." + project.DevelopId + ".name", "item." + text + ".name");
+            Localization.DuplicateKey("item." + project.DevelopId + ".shortdesc", "item." + text + ".shortdesc");
+
+            UpdateKey("item." + text + ".name", "SupaDupa", "T-800");
+            UpdateKey("item." + text + ".shortdesc", "Power", "of Doom");
+
+
+            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(project.DevelopId, true) as CompositeItemRecord;
+
+            // PathOfQuasimorph ADD Start
+            //Plugin.Logger.Log($"\t compositeItemRecord == null {compositeItemRecord == null}");
+            // PathOfQuasimorph ADD End
+
+            Data.Items.RemoveRecord(text);
+            Data.ItemTransformation.RemoveRecord(text);
+            ItemTransformationRecord record = Data.ItemTransformation.GetRecord(project.DevelopId, true);
+
+            // PathOfQuasimorph ADD Start
+            //Plugin.Logger.Log($"\t ItemTransformationRecord == null {record == null}");
+            if (record == null)
+            {
+                //Plugin.Logger.Log($"\t ItemTransformationRecord null. Need add placeholder.");
+                record = Data.ItemTransformation.GetRecord("broken_weapon", true); //Rusty Parts //We won't use it anyway. Don't care.
+                //Plugin.Logger.Log($"\t ItemTransformationRecord text: {text}");
+                //Plugin.Logger.Log($"\t ItemTransformationRecord record: {record}");
+                //Plugin.Logger.Log($"\t ItemTransformationRecord record null?: {record == null}");
+            }
+            // PathOfQuasimorph ADD End
+
+            Data.ItemTransformation.AddRecord(text, record.Clone(text));
+            foreach (BasePickupItemRecord basePickupItemRecord in compositeItemRecord.Records)
+            {
+                WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
+                if (weaponRecord != null)
                 {
-                    WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
-                    if (weaponRecord != null)
+                    WeaponRecord weaponRecord2 = weaponRecord.Clone(text);
+                    Data.Items.AddRecord(text, weaponRecord2);
+                    project.ApplyModifications(weaponRecord2);
+                }
+                else
+                {
+                    ArmorRecord armorRecord = basePickupItemRecord as ArmorRecord;
+                    if (armorRecord != null)
                     {
-                        WeaponRecord weaponRecord2 = weaponRecord.Clone(text);
-                        Data.Items.AddRecord(text, weaponRecord2);
-                        project.ApplyModifications(weaponRecord2);
+                        ArmorRecord armorRecord2 = armorRecord.Clone(text);
+                        Data.Items.AddRecord(text, armorRecord2);
+                        project.ApplyModifications(armorRecord2);
                     }
                     else
                     {
-                        ArmorRecord armorRecord = basePickupItemRecord as ArmorRecord;
-                        if (armorRecord != null)
+                        HelmetRecord helmetRecord = basePickupItemRecord as HelmetRecord;
+                        if (helmetRecord != null)
                         {
-                            ArmorRecord armorRecord2 = armorRecord.Clone(text);
-                            Data.Items.AddRecord(text, armorRecord2);
-                            project.ApplyModifications(armorRecord2);
+                            HelmetRecord helmetRecord2 = helmetRecord.Clone(text);
+                            Data.Items.AddRecord(text, helmetRecord2);
+                            project.ApplyModifications(helmetRecord2);
                         }
                         else
                         {
-                            HelmetRecord helmetRecord = basePickupItemRecord as HelmetRecord;
-                            if (helmetRecord != null)
+                            LeggingsRecord leggingsRecord = basePickupItemRecord as LeggingsRecord;
+                            if (leggingsRecord != null)
                             {
-                                HelmetRecord helmetRecord2 = helmetRecord.Clone(text);
-                                Data.Items.AddRecord(text, helmetRecord2);
-                                project.ApplyModifications(helmetRecord2);
+                                LeggingsRecord leggingsRecord2 = leggingsRecord.Clone(text);
+                                Data.Items.AddRecord(text, leggingsRecord2);
+                                project.ApplyModifications(leggingsRecord2);
                             }
                             else
                             {
-                                LeggingsRecord leggingsRecord = basePickupItemRecord as LeggingsRecord;
-                                if (leggingsRecord != null)
+                                BootsRecord bootsRecord = basePickupItemRecord as BootsRecord;
+                                if (bootsRecord != null)
                                 {
-                                    LeggingsRecord leggingsRecord2 = leggingsRecord.Clone(text);
-                                    Data.Items.AddRecord(text, leggingsRecord2);
-                                    project.ApplyModifications(leggingsRecord2);
+                                    Plugin.Logger.Log($"\t bootsRecord2");
+                                    BootsRecord bootsRecord2 = bootsRecord.Clone(text);
+                                    Data.Items.AddRecord(text, bootsRecord2);
+                                    project.ApplyModifications(bootsRecord2);
                                 }
                                 else
                                 {
-                                    BootsRecord bootsRecord = basePickupItemRecord as BootsRecord;
-                                    if (bootsRecord != null)
-                                    {
-                                        Plugin.Logger.Log($"\t bootsRecord2");
-                                        BootsRecord bootsRecord2 = bootsRecord.Clone(text);
-                                        Data.Items.AddRecord(text, bootsRecord2);
-                                        project.ApplyModifications(bootsRecord2);
-                                    }
-                                    else
-                                    {
-                                        throw new NotImplementedException(string.Format("Failed create project {0}. No clone method for additional records: {1}.", project.DevelopId, basePickupItemRecord.GetType()));
-                                    }
-
+                                    throw new NotImplementedException(string.Format("Failed create project {0}. No clone method for additional records: {1}.", project.DevelopId, basePickupItemRecord.GetType()));
                                 }
+
                             }
                         }
                     }
                 }
-
-                //Plugin.Logger.Log($"\t MagnumDevelopmentSystem_InjectItemRecord_Patch End");
-                return false; // Block original method.
-            }
-
-            public static void Postfix(MagnumProject project)
-            {
-                //Plugin.Logger.Log($" MagnumDevelopmentSystems_InjectItemRecord_Patch : Postfix");
             }
         }
 
 
+        // We block original method. We can do IL-patch but I'm not that smart.
+        //[HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
+        //public static class MagnumDevelopmentSystem_InjectItemRecord_Patch
+        //{
+        //    public static bool Prefix(MagnumProject project)
+        //    {
+        //        //Plugin.Logger.Log($"\t MagnumDevelopmentSystem_InjectItemRecord_Patch End");
+        //        return true; // Block original method.
+        //    }
+
+        //    public static void Postfix(MagnumProject project)
+        //    {
+        //        //Plugin.Logger.Log($" MagnumDevelopmentSystems_InjectItemRecord_Patch : Postfix");
+        //    }
+        //}
 
 
+        [HarmonyPatch(typeof(MagnumProjects), nameof(MagnumProjects.OnAfterLoad))]
+        public static class MagnumProjects_OnAfterLoad_Patch
+        {
+            public static void Postfix(MagnumProjects __instance)
+            {
+                Plugin.Logger.Log($" MagnumProjects_OnAfterLoad_Patch : Postfix");
+                InjectProjectRecords(__instance);
+            }
+        }
 
+        public static void InjectProjectRecords(MagnumProjects projects)
+        {
+            Plugin.Logger.Log($" InjectProjectRecords : Postfix");
+
+            foreach (MagnumProject magnumProject in projects.Values)
+            {
+                InjectProjectRecord(magnumProject);
+            }
+        }
+
+        public static void InjectProjectRecord(MagnumProject project)
+        {
+            Plugin.Logger.Log($" InjectProjectRecord : Postfix");
+
+            switch (project.ProjectType)
+            {
+                case MagnumProjectType.RangeWeapon:
+                    //case MagnumProjectType.MeleeWeapon:
+                    //case MagnumProjectType.Armor:
+                    //case MagnumProjectType.Helmet:
+                    //case MagnumProjectType.Boots:
+                    //case MagnumProjectType.Leggings:
+                    if (project.StartTime == DateTime.MinValue)
+                    {
+                        var newId = magnumProjectsController.WrapProjectDateTime(project);
+                        InjectItemRecord(project, newId);
+                    }
+                    return;
+                default:
+                    return;
+            }
+        }
 
         // We can hook it and intercept item creation.
         // That way we can create our own "projects" on the fly when needed. For example making one of the item custom and different rarity.
@@ -128,39 +193,30 @@ namespace QM_PathOfQuasimorph.Core
             public static bool Prefix(ref string itemId, bool randomizeConditionAndCapacity, ref BasePickupItem __result, ItemFactory __instance)
             {
                 //Plugin.Logger.Log("ItemFactory_CreateForInventory_Patch :: Prefix :: Start");
-                Plugin.Logger.Log($"\t CreateForInventory: {itemId}"); // pmc_shotgun_1_custom
+                //Plugin.Logger.Log($"\t CreateForInventory: {itemId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
 
-                //var cleanedDevId = itemId.Replace("_custom", string.Empty); // TODO
-                //var customDevId = cleanedDevId + "_custom";
-
-                // TEST
-                if (itemId.Contains("_custom"))
-                {
-                    Plugin.Logger.Log($"\t\t itemId is custom {itemId}");
-                }
-                else
-                {
-                    //itemId = itemId + "_custom";
-                }
-
+                // Id here is always non-mod as game is not aware of it. So we do our magic.
+                // Also we don't need to know existing project as we always create new items here.
                 MagnumProject project = magnumProjectsController.GetProjectById(itemId);
 
                 // If project is not null, then we have a project for that item.
-                if (project != null)
-                {
-                    Plugin.Logger.Log($"\t Found project with DevelopId: {itemId}");
-                    Plugin.Logger.Log($"\t project DevelopId: {project.DevelopId}");
-                    Plugin.Logger.Log($"\t project StartTime: {project.StartTime}");
-                    Plugin.Logger.Log($"\t project FinishTime: {project.FinishTime}");
-                    Plugin.Logger.Log($"\t project DefaultRecord: {project.DefaultRecord}");
-                    Plugin.Logger.Log($"\t project CustomRecord: {project.CustomRecord}");
-                    Plugin.Logger.Log($"\t project IsInDevelopment: {project.IsInDevelopment}");
-                }
-                else
-                {
-                    Plugin.Logger.Log($"\t No project found with DevelopId: {itemId}");
+                //if (project != null)
+                //{
+                //    Plugin.Logger.Log($"\t Found project with DevelopId: {itemId}");
+                //    Plugin.Logger.Log($"\t project DevelopId: {project.DevelopId}");
+                //    Plugin.Logger.Log($"\t project StartTime: {project.StartTime}");
+                //    Plugin.Logger.Log($"\t project FinishTime: {project.FinishTime}");
+                //    Plugin.Logger.Log($"\t project DefaultRecord: {project.DefaultRecord}");
+                //    Plugin.Logger.Log($"\t project CustomRecord: {project.CustomRecord}");
+                //    Plugin.Logger.Log($"\t project IsInDevelopment: {project.IsInDevelopment}");
+                //    itemId = itemId + "_custom"; //temp
+                //}
 
-                    // Create new.
+                if (project == null)
+                {
+                    //Plugin.Logger.Log($"\t No project found with DevelopId: {itemId}");
+
+                    // Create new
                     MagnumProjectType itemProjectType = MagnumDevelopmentSystem.GetItemProjectType(itemId);
                     //Plugin.Logger.Log($"\t\t itemProjectType : {itemProjectType}");
 
@@ -180,35 +236,13 @@ namespace QM_PathOfQuasimorph.Core
                         //Plugin.Logger.Log($"\t\t itemProjectType is OK: {itemProjectType}");
                         //try
                         //{
+                        Plugin.Logger.Log($"\t  CreateForInventory: {itemId} {itemProjectType}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
 
                         //var newProject = new MagnumProject(itemProjectType, customDevId); //todo handle randomize creating in controller
-                        var newProject = new MagnumProject(); //todo handle randomize creating in controller
-                        newProject.ProjectType = itemProjectType;
-                        newProject.DevelopId = itemId;
-                        //newProject.AppliedModifications.Add("rangeweapon_damage", "999");
-                        //newProject.AppliedModifications.Add("rangeweapon_crit_damage", "999");
-                        //newProject.AppliedModifications.Add("rangeweapon_max_durability", "999");
-                        //newProject.AppliedModifications.Add("rangeweapon_weight", "0.1");
-                        newProject.InitRecord();
 
-                        if (newProject == null)
-                        {
-                            Plugin.Logger.Log($"\t\t newProject == null");
-
-                        }
-                        else
-                        {
-                            Plugin.Logger.Log($"\t\t newProject Created");
-                            Plugin.Logger.Log($"\t\t newProject 1 {newProject.DevelopId}");
-                        }
-
-                        MagnumDevelopmentSystem.InjectItemRecord(newProject);
-
-                        Plugin.Logger.Log($"\t\t newProject 2 {newProject.DevelopId}");
-
-                        Plugin.Logger.Log($"\t\t SUCCESS: create project");
-
-                        itemId = itemId + "_custom";
+                        var newId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId);
+                        itemId = newId;
+                        Plugin.Logger.Log($"\t  newId: {newId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
 
 
                     }
@@ -270,18 +304,18 @@ namespace QM_PathOfQuasimorph.Core
                     case MagnumProjectType.MeleeWeapon:
                         {
                             // PathOfQuasimorph ADD Start
-                            Plugin.Logger.Log($"\t\t MagnumProject_InitRecord_Patch");
-                            Plugin.Logger.Log($"\t\t magnumProjectPrice null {magnumProjectPrice == null}");
-                            Plugin.Logger.Log($"\t\t itemProduceReceipt null {itemProduceReceipt == null}");
-                            Plugin.Logger.Log($"\t\t __instance.ProjectType {__instance.ProjectType}");
-                            Plugin.Logger.Log($"\t\t Data.Items.GetSimpleRecord to get {__instance.DevelopId}");
-                            Plugin.Logger.Log($"\t\t configTableRecord null? 1 {configTableRecord == null}");
+                            //Plugin.Logger.Log($"\t\t MagnumProject_InitRecord_Patch");
+                            //Plugin.Logger.Log($"\t\t magnumProjectPrice null {magnumProjectPrice == null}");
+                            //Plugin.Logger.Log($"\t\t itemProduceReceipt null {itemProduceReceipt == null}");
+                            //Plugin.Logger.Log($"\t\t __instance.ProjectType {__instance.ProjectType}");
+                            //Plugin.Logger.Log($"\t\t Data.Items.GetSimpleRecord to get {__instance.DevelopId}");
+                            //Plugin.Logger.Log($"\t\t configTableRecord null? 1 {configTableRecord == null}");
                             // PathOfQuasimorph ADD End
 
                             configTableRecord = Data.Items.GetSimpleRecord<WeaponRecord>(__instance.DevelopId, true);
 
                             // PathOfQuasimorph ADD Start
-                            Plugin.Logger.Log($"\t\t configTableRecord null? 2 {configTableRecord == null}");
+                            //Plugin.Logger.Log($"\t\t configTableRecord null? 2 {configTableRecord == null}");
                             // PathOfQuasimorph ADD End
 
                             // ItemProduceReceipt itemProduceReceipt = Data.ProduceReceipts.Get(__instance.DevelopId); // Original code
