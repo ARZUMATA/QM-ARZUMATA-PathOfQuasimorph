@@ -54,7 +54,7 @@ namespace QM_PathOfQuasimorph.Core
                 )
                 .ThrowIfNotMatch("Did not find the first match.")
                  // Insert code the matched block
-                .Advance(1)
+                .Advance(1) // Advance to keep going through the code or we will replace last opcode in following search
                 .Insert(
                    new CodeInstruction(OpCodes.Ldarg_0), // Load 'this'
                    new CodeInstruction(OpCodes.Call, getPoqItemId), // Call the method
@@ -77,7 +77,7 @@ namespace QM_PathOfQuasimorph.Core
                     new CodeMatch(OpCodes.Stloc_1)
                     )
                 .ThrowIfNotMatch("Did not find the second match.")
-                //.Advance(1)
+                .Advance(1) // Advance to keep going through the code or we will replace last opcode in following search
                 .Insert(
                     new CodeInstruction(OpCodes.Ldloc_1),
                     new CodeInstruction(OpCodes.Ldarg_0),
@@ -86,7 +86,7 @@ namespace QM_PathOfQuasimorph.Core
                 )
                 .InstructionEnumeration()
                 .ToList();
-
+                
                 return result;
             }
         }
