@@ -1,31 +1,20 @@
 ﻿using HarmonyLib;
 using MGSC;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
-        [HarmonyPatch(typeof(BasePickupItem), "get_IsModifiedItem")]
-        public static class BasePickupItem_IsModifiedItem_Patch
+        // Our naming structure is different, so we check for the presence of "_poq_" and split the string to get the base.Id without our additions on top of default method.
+        [HarmonyPatch(typeof(PickupItem), "get_RenderId")]
+        public static class PickupItem_RenderId_Patch
         {
-            public static void Postfix(PickupItem __instance, ref bool __result)
+            public static void Postfix(PickupItem __instance, ref string __result)
             {
-                if (__instance.Id.Contains("_poq_"))
+                if (__result.Contains("_poq_"))
                 {
-                    __result = false;
-                }
-                else if (__instance.Id.Contains("_custom"))
-                {
-                    __result = true;
-                }
-                else
-                {
-                    __result = false;
+                    var newResult = __result.Split('_');
+                    __result = newResult[0]; // Return real base.Id
                 }
             }
         }
