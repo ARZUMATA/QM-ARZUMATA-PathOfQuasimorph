@@ -57,7 +57,7 @@ namespace QM_PathOfQuasimorph.Core
             // Resulting Uid
             var newId = $"{projectId}_custom_poq_{rarityString}_{randomUidInjected}";
 
-            PathOfQuasimorph.InjectItemRecord(newProject, newId);
+            PathOfQuasimorph.InjectItemRecord(newProject);
             Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId}");
             return newId;
         }

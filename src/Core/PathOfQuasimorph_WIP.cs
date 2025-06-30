@@ -25,13 +25,14 @@ namespace QM_PathOfQuasimorph.Core
 
         // Other mods compatibility issue.
         // We created our own method using original one to avoid this.
-        public static void InjectItemRecord(MagnumProject project, string newId)
+        public static void InjectItemRecord(MagnumProject project)
         {
             // Default method copied here.
             // Plugin.Logger.Log($"\t MagnumDevelopmentSystem_InjectItemRecord_Patch Start");
             //Plugin.Logger.Log($"InjectItemRecord :: Prefix :: Start");
 
-            string text = newId;//project.DevelopId + "_custom";
+            string text = project.DevelopId + "_custom";
+            text = magnumProjectsController.WrapProjectDateTime(project);
             //string text = project.DevelopId + "_custom";
             //Plugin.Logger.Log($"\t _InjectItemRecord project.DevelopId {project.DevelopId}");
             //Plugin.Logger.Log($"\t _InjectItemRecord text {text}");
@@ -146,15 +147,14 @@ namespace QM_PathOfQuasimorph.Core
             switch (project.ProjectType)
             {
                 case MagnumProjectType.RangeWeapon:
-                    //case MagnumProjectType.MeleeWeapon:
-                    //case MagnumProjectType.Armor:
-                    //case MagnumProjectType.Helmet:
-                    //case MagnumProjectType.Boots:
-                    //case MagnumProjectType.Leggings:
+                case MagnumProjectType.MeleeWeapon:
+                case MagnumProjectType.Armor:
+                case MagnumProjectType.Helmet:
+                case MagnumProjectType.Boots:
+                case MagnumProjectType.Leggings:
                     if (project.StartTime == DateTime.MinValue)
                     {
-                        var newId = magnumProjectsController.WrapProjectDateTime(project);
-                        InjectItemRecord(project, newId);
+                        InjectItemRecord(project);
                     }
                     return;
                 default:
