@@ -13,6 +13,23 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Core
 {
+    /* RGP themed weapon tiers
+         1. **Standard**
+         2. **Enhanced** // Magical
+         3. **Advanced** // Rare
+         4. **Premium** // Epic
+         5. **Prototype** // Legendary
+         6. **Quantum** // Mythic
+
+      //Arcane
+      //Exotic
+      //Mythic
+      //Relic
+      //Premium
+
+      * Name project cleanedDevId: devID_custom_poq_prototype_rndhash
+     */
+
     public enum ItemRarity
     {
         Standard,
@@ -268,27 +285,8 @@ namespace QM_PathOfQuasimorph.Core
                 //rangeweapon_reload_duration
                 //rangeweapon_magazine_capacity
                 //rangeweapon_special_ability
-
-                // Use reflection to get all public fields of mpj
-                //var type = param.Value.GetType();
-                //Plugin.Logger.Log($"\t\t type: {type}");
-
-                //var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                //var members = type.GetMembers(BindingFlags.Public | BindingFlags.Instance);
-
-
-                //Plugin.Logger.Log($"\t\t fields: {fields.Length}");
-                //Plugin.Logger.Log($"\t\t members: {members.Length}");
-
-                //foreach (var field in members)
-                //{
-                //    Plugin.Logger.Log($"\t\t\t\t Field: {field.Name} - Value: {field.Name}");
-                //    //Plugin.Logger.Log($"\t\t\t\t Field: {field.Name} - Value: {field.GetValue(type)}");
-                //}
-
-                //Plugin.Logger.Log($"\t\t\t test: {mpj.ParameterName}");
-
             }
+
             return editable_magnum_projects_params;
         }
 

@@ -22,22 +22,15 @@ namespace QM_PathOfQuasimorph.Core
         //}
 
 
-        [HarmonyPatch(typeof(MagnumProjects), nameof(MagnumProjects.OnAfterLoad))]
-        public static class MagnumProjects_OnAfterLoad_Patch
-        {
-            public static void Postfix(MagnumProjects __instance)
-            {
-                Plugin.Logger.Log($" MagnumProjects_OnAfterLoad_Patch : Postfix");
-                InjectProjectRecords(__instance);
-            }
-        }
-
-
-
-
-
-
-
+        //[HarmonyPatch(typeof(MagnumProjects), nameof(MagnumProjects.OnAfterLoad))]
+        //public static class MagnumProjects_OnAfterLoad_Patch
+        //{
+        //   public static void Postfix(MagnumProjects __instance)
+        //   {
+        //       Plugin.Logger.Log($" MagnumProjects_OnAfterLoad_Patch : Postfix");
+        //       //InjectProjectRecords(__instance);
+        //   }
+        //}
 
     }
 }

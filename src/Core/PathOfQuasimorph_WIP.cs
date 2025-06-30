@@ -32,22 +32,18 @@ namespace QM_PathOfQuasimorph.Core
             //Plugin.Logger.Log($"InjectItemRecord :: Prefix :: Start");
 
             string text = project.DevelopId + "_custom";
-            text = magnumProjectsController.WrapProjectDateTime(project);
+            text = MagnumPoQProjectsController.GetPoqItemId(project);
             //string text = project.DevelopId + "_custom";
-            //Plugin.Logger.Log($"\t _InjectItemRecord project.DevelopId {project.DevelopId}");
-            //Plugin.Logger.Log($"\t _InjectItemRecord text {text}");
 
             Localization.DuplicateKey("item." + project.DevelopId + ".name", "item." + text + ".name");
             Localization.DuplicateKey("item." + project.DevelopId + ".shortdesc", "item." + text + ".shortdesc");
 
             //TEST
 
-            DigitInfo digits = DigitInfo.GetDigits(project.FinishTime.Ticks);
-            var rarstr = (ItemRarity)digits.D6_Rarity;
-
-            UpdateKey("item." + text + ".name", "Mod: ", $" {rarstr.ToString()}");
+            //DigitInfo digits = DigitInfo.GetDigits(project.FinishTime.Ticks);
+            //var rarstr = (ItemRarity)digits.D6_Rarity;
+            //UpdateKey("item." + text + ".name", "Mod: ", $" {rarstr.ToString()}");
             //UpdateKey("item." + text + ".shortdesc", "Power", "of Doom");
-
 
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(project.DevelopId, true) as CompositeItemRecord;
 
@@ -110,19 +106,14 @@ namespace QM_PathOfQuasimorph.Core
                             }
                             else
                             {
-                                BootsRecord bootsRecord = basePickupItemRecord as BootsRecord;
-                                if (bootsRecord != null)
-                                {
-                                    Plugin.Logger.Log($"\t bootsRecord2");
-                                    BootsRecord bootsRecord2 = bootsRecord.Clone(text);
-                                    Data.Items.AddRecord(text, bootsRecord2);
-                                    project.ApplyModifications(bootsRecord2);
-                                }
-                                else
+                                BootsRecord bootsRecord3 = basePickupItemRecord as BootsRecord;
+                                if (bootsRecord3 == null)
                                 {
                                     throw new NotImplementedException(string.Format("Failed create project {0}. No clone method for additional records: {1}.", project.DevelopId, basePickupItemRecord.GetType()));
                                 }
-
+                                BootsRecord bootsRecord2 = bootsRecord3.Clone(text);
+                                Data.Items.AddRecord(text, bootsRecord2);
+                                project.ApplyModifications(bootsRecord2);
                             }
                         }
                     }
@@ -130,37 +121,37 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        public static void InjectProjectRecords(MagnumProjects projects)
-        {
-            Plugin.Logger.Log($" InjectProjectRecords : Postfix");
+        //public static void InjectProjectRecords(MagnumProjects projects)
+        //{
+        //    Plugin.Logger.Log($" InjectProjectRecords : Postfix");
 
-            foreach (MagnumProject magnumProject in projects.Values)
-            {
-                InjectProjectRecord(magnumProject);
-            }
-        }
+        //    foreach (MagnumProject magnumProject in projects.Values)
+        //    {
+        //        InjectProjectRecord(magnumProject);
+        //    }
+        //}
 
-        public static void InjectProjectRecord(MagnumProject project)
-        {
-            Plugin.Logger.Log($" InjectProjectRecord : Postfix");
+        //public static void InjectProjectRecord(MagnumProject project)
+        //{
+        //    Plugin.Logger.Log($" InjectProjectRecord : Postfix");
 
-            switch (project.ProjectType)
-            {
-                case MagnumProjectType.RangeWeapon:
-                case MagnumProjectType.MeleeWeapon:
-                case MagnumProjectType.Armor:
-                case MagnumProjectType.Helmet:
-                case MagnumProjectType.Boots:
-                case MagnumProjectType.Leggings:
-                    if (project.StartTime == DateTime.MinValue)
-                    {
-                        InjectItemRecord(project);
-                    }
-                    return;
-                default:
-                    return;
-            }
-        }
+        //    switch (project.ProjectType)
+        //    {
+        //        case MagnumProjectType.RangeWeapon:
+        //        case MagnumProjectType.MeleeWeapon:
+        //        case MagnumProjectType.Armor:
+        //        case MagnumProjectType.Helmet:
+        //        case MagnumProjectType.Boots:
+        //        case MagnumProjectType.Leggings:
+        //            if (project.StartTime == DateTime.MinValue)
+        //            {
+        //                InjectItemRecord(project);
+        //            }
+        //            return;
+        //        default:
+        //            return;
+        //    }
+        //}
 
 
 

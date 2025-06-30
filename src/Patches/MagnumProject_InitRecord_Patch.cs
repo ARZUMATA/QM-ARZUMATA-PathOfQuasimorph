@@ -6,21 +6,7 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
-        // TODO: Transpliers
-        [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectProjectRecord))]
-        public static class MagnumDevelopmentSystems_InjectProjectRecord_Patch
-        {
-            public static bool Prefix(MagnumProject project)
-            {
-                //Plugin.Logger.Log($" MagnumDevelopmentSystems_InjectProjectRecord_Patch : Prefix");
-                return true;
-            }
 
-            public static void Postfix(MagnumProject project)
-            {
-                //Plugin.Logger.Log($" MagnumDevelopmentSystems_InjectProjectRecord_Patch : Postfix");
-            }
-        }
 
         // It creates all projects possible at game start. Always.
         // We reuse original method. We can do IL-patch but I'm not that smart.
@@ -29,6 +15,10 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static bool Prefix(MagnumProject __instance)
             {
+                //Plugin.Logger.Log($"\t\t MagnumProject_InitRecord_Patch");
+                //Plugin.Logger.Log($"\t\t MagnumProject null {__instance.DevelopId}");
+
+
                 // Default method copied here.
                 ConfigTableRecord configTableRecord = null;
                 MagnumProjectPrice magnumProjectPrice = Data.MagnumProjectPrices.Get(__instance.ProjectType);
