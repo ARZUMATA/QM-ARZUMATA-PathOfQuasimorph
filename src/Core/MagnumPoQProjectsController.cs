@@ -8,6 +8,7 @@ using QM_PathOfQuasimorph.Core;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using System.Security.Policy;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -15,7 +16,7 @@ namespace QM_PathOfQuasimorph.Core
     {
         public MagnumProjects magnumProjects;
         public RaritySystem raritySystem = new RaritySystem();
-        
+
         public MagnumPoQProjectsController(MagnumProjects magnumProjects)
         {
             this.magnumProjects = magnumProjects;
@@ -49,7 +50,6 @@ namespace QM_PathOfQuasimorph.Core
             var finishTimeTemp = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
             newProject.StartTime = DateTime.MinValue;
             newProject.FinishTime = finishTimeTemp;
-            magnumProjects.Values.Add(newProject);
 
             // Apply various project related parameters
             raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
@@ -57,7 +57,12 @@ namespace QM_PathOfQuasimorph.Core
             // Resulting Uid
             var newId = $"{projectId}_custom_poq_{rarityString}_{randomUidInjected}";
 
-            PathOfQuasimorph.InjectItemRecord(newProject);
+            //PathOfQuasimorph.InjectItemRecord(newProject);
+            MagnumDevelopmentSystem.InjectItemRecord(newProject);
+
+            // Add the project to the list
+            magnumProjects.Values.Add(newProject);
+
             Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId}");
             return newId;
         }
@@ -66,7 +71,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             if (itemId.Contains("_poq_"))
             {
-                var wrapped = SplitItemId(itemId);
+                var wrapped = SplitItemUid(itemId);
 
                 foreach (MagnumProject magnumProject in magnumProjects.Values)
                 {
@@ -90,24 +95,61 @@ namespace QM_PathOfQuasimorph.Core
             return null; // Return null if no project is found
         }
 
-
-        public string WrapProjectDateTime(MagnumProject newProject)
+        public static ItemRarity GetItemRarity(long finishTime)
         {
-            var finishTimeTemp = newProject.FinishTime.Ticks;
-            DigitInfo digits = DigitInfo.GetDigits(finishTimeTemp);
-
-            var rarityClass = ((ItemRarity)digits.D6_Rarity).ToString().ToLower();
-
-            var newId =
-                $"{newProject.DevelopId}_custom_poq_{rarityClass}_{finishTimeTemp.ToString()}";
-            return newId;
+            DigitInfo digits = DigitInfo.GetDigits(finishTime);
+            return (ItemRarity)digits.D6_Rarity;
         }
 
-        public MagnumProjectWrapper SplitItemId(string itemId)
+        // Yes I dont know to get it right in IL opcodes.
+        public static ItemTransformationRecord GetItemTransformationRecord(ItemTransformationRecord record, MagnumProject project)
         {
-            if (itemId.Contains("_poq_"))
+            if (record == null)
             {
-                var newResult = itemId.Split(new string[] { "_poq_" }, StringSplitOptions.None);
+                Data.ItemTransformation.GetRecord("broken_weapon", true);
+            }
+
+            return record;
+        }
+
+        public static string GetPoqItemId(MagnumProject newProject)
+        {
+            // Get POQ item ID if we can, else return as is.
+            var splittedUid = SplitItemUid(newProject.DevelopId);
+            Plugin.Logger.Log($"newProject {newProject.DevelopId}");
+            Plugin.Logger.Log($"StartTime {newProject.StartTime.Ticks}");
+            Plugin.Logger.Log($"FinishTime {newProject.FinishTime.Ticks}");
+
+            // So either have 'broken' newProject.DevelopId during item creation passed and get PoqItem from it.
+            if (splittedUid.PoqItem)// || newProject.StartTime == DateTime.MinValue)
+            {
+                Plugin.Logger.Log($"poq1");
+                return $"{splittedUid.id}_custom_poq_{splittedUid.rarity}_{splittedUid.finishTime.Ticks.ToString()}";
+
+            }
+            // Or we have saved existing project with standard DevelopId so we need to check using project start time.
+            else if (newProject.StartTime.Ticks == 0 && newProject.FinishTime.Ticks > 0)
+            {
+                Plugin.Logger.Log($"poq2");
+
+                var rarity = GetItemRarity(newProject.FinishTime.Ticks).ToString().ToLower();
+                // We got another existing 'poq' item i.e. during gameload.
+                return $"{splittedUid.id}_custom_poq_{rarity}_{newProject.FinishTime.Ticks.ToString()}";
+            }
+            else
+            {
+                Plugin.Logger.Log($"no poq");
+
+                return splittedUid.customId; // returns customId i.e. common_shirt_2_custom
+            }
+        }
+
+        public static MagnumProjectWrapper SplitItemUid(string uid)
+        {
+            // This is used for dynamic item creation during CreateForInventory
+            if (uid.Contains("_poq_"))
+            {
+                var newResult = uid.Split(new string[] { "_poq_" }, StringSplitOptions.None);
 
                 var realBaseId = newResult[0].Replace("_custom", string.Empty); // Real Base item ID
                 var customId = realBaseId + "_custom"; // Custom ID
@@ -127,11 +169,12 @@ namespace QM_PathOfQuasimorph.Core
                     rarityClass = rarityClass,
                     finishTime = DateTime.FromBinary((long)hash),
                     uid = hash,
-                    fullstring = itemId,
+                    fullstring = uid,
+                    PoqItem = true
                 };
             }
-
-            var realBaseId2 = itemId.Replace("_custom", string.Empty); // Real Base item ID
+            
+            var realBaseId2 = uid.Replace("_custom", string.Empty); // Real Base item ID
             var customId2 = realBaseId2 + "_custom"; // Custom ID
 
             return new MagnumProjectWrapper
@@ -140,8 +183,10 @@ namespace QM_PathOfQuasimorph.Core
                 customId = customId2,
                 rarity = "Standard",
                 rarityClass = ItemRarity.Standard,
+                finishTime = DateTime.MinValue,
                 uid = 0,
-                fullstring = itemId,
+                fullstring = uid,
+                PoqItem = false
             };
         }
 
@@ -154,6 +199,7 @@ namespace QM_PathOfQuasimorph.Core
             public long uid { get; set; }
             public DateTime finishTime { get; set; }
             public string fullstring { get; set; }
+            public bool PoqItem { get; set; }
         }
 
         public class DigitInfo

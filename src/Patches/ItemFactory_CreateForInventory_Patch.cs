@@ -60,9 +60,8 @@ namespace QM_PathOfQuasimorph.Core
 
                         //var newProject = new MagnumProject(itemProjectType, customDevId); //todo handle randomize creating in controller
 
-                        var newId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId);
-                        itemId = newId;
-                        Plugin.Logger.Log($"\t  newId: {newId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
+                        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId); ;
+                        Plugin.Logger.Log($"\t  newId: {itemId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
 
 
                     }
