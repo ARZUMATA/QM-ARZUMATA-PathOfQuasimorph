@@ -105,9 +105,10 @@ namespace QM_PathOfQuasimorph.Core
         // Yes I dont know to get it right in IL opcodes.
         public static ItemTransformationRecord GetItemTransformationRecord(ItemTransformationRecord record, MagnumProject project)
         {
-            if (record == null)
+            if (record == null || record.Id == string.Empty)
             {
-                Data.ItemTransformation.GetRecord("broken_weapon", true);
+                // Item breaks into this, unless it has it's own record.
+                Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
 
             return record;
@@ -116,28 +117,20 @@ namespace QM_PathOfQuasimorph.Core
         public ItemProduceReceipt GetPlaceHolderItemProduceReceipt()
         {
             // If we already found it, reuse it as iteration and calls are very intensive for the hook.
-            if (itemProduceReceiptPlaceHolder != null)
+            if (itemProduceReceiptPlaceHolder != null && itemProduceReceiptPlaceHolder.Id != string.Empty)
             {
                 return itemProduceReceiptPlaceHolder;
             }
 
-            // Safe in case we don't find in cycle.
-            ItemProduceReceipt itemProduceReceiptPlaceHolderTemp = Data.ProduceReceipts[0];
-
             // Iterate whole receipts do find our placeholder.
             for (int i = 0; i < Data.ProduceReceipts.Count; i++)
             {
+                // Item has no recipe, let's add placeholder as we won't see it in recipe's list anyway.
                 if (Data.ProduceReceipts[i].OutputItem == "pills_sorbent")
                 {
                     itemProduceReceiptPlaceHolder = Data.ProduceReceipts[i];
-                    break;
+                    return itemProduceReceiptPlaceHolder;
                 }
-            }
-
-            // Reuse new found one for our placeholder.
-            if (itemProduceReceiptPlaceHolder == null)
-            {
-                itemProduceReceiptPlaceHolder = itemProduceReceiptPlaceHolderTemp;
             }
 
             return itemProduceReceiptPlaceHolder;

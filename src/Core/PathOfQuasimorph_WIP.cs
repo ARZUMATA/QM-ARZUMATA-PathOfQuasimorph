@@ -29,7 +29,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             // Default method copied here.
             // Plugin.Logger.Log($"\t MagnumDevelopmentSystem_InjectItemRecord_Patch Start");
-            //Plugin.Logger.Log($"InjectItemRecord :: Prefix :: Start");
+            Plugin.Logger.Log($"InjectItemRecord :: Prefix :: Start");
 
             string text = project.DevelopId + "_custom";
             text = MagnumPoQProjectsController.GetPoqItemId(project);
@@ -53,17 +53,21 @@ namespace QM_PathOfQuasimorph.Core
 
             Data.Items.RemoveRecord(text);
             Data.ItemTransformation.RemoveRecord(text);
+
+            Plugin.Logger.Log($"\t RemoveRecord text: {text}");
+
             ItemTransformationRecord record = Data.ItemTransformation.GetRecord(project.DevelopId, true);
+            Plugin.Logger.Log($"\t project.DevelopId text: {project.DevelopId}");
 
             // PathOfQuasimorph ADD Start
             //Plugin.Logger.Log($"\t ItemTransformationRecord == null {record == null}");
-            if (record == null)
+            if (record == null || record.Id == string.Empty)
             {
-                //Plugin.Logger.Log($"\t ItemTransformationRecord null. Need add placeholder.");
-                record = Data.ItemTransformation.GetRecord("broken_weapon", true); //Rusty Parts //We won't use it anyway. Don't care.
-                //Plugin.Logger.Log($"\t ItemTransformationRecord text: {text}");
-                //Plugin.Logger.Log($"\t ItemTransformationRecord record: {record}");
-                //Plugin.Logger.Log($"\t ItemTransformationRecord record null?: {record == null}");
+                Plugin.Logger.Log($"\t ItemTransformationRecord null. Need add placeholder.");
+                record = Data.ItemTransformation.GetRecord("prison_tshirt_1", true); //Rusty Parts //We won't use it anyway. Don't care.
+                Plugin.Logger.Log($"\t ItemTransformationRecord text: {text}");
+                Plugin.Logger.Log($"\t ItemTransformationRecord record: {record}");
+                Plugin.Logger.Log($"\t ItemTransformationRecord record null?: {record == null}");
             }
             // PathOfQuasimorph ADD End
 

@@ -21,7 +21,7 @@ namespace QM_PathOfQuasimorph.Core
 
             public static void Postfix(string outputId, ref ItemProduceReceipt __result)
             {
-                if (__result == null)
+                if (__result == null || __result.Id == string.Empty)
                 {
                     ItemProduceReceipt itemProduceReceiptPlaceHolder = magnumProjectsController.GetPlaceHolderItemProduceReceipt();
                     __result = itemProduceReceiptPlaceHolder;
@@ -33,6 +33,6 @@ namespace QM_PathOfQuasimorph.Core
         // Since it requires recipe for "new" items that are not available for crafting by default, we could hook or Il patch, but better to use ListExtensions.Get
         //[HarmonyPatch(typeof(MagnumProject), nameof(MagnumProject.InitRecord))]
         //public static class MagnumProject_InitRecord_Patch
-        
+
     }
 }
