@@ -53,10 +53,11 @@ namespace QM_PathOfQuasimorph.Core
         {
             { ItemRarity.Standard,    "#FFFFFF" },         // #FFFFFF (White - common items)
             { ItemRarity.Enhanced,    "#8888FF" },         // #8888FF (Blue - magical items)
-            { ItemRarity.Advanced,    "#FFFF77" },         // #FFFF77 // #FFD700 (Gold - legendary items)
-            { ItemRarity.Premium,     "#AF6025" },         // ##AF6025 (Brown - rare items) 
+            { ItemRarity.Advanced,    "#FFFF77" },         // #FFFF77 // #FFD700 (Gold - rare items)
+            { ItemRarity.Premium,     "#AF6025" },         // ##AF6025 (Brown - legendary items) 
             { ItemRarity.Prototype,   "#800080" },         // #FF0000 (Purple - set items or special tier)
             { ItemRarity.Quantum,     "#FF0000" },         // #800080 (Red - elite/unique items)
+            // #60C060 (Green - items)
         };
 
         public Color RarityToUnityColor(ItemRarity rarity)
