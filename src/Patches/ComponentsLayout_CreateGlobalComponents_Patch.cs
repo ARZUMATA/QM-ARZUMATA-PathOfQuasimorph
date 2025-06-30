@@ -16,20 +16,9 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.LogWarning("MagnumPoQProjectsController missing. Creating one.");
                     MagnumProjects magnumProjects = __instance._state.Get<MagnumProjects>(); // Assuming _state stores it
                     magnumProjectsController = new MagnumPoQProjectsController(magnumProjects);
-                    Plugin.Logger.Log($"\t\t test: {magnumProjectsController.magnumProjects.Values.Count}"); // What projects we made in-game.
+                    Plugin.Logger.Log($"\t\t magnumProjects Count: {magnumProjectsController.magnumProjects.Values.Count}"); // What projects we made in-game.
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 }
