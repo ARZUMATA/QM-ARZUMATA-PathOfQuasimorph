@@ -16,6 +16,7 @@ namespace QM_PathOfQuasimorph.Core
     {
         public MagnumProjects magnumProjects;
         public RaritySystem raritySystem = new RaritySystem();
+        public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
 
         public MagnumPoQProjectsController(MagnumProjects magnumProjects)
         {
@@ -112,6 +113,36 @@ namespace QM_PathOfQuasimorph.Core
             return record;
         }
 
+        public ItemProduceReceipt GetPlaceHolderItemProduceReceipt()
+        {
+            // If we already found it, reuse it as iteration and calls are very intensive for the hook.
+            if (itemProduceReceiptPlaceHolder != null)
+            {
+                return itemProduceReceiptPlaceHolder;
+            }
+
+            // Safe in case we don't find in cycle.
+            ItemProduceReceipt itemProduceReceiptPlaceHolderTemp = Data.ProduceReceipts[0];
+
+            // Iterate whole receipts do find our placeholder.
+            for (int i = 0; i < Data.ProduceReceipts.Count; i++)
+            {
+                if (Data.ProduceReceipts[i].OutputItem == "pills_sorbent")
+                {
+                    itemProduceReceiptPlaceHolder = Data.ProduceReceipts[i];
+                    break;
+                }
+            }
+
+            // Reuse new found one for our placeholder.
+            if (itemProduceReceiptPlaceHolder == null)
+            {
+                itemProduceReceiptPlaceHolder = itemProduceReceiptPlaceHolderTemp;
+            }
+
+            return itemProduceReceiptPlaceHolder;
+        }
+
         public static string GetPoqItemId(MagnumProject newProject)
         {
             // Get POQ item ID if we can, else return as is.
@@ -173,7 +204,7 @@ namespace QM_PathOfQuasimorph.Core
                     PoqItem = true
                 };
             }
-            
+
             var realBaseId2 = uid.Replace("_custom", string.Empty); // Real Base item ID
             var customId2 = realBaseId2 + "_custom"; // Custom ID
 
