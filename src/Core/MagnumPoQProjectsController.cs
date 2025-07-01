@@ -16,50 +16,111 @@ namespace QM_PathOfQuasimorph.Core
     {
         public const long MAGNUM_PROJECT_START_TIME = 1337L;
 
-        public MagnumProjects magnumProjects;
+        public static MagnumProjects magnumProjects;
         public RaritySystem raritySystem = new RaritySystem();
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
-        public Dictionary<string, List<string>> traitsTracker = new Dictionary<string, List<string>>();
-        public MagnumPoQProjectsController(MagnumProjects magnumProjects)
+        public List<string> traitsTracker = new List<string>();
+
+        public MagnumPoQProjectsController(MagnumProjects _magnumProjects)
         {
-            this.magnumProjects = magnumProjects;
+            magnumProjects = _magnumProjects;
         }
 
-        public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId)
+        public static bool IsPoqProject(MagnumProject magnumProject)
         {
-            // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
-            // NotImplementedException: Failed create project possesed_centaur_hand. No clone method for additional records: MGSC.AugmentationRecord.
-            bool dropMethod = false;
+            if (magnumProject.StartTime.Ticks == MAGNUM_PROJECT_START_TIME && magnumProject.FinishTime.Ticks > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(projectId, true) as CompositeItemRecord;
+        public bool CanProcessItemRecord(string id)
+        {
+            bool canProcess = true;
+
+            // Blacklist some items
+            List<string> blacklistedCategories = new List<string>
+                {
+                    "Possessed",
+                    "CyberAug",
+                    "PossessedAug",
+                    "QuasiAug",
+                    "none"
+                };
+
+            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(id, true) as CompositeItemRecord;
 
             foreach (var rec in compositeItemRecord.Records)
             {
                 Type recordType = rec.GetType();
+                bool checkWeaponRecord = false;
 
                 switch (recordType.Name)
                 {
                     case nameof(WeaponRecord):
+                        checkWeaponRecord = true;
+                        break;
                     case nameof(ArmorRecord):
                     case nameof(HelmetRecord):
                     case nameof(LeggingsRecord):
                     case nameof(BootsRecord):
                         break;
                     case nameof(AugmentationRecord):
-                        dropMethod = true;
+                        canProcess = false;
                         break;
                     default:
-                        dropMethod = true;
+                        canProcess = false;
                         break;
+                }
 
+                if (checkWeaponRecord)
+                {
+                    var weaponRecord = rec as WeaponRecord;
+                    if (weaponRecord != null)
+                    {
+                        //Plugin.Logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
+                        if (weaponRecord.IsImplicit)
+                        {
+                            canProcess = false;
+                            break;
+                        }
+
+                        foreach (var mod in weaponRecord.Categories)
+                        {
+                            if (blacklistedCategories.Contains(mod))
+                            {
+                                canProcess = false;
+                                break;
+                            }
+
+                            //Plugin.Logger.Log($"\t\t\t Category  {mod}");
+                        }
+
+                        //Plugin.Logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
+                        //Plugin.Logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
+                    }
                 }
             }
 
-            if (dropMethod)
+            return canProcess;
+        }
+
+        public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId)
+        {
+            // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
+            // NotImplementedException: Failed create project possesed_centaur_hand. No clone method for additional records: MGSC.AugmentationRecord.
+
+            if (!CanProcessItemRecord(projectId))
             {
                 return projectId;
             }
 
+            Plugin.Logger.Log($"\t No project found with DevelopId: {projectId}");
+            Plugin.Logger.Log($"Creating a new project with mods for {projectId} - {projectType}");
 
             // Determine if we ever need to create a new project
             var itemRarity = raritySystem.SelectRarity();
@@ -83,7 +144,6 @@ namespace QM_PathOfQuasimorph.Core
 
             // New finish project time
             newProject.StartTime = DateTime.FromBinary(MAGNUM_PROJECT_START_TIME);
-
             newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
 
             // Apply various project related parameters
@@ -96,7 +156,7 @@ namespace QM_PathOfQuasimorph.Core
             // Add our new Id to traits tracker as traits can't be added during project in game.
             // I'ts per item.
             // for: raritySystem.ApplyTraits
-            traitsTracker.Add(newId, new List<string>());
+            traitsTracker.Add(newId);
 
             //PathOfQuasimorph.InjectItemRecord(newProject);
             MagnumDevelopmentSystem.InjectItemRecord(newProject);
@@ -104,11 +164,11 @@ namespace QM_PathOfQuasimorph.Core
             // Add the project to the list
             magnumProjects.Values.Add(newProject);
 
-            Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId}");
+            Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId} with itemId: {newId}");
             return newId;
         }
 
-        internal MagnumProject GetProjectById(string itemId)
+        internal static MagnumProject GetProjectById(string itemId)
         {
             if (itemId.Contains("_poq_"))
             {

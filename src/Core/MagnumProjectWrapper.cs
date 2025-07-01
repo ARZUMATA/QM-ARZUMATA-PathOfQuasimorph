@@ -21,7 +21,7 @@ namespace QM_PathOfQuasimorph.Core
                 this.Id = newProject.DevelopId;
 
                 // This is our project based on time.
-                if (newProject.StartTime.Ticks == MAGNUM_PROJECT_START_TIME && newProject.FinishTime.Ticks > 0)
+                if (MagnumPoQProjectsController.IsPoqProject(newProject))
                 {
                     PoqItem = true;
                 }

@@ -33,8 +33,8 @@ namespace QM_PathOfQuasimorph.Core
                    // DateTime MaxValue = new DateTime(3155378975999999999L, DateTimeKind.Unspecified);
                    // Both Int64
 
-                   if (magnumProject.StartTime == DateTime.MinValue)
-                   {
+                   if (MagnumPoQProjectsController.IsPoqProject(__result))
+                    {
                        __result = null;
                        return false; // Return false to skip the original method
                    }
@@ -46,16 +46,5 @@ namespace QM_PathOfQuasimorph.Core
                return false; // Return false to skip the original method
            }
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 }

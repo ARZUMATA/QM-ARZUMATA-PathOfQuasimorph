@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
+using System;
+using UnityEngine;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -17,11 +19,10 @@ namespace QM_PathOfQuasimorph.Core
 
                 // Id here is always non-mod as game is not aware of it. So we do our magic.
                 // Also we don't need to know existing project as we always create new items here.
-                MagnumProject project = magnumProjectsController.GetProjectById(itemId);
+                MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 if (project == null)
                 {
-                    Plugin.Logger.Log($"\t No project found with DevelopId: {itemId}");
 
                     // Create new
                     MagnumProjectType itemProjectType = MagnumDevelopmentSystem.GetItemProjectType(itemId);
@@ -39,7 +40,6 @@ namespace QM_PathOfQuasimorph.Core
                         )
                     {
                         // Item is OK
-                        Plugin.Logger.Log($"\t  CreateForInventory: {itemId} {itemProjectType} ."); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
                         itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId);
                     }
                     //else if (itemProjectType == MagnumProjectType.None ||
@@ -50,13 +50,36 @@ namespace QM_PathOfQuasimorph.Core
                     //{
                     else
                     {
-                        // Skip if the project type is not OK
                         //Plugin.Logger.Log($"\t\t itemProjectType is NOT OK: {itemProjectType}");
+                        // Skip if the project type is not OK
                         //return true;
                     }
                 }
 
                 return true;  // Allow original method.
+            }
+
+            public static void Postfix(ref string itemId, bool randomizeConditionAndCapacity,
+                ref BasePickupItem __result,
+                ItemFactory __instance)
+            {
+                // Here we need to apply traits and other stuff that magnum projects don't cover.
+                // That's why we have traitsTracker in MagnumPoQProjectsController.
+                // We don't rely on magnum project here so we just look for traits tracker and slap them here.
+
+                if (magnumProjectsController.traitsTracker.Contains(__result.Id))
+                {
+
+                    if (magnumProjectsController.CanProcessItemRecord(__result.Id) == false)
+                    {
+                        return;
+                    }
+
+                    if (__result != null)
+                    {
+                        magnumProjectsController.raritySystem.ApplyTraits(ref __result);
+                    }
+                }
             }
         }
     }

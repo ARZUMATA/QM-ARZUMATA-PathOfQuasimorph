@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MGSC;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -57,24 +58,25 @@ namespace QM_PathOfQuasimorph.Core
 
             // Set the Z position to a value that ensures it appears behind the item (negative)
             // But if we want it to appear on top as overlay, use a positive Z value
-            transform.position = new Vector3(transform.position.x, transform.position.y, 100f); // Adjust Z as needed to stay on top
+            //transform.position = new Vector3(transform.position.x, transform.position.y, 100f); // Adjust Z as needed to stay on top
 
             // Set the Z position to make it appear before the item
-            rarityBackgroundRectTransform.SetAsLastSibling();
+            //rarityBackgroundRectTransform.SetAsLastSibling();
 
             // Set the Z position to make it appear behind the item
-            //rarityBackgroundRectTransform.SetAsFirstSibling();
+            rarityBackgroundRectTransform.SetAsFirstSibling();
         }
 
         public void SetRarityColor(Color color)
         {
-            color.a = 0.15f;
+            color.a = 0.2f;
             imageComponent.color = color;
         }
 
         public void EnableDisableComponent(bool active)
         {
             imageComponent.enabled = active;
+            rarityBackgroundGameObject.SetActive(active);
         }
     }
 }

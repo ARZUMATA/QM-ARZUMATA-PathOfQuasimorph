@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using static System.Net.Mime.MediaTypeNames;
@@ -19,6 +20,17 @@ namespace QM_PathOfQuasimorph.Core
         private static bool enabled = false;
         private static MagnumPoQProjectsController magnumProjectsController;
         private static bool done = false;
+
+        public static void UpdateKey(string lookupstr, string prefix, string suffix)
+        {
+            foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
+            {
+                if (languageToDict.Value.ContainsKey(lookupstr))
+                {
+                    languageToDict.Value[lookupstr] = prefix + languageToDict.Value[lookupstr] + suffix;
+                }
+            }
+        }
 
         /* All magnum project are recipes that are always available in the game. You get access to exact recipe via chip.
          * Mod projects are just derivatives from that

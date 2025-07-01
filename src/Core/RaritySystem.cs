@@ -7,8 +7,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using UnityEngine;
 using UnityEngine.Profiling;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Core
@@ -66,6 +68,18 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum, 0.85f }        // 85%
         };
 
+        // Dictionary to store the chance of getting the special trait for each rarity
+        private readonly Dictionary<ItemRarity, float> specialTraitChances = new Dictionary<ItemRarity, float>
+        {
+            { ItemRarity.Standard, 0f },       // 0% chance
+            { ItemRarity.Enhanced, 0.05f },      // 5% chance
+            { ItemRarity.Advanced, 0.1f },     // 10% chance
+            { ItemRarity.Premium, 0.15f },         // 20% chance
+            { ItemRarity.Prototype, 0.20f },        // 35% chance
+            { ItemRarity.Quantum, 0.25f },    // 50% chance
+        };
+
+        private MagnumPoQProjectsController magnumPoQProjectsController;
         public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
         {
             { ItemRarity.Standard,    "#FFFFFF" },         // #FFFFFF (White - common items)
@@ -246,27 +260,115 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Traits
-        internal void ApplyTraits(ref MagnumProject magnumProject, ItemRarity itemRarity)
+        private void ApplyTraits(ref BasePickupItem item, ItemRarity itemRarity, ItemTraitType itemTraitType, CompositeItemRecord compositeItemRecord)
         {
-            switch (magnumProject.ProjectType)
+            var traitsForItemType = GetAddeableTraits(itemTraitType);
+            var traitsForItemTypeShuffled = ShuffleDictionary(traitsForItemType);
+
+            // Calculate the number of parameters to adjust based on the percentage
+            int numParamsToAdjust = Mathf.RoundToInt(traitsForItemType.Count * rarityParamPercentages[itemRarity]);
+            numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
+
+            var canAddUnbreakableTrait = false;
+
+            if (specialTraitChances.TryGetValue(itemRarity, out float chance) && (new Random().Next(1, 100) / 100f) >= chance)
             {
-                case MagnumProjectType.RangeWeapon:
-                    ApplyTraits(ref magnumProject, itemRarity, GetAddeableTraits(MagnumProjectType.RangeWeapon, ItemTraitType.WeaponTrait));
-                    break;
-                case MagnumProjectType.MeleeWeapon:
-                    break;
-                    ApplyTraits(ref magnumProject, itemRarity, GetAddeableTraits(MagnumProjectType.MeleeWeapon, ItemTraitType.WeaponTrait));
-                default:
-                    break;
+                canAddUnbreakableTrait = true;
+            }
+
+            if (itemTraitType == ItemTraitType.ArmorTrait)
+            {
+                // Armor has no traits. T_T
+                foreach (PickupItemComponent comp in ((PickupItem)item).Components)
+                {
+                    var breakableItemComponent = comp as BreakableItemComponent;
+                    if (breakableItemComponent != null)
+                    {
+                        breakableItemComponent.Unbreakable = canAddUnbreakableTrait;
+                        break;
+                    }
+                }
+            }
+
+            if (itemTraitType == ItemTraitType.WeaponTrait)
+            {
+                foreach (PickupItemComponent comp in ((PickupItem)item).Components)
+                {
+                    var breakableItemComponent = comp as BreakableItemComponent;
+                    if (breakableItemComponent != null)
+                    {
+                        breakableItemComponent.Unbreakable = canAddUnbreakableTrait;
+                        break;
+                    }
+                }
+
+                foreach (PickupItemComponent comp in ((PickupItem)item).Components)
+                {
+                    var weaponComponent = comp as WeaponComponent;
+                    if (weaponComponent != null)
+                    {
+                        // If trait already there, don't touch it and remove from candidates.
+                        for (int i = 0; i < weaponComponent.Traits.Count; i++)
+                        {
+                            if (traitsForItemTypeShuffled.ContainsKey(weaponComponent.Traits[i].TraitId))
+                            {
+                                traitsForItemTypeShuffled.Remove(weaponComponent.Traits[i].TraitId);
+                            }
+                        }
+
+                        // In case the dictionary is smaller now.
+                        if (numParamsToAdjust > traitsForItemTypeShuffled.Count)
+                        {
+                            numParamsToAdjust = traitsForItemTypeShuffled.Count;
+                        }
+
+                        for (int i = 0; i < numParamsToAdjust; i++)
+                        {
+                            ItemTrait item2 = ItemTraitSystem.CreateItemTrait(traitsForItemTypeShuffled.ElementAt(i).Key);
+                            weaponComponent.Traits.Add(item2);
+                        }
+                    }
+                }
+            }
+
+            if (itemTraitType == ItemTraitType.AmmoTrait)
+            {
+                // No way to reliably get uniuque id as it's not a moddable magnum project.
             }
         }
 
-        private void ApplyTraits(ref MagnumProject magnumProject, ItemRarity itemRarity, Dictionary<string, ItemTraitRecord> dictionary)
+        internal void ApplyTraits(ref BasePickupItem item)
         {
-            throw new NotImplementedException();
+            var wrapper = MagnumProjectWrapper.SplitItemUid(item.Id);
+
+            // We have that item in list so we need to process it and remove later on.
+            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(item.Id, true) as CompositeItemRecord;
+
+            foreach (BasePickupItemRecord basePickupItemRecord in compositeItemRecord.Records)
+            {
+                Type recordType = basePickupItemRecord.GetType();
+
+                switch (recordType.Name)
+                {
+                    case nameof(WeaponRecord):
+                        ApplyTraits(ref item, wrapper.RarityClass, ItemTraitType.WeaponTrait, compositeItemRecord);
+                        break;
+                    case nameof(ArmorRecord):
+                    case nameof(HelmetRecord):
+                    case nameof(LeggingsRecord):
+                    case nameof(BootsRecord):
+                        ApplyTraits(ref item, wrapper.RarityClass, ItemTraitType.ArmorTrait, compositeItemRecord);
+                        break;
+                        //case nameof(AmmoRecord):
+                        //    ApplyTraits(ref item, wrapper.RarityClass, ItemTraitType.ArmorTrait, compositeItemRecord);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
-        private static Dictionary<string, ItemTraitRecord> GetAddeableTraits(MagnumProjectType projectType, ItemTraitType itemTraitType)
+        private static Dictionary<string, ItemTraitRecord> GetAddeableTraits(ItemTraitType itemTraitType)
         {
             Dictionary<string, ItemTraitRecord> addeableTraits = new Dictionary<string, ItemTraitRecord>();
 
@@ -275,7 +377,6 @@ namespace QM_PathOfQuasimorph.Core
                 if (param.Value.ItemTraitType == itemTraitType)
                 {
                     addeableTraits.Add(param.Value.Id, param.Value);
-
                 }
             }
 
@@ -311,21 +412,31 @@ namespace QM_PathOfQuasimorph.Core
             return editable_magnum_projects_params;
         }
 
-        private Dictionary<string, MagnumProjectParameter> ShuffleDictionary(Dictionary<string, MagnumProjectParameter> dictionary)
+        private void ShuffleList<T>(IList<T> list)
         {
-            List<KeyValuePair<string, MagnumProjectParameter>> list = dictionary.ToList();
-
             // Fisher-Yates shuffle
             for (int i = list.Count - 1; i > 0; i--)
             {
                 int j = _random.Next(i + 1);
-                KeyValuePair<string, MagnumProjectParameter> temp = list[i];
+                T temp = list[i];
                 list[i] = list[j];
                 list[j] = temp;
             }
+        }
 
-            // Create a new dictionary from the shuffled list
-            return list.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        private Dictionary<TKey, TValue> ShuffleDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+        {
+            List<TKey> keys = dictionary.Keys.ToList();
+            ShuffleList(keys);  // Use the generic shuffle method for the list of keys
+
+            Dictionary<TKey, TValue> shuffled = new Dictionary<TKey, TValue>();
+
+            foreach (TKey key in keys)
+            {
+                shuffled[key] = dictionary[key];
+            }
+
+            return shuffled;
         }
     }
 }
