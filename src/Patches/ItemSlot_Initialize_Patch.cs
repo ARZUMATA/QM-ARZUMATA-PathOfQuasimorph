@@ -29,6 +29,19 @@ namespace QM_PathOfQuasimorph.Core
 
         public static void ApplyItemRarityBackground(ItemSlot __instance, BasePickupItem item)
         {
+            // Check if the ItemSlot GameObject already has our RarityBackgroundComponent component.
+            RarityBackgroundComponent rarityComponent = __instance.gameObject.GetComponent<RarityBackgroundComponent>();
+
+            if (rarityComponent == null)
+            {
+                rarityComponent = __instance.gameObject.AddComponent<RarityBackgroundComponent>();
+            }
+
+            if (item == null)
+            {
+                rarityComponent.EnableDisableComponent(false);
+            }
+
             if (item != null)
             {
                 /* Note to self and explanation:
@@ -37,14 +50,6 @@ namespace QM_PathOfQuasimorph.Core
                 ItemSlot is attached to GameObject.
                 We check if the GameObject already has a RarityBackgroundComponent attached to it, which is a separate MonoBehaviour.
                 */
-
-                // Check if the ItemSlot GameObject already has our RarityBackgroundComponent component.
-                RarityBackgroundComponent rarityComponent = __instance.gameObject.GetComponent<RarityBackgroundComponent>();
-
-                if (rarityComponent == null)
-                {
-                    rarityComponent = __instance.gameObject.AddComponent<RarityBackgroundComponent>();
-                }
 
                 // Update or create imageComponent on the GameObject
                 var rarity = MagnumProjectWrapper.SplitItemUid(item.Id).RarityClass;
