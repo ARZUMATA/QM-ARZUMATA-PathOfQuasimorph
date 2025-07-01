@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using QM_PathOfQuasimorph.Core;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -24,9 +25,6 @@ namespace QM_PathOfQuasimorph.Core
         {
             if (item != null)
             {
-                Plugin.Logger.Log($"ApplyItemRarityBackground");
-                Plugin.Logger.Log($"\t\t {item.Id}");
-
                 /* Note to self and explanation:
                 __instance is the ItemSlot component
                 __instance.gameObject is the actual UI element (a GameObject) that the item is displayed on.
@@ -43,7 +41,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
                 // Update or create imageComponent on the GameObject
-                var rarity = MagnumPoQProjectsController.SplitItemUid(item.Id).rarityClass;
+                var rarity = MagnumProjectWrapper.SplitItemUid(item.Id).RarityClass;
 
                 if (rarity != ItemRarity.Standard)
                 {

@@ -14,10 +14,12 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class MagnumPoQProjectsController
     {
+        public const long MAGNUM_PROJECT_START_TIME = 1337L;
+
         public MagnumProjects magnumProjects;
         public RaritySystem raritySystem = new RaritySystem();
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
-
+        public Dictionary<string, List<string>> traitsTracker = new Dictionary<string, List<string>>();
         public MagnumPoQProjectsController(MagnumProjects magnumProjects)
         {
             this.magnumProjects = magnumProjects;
@@ -25,6 +27,40 @@ namespace QM_PathOfQuasimorph.Core
 
         public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId)
         {
+            // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
+            // NotImplementedException: Failed create project possesed_centaur_hand. No clone method for additional records: MGSC.AugmentationRecord.
+            bool dropMethod = false;
+
+            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(projectId, true) as CompositeItemRecord;
+
+            foreach (var rec in compositeItemRecord.Records)
+            {
+                Type recordType = rec.GetType();
+
+                switch (recordType.Name)
+                {
+                    case nameof(WeaponRecord):
+                    case nameof(ArmorRecord):
+                    case nameof(HelmetRecord):
+                    case nameof(LeggingsRecord):
+                    case nameof(BootsRecord):
+                        break;
+                    case nameof(AugmentationRecord):
+                        dropMethod = true;
+                        break;
+                    default:
+                        dropMethod = true;
+                        break;
+
+                }
+            }
+
+            if (dropMethod)
+            {
+                return projectId;
+            }
+
+
             // Determine if we ever need to create a new project
             var itemRarity = raritySystem.SelectRarity();
 
@@ -34,8 +70,6 @@ namespace QM_PathOfQuasimorph.Core
             {
                 return projectId;
             }
-
-            var rarityString = itemRarity.ToString().ToLower();
 
             // Create a new project
             MagnumProject newProject = new MagnumProject(projectType, projectId);
@@ -48,15 +82,21 @@ namespace QM_PathOfQuasimorph.Core
             var randomUidInjected = digits.ReturnUID();
 
             // New finish project time
-            var finishTimeTemp = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
-            newProject.StartTime = DateTime.MinValue;
-            newProject.FinishTime = finishTimeTemp;
+            newProject.StartTime = DateTime.FromBinary(MAGNUM_PROJECT_START_TIME);
+
+            newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
 
             // Apply various project related parameters
             raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
 
             // Resulting Uid
-            var newId = $"{projectId}_custom_poq_{rarityString}_{randomUidInjected}";
+            var magnumProjectWrapper = new MagnumProjectWrapper(newProject);
+            var newId = magnumProjectWrapper.ReturnItemUid();
+
+            // Add our new Id to traits tracker as traits can't be added during project in game.
+            // I'ts per item.
+            // for: raritySystem.ApplyTraits
+            traitsTracker.Add(newId, new List<string>());
 
             //PathOfQuasimorph.InjectItemRecord(newProject);
             MagnumDevelopmentSystem.InjectItemRecord(newProject);
@@ -72,11 +112,11 @@ namespace QM_PathOfQuasimorph.Core
         {
             if (itemId.Contains("_poq_"))
             {
-                var wrapped = SplitItemUid(itemId);
+                var wrapped = MagnumProjectWrapper.SplitItemUid(itemId);
 
                 foreach (MagnumProject magnumProject in magnumProjects.Values)
                 {
-                    if (magnumProject.FinishTime == wrapped.finishTime)
+                    if (magnumProject.FinishTime == wrapped.FinishTime)
                     {
                         return magnumProject;
                     }
@@ -108,7 +148,7 @@ namespace QM_PathOfQuasimorph.Core
             if (record == null || record.Id == string.Empty)
             {
                 // Item breaks into this, unless it has it's own record.
-                Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
+                return Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
 
             return record;
@@ -136,66 +176,134 @@ namespace QM_PathOfQuasimorph.Core
             return itemProduceReceiptPlaceHolder;
         }
 
-        public static string GetPoqItemId(MagnumProject newProject)
+        public class MagnumProjectWrapper
         {
-            // Get POQ item ID if we can, else return as is.
-            var splittedUid = SplitItemUid(newProject.DevelopId);
-            Plugin.Logger.Log($"newProject {newProject.DevelopId}");
-            Plugin.Logger.Log($"StartTime {newProject.StartTime.Ticks}");
-            Plugin.Logger.Log($"FinishTime {newProject.FinishTime.Ticks}");
+            public string Id { get; set; }
+            public string CustomId { get; set; }
+            public string Rarity { get; set; }
+            public ItemRarity RarityClass { get; set; }
+            public DateTime StartTime { get; set; }
+            public DateTime FinishTime { get; set; }
+            public bool PoqItem { get; set; }
 
-            // So either have 'broken' newProject.DevelopId during item creation passed and get PoqItem from it.
-            if (splittedUid.PoqItem)// || newProject.StartTime == DateTime.MinValue)
+            public MagnumProjectWrapper(MagnumProject newProject)
             {
-                Plugin.Logger.Log($"poq1");
-                return $"{splittedUid.id}_custom_poq_{splittedUid.rarity}_{splittedUid.finishTime.Ticks.ToString()}";
+
+                // Generate metadata
+                this.Id = newProject.DevelopId;
+
+                // This is our project based on time.
+                if (newProject.StartTime.Ticks == MAGNUM_PROJECT_START_TIME && newProject.FinishTime.Ticks > 0)
+                {
+                    PoqItem = true;
+                }
+                else
+                {
+                    PoqItem = false;
+                }
+
+                Plugin.Logger.Log($" MagnumProjectWrapper PoqItem {PoqItem}");
+
+                if (PoqItem)
+                {
+                    CustomId = $"{Id}_custom_poq";
+                    var digitinfo = DigitInfo.GetDigits(newProject.FinishTime.Ticks);
+                    RarityClass = (ItemRarity)digitinfo.D6_Rarity;
+                    Rarity = RarityClass.ToString().ToLower();
+                    StartTime = newProject.StartTime;
+                    FinishTime = newProject.FinishTime;
+
+                }
+                else
+                {
+                    CustomId = $"{Id}_custom";
+                    RarityClass = ItemRarity.Standard;
+                    Rarity = RarityClass.ToString().ToLower();
+                    StartTime = newProject.StartTime;
+                    FinishTime = newProject.FinishTime;
+                }
+            }
+
+            public MagnumProjectWrapper()
+            {
 
             }
-            // Or we have saved existing project with standard DevelopId so we need to check using project start time.
-            else if (newProject.StartTime.Ticks == 0 && newProject.FinishTime.Ticks > 0)
-            {
-                Plugin.Logger.Log($"poq2");
 
-                var rarity = GetItemRarity(newProject.FinishTime.Ticks).ToString().ToLower();
-                // We got another existing 'poq' item i.e. during gameload.
-                return $"{splittedUid.id}_custom_poq_{rarity}_{newProject.FinishTime.Ticks.ToString()}";
+            public MagnumProjectWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime)
+            {
+                this.Id = id;
+
+                if (poqItem)
+                {
+                    this.CustomId = $"${id}_custom_poq";
+                }
+                else
+                {
+                    this.CustomId = $"{id}_custom";
+                }
+
+                var digitinfo = DigitInfo.GetDigits(finishTime.Ticks);
+                this.RarityClass = (ItemRarity)digitinfo.D6_Rarity;
+                this.Rarity = RarityClass.ToString().ToLower();
+                this.StartTime = startTime;
+                this.FinishTime = finishTime;
+                this.PoqItem = poqItem;
+
+                Plugin.Logger.Log($"Created MagnumProjectWrapper with id: {this.Id}, CustomId: {this.CustomId}, Rarity: {this.Rarity}, RarityClass: {this.RarityClass}, StartTime: {this.StartTime.Ticks}, FinishTime: {this.FinishTime.Ticks}, PoqItem: {this.PoqItem}");
+            }
+
+            public string ReturnItemUid()
+            {
+                if (PoqItem)
+                {
+                    return $"{this.CustomId}_{this.Rarity}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
             }
             else
             {
-                Plugin.Logger.Log($"no poq");
-
-                return splittedUid.customId; // returns customId i.e. common_shirt_2_custom
+                    return $"{this.CustomId}";
+                }
             }
+
+            public static string GetPoqItemId(MagnumProject newProject)
+            {
+                // Check our project, detect if it has metadata we injected.
+                return new MagnumProjectWrapper(newProject).ReturnItemUid();
         }
 
         public static MagnumProjectWrapper SplitItemUid(string uid)
         {
+                // trucker_pistol_1_custom_poq_quantum_1337_808576342000005
+
             // This is used for dynamic item creation during CreateForInventory
             if (uid.Contains("_poq_"))
             {
-                var newResult = uid.Split(new string[] { "_poq_" }, StringSplitOptions.None);
+                    var splittedUid = uid.Split(new string[] { "_poq_" }, StringSplitOptions.None);
+                    /* Two parts:
+                     * First:
+                     * trucker_pistol_1_custom
+                     * _poq_
+                     * Second:
+                     * quantum_1337_808576342000005
+                     * */
 
-                var realBaseId = newResult[0].Replace("_custom", string.Empty); // Real Base item ID
-                var customId = realBaseId + "_custom"; // Custom ID
+                    var realId = splittedUid[0].Replace("_custom", string.Empty); // Real Base item ID
+                    var suffixParts = splittedUid[1].Split('_'); // T_T
 
-                var suffixParts = newResult[1]
-                    .Split(new string[] { "_" }, 2, StringSplitOptions.None);
-                string rarityName = suffixParts[0]; // e.g., "Prototype"
-                long hash = Int64.Parse(suffixParts.Length > 1 ? suffixParts[1] : "0"); // "1234567890"
+                    /* 
+                    * quantum
+                    * 1337
+                    * 808576342000005
+                    */
 
-                ItemRarity rarityClass = (ItemRarity)Enum.Parse(typeof(ItemRarity), rarityName, true);
+                    //  string id, bool poqItem, ItemRarity rarityClass, DateTime startTime, DateTime finishTime)
+                    var wrapper = new MagnumProjectWrapper(
+                        id: realId,
+                        poqItem: true,
+                        startTime: new DateTime(Int64.Parse(suffixParts[1])),
+                        finishTime: new DateTime(Int64.Parse(suffixParts[2]))
+                        );
 
-                return new MagnumProjectWrapper
-                {
-                    id = realBaseId,
-                    customId = customId,
-                    rarity = rarityName,
-                    rarityClass = rarityClass,
-                    finishTime = DateTime.FromBinary((long)hash),
-                    uid = hash,
-                    fullstring = uid,
-                    PoqItem = true
-                };
+                    return wrapper;
             }
 
             var realBaseId2 = uid.Replace("_custom", string.Empty); // Real Base item ID
@@ -203,27 +311,15 @@ namespace QM_PathOfQuasimorph.Core
 
             return new MagnumProjectWrapper
             {
-                id = realBaseId2,
-                customId = customId2,
-                rarity = "Standard",
-                rarityClass = ItemRarity.Standard,
-                finishTime = DateTime.MinValue,
-                uid = 0,
-                fullstring = uid,
+                    Id = realBaseId2,
+                    CustomId = customId2,
+                    Rarity = "Standard",
+                    RarityClass = ItemRarity.Standard,
+                    StartTime = DateTime.MinValue,
+                    FinishTime = DateTime.MinValue,
                 PoqItem = false
             };
         }
-
-        public class MagnumProjectWrapper
-        {
-            public string id { get; set; }
-            public string customId { get; set; }
-            public string rarity { get; set; }
-            public ItemRarity rarityClass { get; set; }
-            public long uid { get; set; }
-            public DateTime finishTime { get; set; }
-            public string fullstring { get; set; }
-            public bool PoqItem { get; set; }
         }
 
         public class DigitInfo

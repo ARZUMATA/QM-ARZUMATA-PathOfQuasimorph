@@ -44,7 +44,7 @@ namespace QM_PathOfQuasimorph.Core
     {
         private readonly Random _random = new Random();
 
-        // Weights for each rarity (lower = rarer)
+        // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
         {
             { ItemRarity.Standard, 100 },
@@ -55,7 +55,7 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum, 1 }
             };
 
-        // Define the percentage of parameters to modify per rarity
+        // Define the percentage of parameters to modify per Rarity
         private Dictionary<ItemRarity, float> rarityParamPercentages = new Dictionary<ItemRarity, float>
         {
             { ItemRarity.Standard, 0.10f },     // 10% of editableParams
@@ -104,63 +104,6 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return ItemRarity.Standard;
-        }
-
-        public void ApplyRarityToItem(Dictionary<string, MagnumProjectParameter> editableParams, ItemRarity itemRarity, ref MagnumProject newProject)
-        {
-            int maxParamsToAdjust = editableParams.Count;
-
-            // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = Mathf.RoundToInt(editableParams.Count * rarityParamPercentages[itemRarity]);
-            numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
-
-            // Shuffle the dictionary
-            var editableParamsShuffled = ShuffleDictionary(editableParams);
-
-            for (int i = 0; i < numParamsToAdjust; i++)
-            {
-                MagnumProjectParameter defaultParamValue = editableParamsShuffled.Values.ToArray()[i];
-
-                // Increase
-                // everything else
-
-                // Decrease
-                // _weight
-                // _reload_duration
-                // _scatter_angle
-
-                // Special case
-                // _special_ability
-
-                switch (defaultParamValue.Id)
-                {
-                    case "_weight":
-                    case "_reload_duration":
-                    case "_scatter_angle":
-                        AddIncreasedOrDecreased(defaultParamValue, ref newProject, itemRarity, false);
-                        break;
-                    case "_special_ability":
-                        break;
-                    case "_damage":
-                    case "_crit_damage":
-                    case "_max_durability":
-                    case "_accuracy":
-                    case "_magazine_capacity":
-                        AddIncreasedOrDecreased(defaultParamValue, ref newProject, itemRarity, true);
-                        break;
-                    //AddSpecialAbility(defaultParamValue, ref newProject, itemRarity);
-                    default:
-                        break;
-                }
-
-                // TODO:
-                // Unbreakable
-                // Traits
-            }
-        }
-
-        private void AddSpecialAbility(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity)
-        {
         }
 
         // Used part of code from  MagnumProjectNumericParameterPanel.Initialize
@@ -228,7 +171,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private float[] GetRarityModifiers(ItemRarity rarity)
         {
-            // Define multipliers for each rarity class
+            // Define multipliers for each Rarity class
             // Feel free to adjust these values to balance the system
             switch (rarity)
             {
@@ -247,18 +190,96 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        internal void ApplyProjectParameters(ref MagnumProject newProject, ItemRarity itemRarity)
+        internal void ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
         {
-            // How many upgrades it can hold?
-            var upgradeLimit = newProject.ModifyLevelLimit;
-            Plugin.Logger.Log($"\t\t upgradeLimit: {upgradeLimit}");
+            var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
-            // Determine projectType i.e. RangeWeapon
-            var projectType = newProject.ProjectType;
+            int maxParamsToAdjust = editableParameters.Count;
 
-            var editableParameters = GetEditableParameters(projectType);
+            // Calculate the number of parameters to adjust based on the percentage
+            int numParamsToAdjust = Mathf.RoundToInt(editableParameters.Count * rarityParamPercentages[itemRarity]);
+            numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
 
-            ApplyRarityToItem(editableParameters, itemRarity, ref newProject);
+            // Shuffle the dictionary
+            var editableParamsShuffled = ShuffleDictionary(editableParameters);
+
+            for (int i = 0; i < numParamsToAdjust; i++)
+            {
+                MagnumProjectParameter defaultParamValue = editableParamsShuffled.Values.ToArray()[i];
+
+                // Increase
+                // everything else
+
+                // Decrease
+                // _weight
+                // _reload_duration
+                // _scatter_angle
+
+                // Special case
+                // _special_ability
+
+                switch (defaultParamValue.Id)
+                {
+                    case "_weight":
+                    case "_reload_duration":
+                    case "_scatter_angle":
+                    case "_resist":
+                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false);
+                        break;
+                    case "_special_ability":
+                        break;
+                    case "_damage":
+                    case "_crit_damage":
+                    case "_max_durability":
+                    case "_accuracy":
+                    case "_magazine_capacity":
+                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true);
+                        break;
+                    default:
+                        break;
+                }
+
+                // TODO:
+                // Unbreakable
+                // Traits
+            }
+        }
+
+        // Traits
+        internal void ApplyTraits(ref MagnumProject magnumProject, ItemRarity itemRarity)
+        {
+            switch (magnumProject.ProjectType)
+            {
+                case MagnumProjectType.RangeWeapon:
+                    ApplyTraits(ref magnumProject, itemRarity, GetAddeableTraits(MagnumProjectType.RangeWeapon, ItemTraitType.WeaponTrait));
+                    break;
+                case MagnumProjectType.MeleeWeapon:
+                    break;
+                    ApplyTraits(ref magnumProject, itemRarity, GetAddeableTraits(MagnumProjectType.MeleeWeapon, ItemTraitType.WeaponTrait));
+                default:
+                    break;
+            }
+        }
+
+        private void ApplyTraits(ref MagnumProject magnumProject, ItemRarity itemRarity, Dictionary<string, ItemTraitRecord> dictionary)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static Dictionary<string, ItemTraitRecord> GetAddeableTraits(MagnumProjectType projectType, ItemTraitType itemTraitType)
+        {
+            Dictionary<string, ItemTraitRecord> addeableTraits = new Dictionary<string, ItemTraitRecord>();
+
+            foreach (var param in Data.ItemTraits._records)
+            {
+                if (param.Value.ItemTraitType == itemTraitType)
+                {
+                    addeableTraits.Add(param.Value.Id, param.Value);
+
+                }
+            }
+
+            return addeableTraits;
         }
 
         private static Dictionary<string, MagnumProjectParameter> GetEditableParameters(MagnumProjectType projectType)

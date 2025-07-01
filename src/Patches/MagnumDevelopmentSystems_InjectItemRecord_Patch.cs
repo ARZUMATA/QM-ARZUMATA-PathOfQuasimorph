@@ -3,13 +3,14 @@ using MGSC;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Linq;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
 
-        // Using transpliers now.
+        //Using transpliers now.
         //[HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
         //public static class MagnumDevelopmentSystems_InjectItemRecord_Patch
         //{
@@ -28,7 +29,7 @@ namespace QM_PathOfQuasimorph.Core
                 // Get original instructions
                 var original = new List<CodeInstruction>(instructions);
 
-                var getPoqItemId = AccessTools.Method(typeof(MagnumPoQProjectsController), nameof(MagnumPoQProjectsController.GetPoqItemId));
+                var getPoqItemId = AccessTools.Method(typeof(MagnumProjectWrapper), nameof(MagnumProjectWrapper.GetPoqItemId));
                 var getItemTransformationRecord = AccessTools.Method(typeof(MagnumPoQProjectsController), nameof(MagnumPoQProjectsController.GetItemTransformationRecord));
 
                 // Using Codematcher to find instruction sequence we need.
@@ -86,7 +87,7 @@ namespace QM_PathOfQuasimorph.Core
                 )
                 .InstructionEnumeration()
                 .ToList();
-                
+
                 return result;
             }
         }
