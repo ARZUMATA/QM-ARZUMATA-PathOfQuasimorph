@@ -55,13 +55,20 @@ namespace QM_PathOfQuasimorph.Core
             // Set the position to (0,0), centered in the parent
             rarityBackgroundRectTransform.anchoredPosition = Vector2.zero;
 
+            // Set the Z position to a value that ensures it appears behind the item (negative)
+            // But if we want it to appear on top as overlay, use a positive Z value
+            transform.position = new Vector3(transform.position.x, transform.position.y, 100f); // Adjust Z as needed to stay on top
+
+            // Set the Z position to make it appear before the item
+            rarityBackgroundRectTransform.SetAsLastSibling();
+
             // Set the Z position to make it appear behind the item
-            rarityBackgroundRectTransform.SetAsFirstSibling();
+            //rarityBackgroundRectTransform.SetAsFirstSibling();
         }
 
         public void SetRarityColor(Color color)
         {
-            color.a = 0.35f;
+            color.a = 0.15f;
             imageComponent.color = color;
         }
 
