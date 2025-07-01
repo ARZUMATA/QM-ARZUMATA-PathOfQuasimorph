@@ -1,0 +1,200 @@
+﻿Weapon,Prefix,Advanced,Plasma-Charged
+Weapon,Prefix,Advanced,Kinetic-Burst
+Weapon,Prefix,Quantum,Void-Infused
+Weapon,Prefix,Quantum,Quantum-Phase
+Weapon,Prefix,Premium,Hyper-Velocity
+Weapon,Prefix,Advanced,Grav-Pulse
+Weapon,Prefix,Advanced,Sonic-Wave
+Weapon,Prefix,Advanced,Nano-Filament
+Weapon,Prefix,Advanced,Cybernetic-Link
+Weapon,Prefix,Prototype,Chrono-Synched
+Weapon,Prefix,Premium,Orbital-Strike
+Weapon,Prefix,Enhanced,Tactical
+Weapon,Prefix,Enhanced,Assault
+Weapon,Prefix,Advanced,Precision
+Weapon,Prefix,Premium,Vanguard
+Weapon,Prefix,Premium,Sentinel's
+Weapon,Prefix,Premium,Predator's
+Weapon,Prefix,Advanced,Hunter-Killer
+Weapon,Prefix,Premium,Annihilation
+Weapon,Prefix,Premium,Devastator
+Weapon,Prefix,Premium,Obliterator
+Weapon,Prefix,Advanced,Incinerator
+Weapon,Prefix,Advanced,Shredder
+Weapon,Prefix,Advanced,Disruptor
+Weapon,Prefix,Advanced,Enforcer's
+Weapon,Prefix,Premium,Terminator
+Weapon,Prefix,Advanced,Ragefire
+Weapon,Prefix,Premium,Stormcall
+Weapon,Prefix,Quantum,Doombringer
+Weapon,Prefix,Advanced,Shadow-Ops
+Weapon,Prefix,Prototype,Ghost-Protocol
+Weapon,Prefix,Premium,Phantom-Class
+Weapon,Prefix,Premium,Apex-Tier
+Weapon,Prefix,Premium,Alpha-Strike
+Weapon,Prefix,Quantum,Omega-Pattern
+Weapon,Prefix,Enhanced,Reinforced
+Weapon,Prefix,Enhanced,Calibrated
+Weapon,Prefix,Advanced,Optimized
+Weapon,Prefix,Advanced,Adaptive
+Weapon,Prefix,Enhanced,Brutal
+Weapon,Prefix,Advanced,Relentless
+Weapon,Prefix,Advanced,Swiftfire
+Weapon,Prefix,Premium,Pulsar
+Weapon,Prefix,Prototype,Beam-Forge
+Weapon,Prefix,Advanced,Railgun
+Weapon,Prefix,Advanced,Arc-Blaze
+Weapon,Prefix,Enhanced,Burst-Fire
+Weapon,Prefix,Advanced,Penetrator
+Weapon,Prefix,Advanced,Demolition
+Weapon,Prefix,Premium,Exterminator
+Weapon,Suffix,Premium,of Annihilation
+Weapon,Suffix,Quantum,of the Void
+Weapon,Suffix,Quantum,of the Stars
+Weapon,Suffix,Quantum,of Galactic Fury
+Weapon,Suffix,Quantum,of Cosmic Ruin
+Weapon,Suffix,Quantum,of Oblivion
+Weapon,Suffix,Quantum,of Quantum Collapse
+Weapon,Suffix,Prototype,of Hyperdrive
+Weapon,Suffix,Advanced,of Sonic Shock
+Weapon,Suffix,Advanced,of Nanite Swarms
+Weapon,Suffix,Advanced,of Cyber Warfare
+Weapon,Suffix,Prototype,of Chrono-Shift
+Weapon,Suffix,Premium,of Orbital Descent
+Weapon,Suffix,Advanced,of Tactical Superiority
+Weapon,Suffix,Premium,of the Elite Guard
+Weapon,Suffix,Premium,of the Vanguard
+Weapon,Suffix,Premium,of the Sentinel
+Weapon,Suffix,Premium,of the Predator
+Weapon,Suffix,Advanced,of the Hunter
+Weapon,Suffix,Advanced,of the Killer
+Weapon,Suffix,Advanced,of the Enforcer
+Weapon,Suffix,Premium,of the Terminator
+Weapon,Suffix,Premium,of the Destroyer
+Weapon,Suffix,Prototype,of Death's Whisper
+Weapon,Suffix,Premium,of Fury's End
+Weapon,Suffix,Premium,of Desolation
+Weapon,Suffix,Advanced,of the Shadow's Reach
+Weapon,Suffix,Prototype,of the Ghost Protocol
+Weapon,Suffix,Premium,of Phantom Strikes
+Weapon,Suffix,Premium,of Apex Predation
+Weapon,Suffix,Premium,of Alpha Authority
+Weapon,Suffix,Quantum,of Omega Protocol
+Weapon,Suffix,Enhanced,of Calibrated Force
+Weapon,Suffix,Advanced,of Optimized Output
+Weapon,Suffix,Advanced,of Adaptive Fire
+Weapon,Suffix,Enhanced,of Brutal Efficiency
+Weapon,Suffix,Advanced,of Relentless Barrage
+Weapon,Suffix,Advanced,of Swift Engagement
+Weapon,Suffix,Advanced,of Pulsating Energy
+Weapon,Suffix,Advanced,of Focused Beam
+Weapon,Suffix,Advanced,of Railgun Impact
+Weapon,Suffix,Advanced,of Arc Discharge
+Weapon,Suffix,Enhanced,of Burst Volley
+Weapon,Suffix,Advanced,of Armor Penetration
+Weapon,Suffix,Advanced,of Demolition Charges
+Weapon,Suffix,Premium,of Enemy Extermination
+Weapon,Suffix,Advanced,of Pinpoint Accuracy
+Weapon,Suffix,Enhanced,of Sustained Fire
+Weapon,Suffix,Premium,of the Warfang
+Weapon,Suffix,Quantum,of the Blacklight
+Armor,Prefix,Advanced,Kinetic-Dampening
+Armor,Prefix,Advanced,Energy-Shielded
+Armor,Prefix,Quantum,Void-Woven
+Armor,Prefix,Quantum,Quantum-Phased
+Armor,Prefix,Premium,Hyper-Plated
+Armor,Prefix,Advanced,Grav-Deflecting
+Armor,Prefix,Advanced,Sonic-Damped
+Armor,Prefix,Advanced,Nano-Weave
+Armor,Prefix,Advanced,Cybernetic-Reinforced
+Armor,Prefix,Prototype,Chrono-Layered
+Armor,Prefix,Enhanced,Ablative-Coated
+Armor,Prefix,Advanced,Reactive-Armor
+Armor,Prefix,Enhanced,Composite-Shell
+Armor,Prefix,Advanced,Power-Assisted
+Armor,Prefix,Advanced,Exo-Frame
+Armor,Prefix,Premium,Titan-Class
+Armor,Prefix,Premium,Juggernaut
+Armor,Prefix,Premium,Atlas-Rig
+Armor,Prefix,Premium,Colossus-Grade
+Armor,Prefix,Advanced,Ironclad
+Armor,Prefix,Premium,Steel-Sentinel
+Armor,Prefix,Enhanced,Fortified
+Armor,Prefix,Enhanced,Reinforced
+Armor,Prefix,Advanced,Adaptive
+Armor,Prefix,Advanced,Optimized
+Armor,Prefix,Premium,Vanguard's
+Armor,Prefix,Premium,Sentinel's
+Armor,Prefix,Advanced,Guardian's
+Armor,Prefix,Advanced,Defender's
+Armor,Prefix,Advanced,Bulwark
+Armor,Prefix,Premium,Bastion's
+Armor,Prefix,Premium,Aegis-Pattern
+Armor,Prefix,Premium,Dreadnought
+Armor,Prefix,Advanced,Crusader's
+Armor,Prefix,Advanced,Warden's
+Armor,Prefix,Enhanced,Combat-Ready
+Armor,Prefix,Enhanced,Tactical
+Armor,Prefix,Advanced,Stealth-Ops
+Armor,Prefix,Prototype,Ghost-Weave
+Armor,Prefix,Premium,Phantom-Skin
+Armor,Prefix,Enhanced,Environmental
+Armor,Prefix,Enhanced,Bio-Hazard
+Armor,Prefix,Enhanced,Hazmat
+Armor,Prefix,Enhanced,Armored
+Armor,Prefix,Advanced,Resilient
+Armor,Prefix,Premium,Unbreakable
+Armor,Prefix,Premium,Impregnable
+Armor,Prefix,Premium,Impervious
+Armor,Prefix,Premium,Unyielding
+Armor,Prefix,Premium,Dominator
+Armor,Suffix,Enhanced,of Fortification
+Armor,Suffix,Premium,of Unyielding Defense
+Armor,Suffix,Advanced,of Kinetic Absorption
+Armor,Suffix,Advanced,of Energy Dissipation
+Armor,Suffix,Quantum,of Void Protection
+Armor,Suffix,Quantum,of Quantum Stability
+Armor,Suffix,Premium,of Hyper-Density
+Armor,Suffix,Advanced,of Gravitational Shielding
+Armor,Suffix,Advanced,of Sonic Dampening
+Armor,Suffix,Advanced,of Nanite Repair
+Armor,Suffix,Advanced,of Cyber Security
+Armor,Suffix,Prototype,of Chrono-Resilience
+Armor,Suffix,Enhanced,of Ablative Resistance
+Armor,Suffix,Advanced,of Reactive Plating
+Armor,Suffix,Enhanced,of Composite Integrity
+Armor,Suffix,Advanced,of Power Amplification
+Armor,Suffix,Advanced,of Exo-Durability
+Armor,Suffix,Premium,of the Titan's Might
+Armor,Suffix,Premium,of the Juggernaut
+Armor,Suffix,Premium,of Atlas's Burden
+Armor,Suffix,Premium,of Colossal Strength
+Armor,Suffix,Advanced,of Ironclad Will
+Armor,Suffix,Premium,of the Steel Sentinel
+Armor,Suffix,Enhanced,of Enhanced Protection
+Armor,Suffix,Advanced,of Adaptive Camouflage
+Armor,Suffix,Advanced,of Optimized Combat
+Armor,Suffix,Premium,of the Vanguard
+Armor,Suffix,Premium,of the Sentinel
+Armor,Suffix,Advanced,of the Guardian
+Armor,Suffix,Advanced,of the Defender
+Armor,Suffix,Advanced,of the Bulwark
+Armor,Suffix,Premium,of the Bastion
+Armor,Suffix,Premium,of the Aegis
+Armor,Suffix,Premium,of the Dreadnought
+Armor,Suffix,Advanced,of the Crusader
+Armor,Suffix,Advanced,of the Warden
+Armor,Suffix,Enhanced,of Combat Readiness
+Armor,Suffix,Advanced,of Tactical Superiority
+Armor,Suffix,Advanced,of Stealth Operations
+Armor,Suffix,Premium,of Phantom Invisibility
+Armor,Suffix,Enhanced,of Environmental Sealing
+Armor,Suffix,Enhanced,of Bio-Hazard Containment
+Armor,Suffix,Enhanced,of Hazmat Safeguard
+Armor,Suffix,Advanced,of Armored Might
+Armor,Suffix,Premium,of Total Resilience
+Armor,Suffix,Premium,of the Unbroken
+Armor,Suffix,Premium,of Imperial Guard
+Armor,Suffix,Advanced,of Infiltrator
+Armor,Suffix,Premium,of the Last Stand
+Armor,Suffix,Premium,of the Indomitable
