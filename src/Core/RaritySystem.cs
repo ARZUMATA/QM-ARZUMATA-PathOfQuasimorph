@@ -45,6 +45,7 @@ namespace QM_PathOfQuasimorph.Core
     internal class RaritySystem
     {
         private readonly Random _random = new Random();
+        internal AffixManager affixManager = new AffixManager();
 
         // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
@@ -266,7 +267,9 @@ namespace QM_PathOfQuasimorph.Core
             var traitsForItemTypeShuffled = ShuffleDictionary(traitsForItemType);
 
             // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = Mathf.RoundToInt(traitsForItemType.Count * rarityParamPercentages[itemRarity]);
+            int numParamsToAdjust = (int)itemRarity;
+            
+            //Mathf.RoundToInt(traitsForItemType.Count * rarityParamPercentages[itemRarity]);
             numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
 
             var canAddUnbreakableTrait = false;
@@ -437,6 +440,50 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return shuffled;
+        }
+
+        internal static void AddAffixes(MagnumProject magnumProject)
+        {
+            // Add affixes for localization data.
+            // English as of time being.
+
+            var magnumProjectWrapper = new MagnumProjectWrapper(magnumProject);
+
+            var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType);
+
+            if (affix == null || affix.Count != 2)
+            {
+                Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
+                return;
+            }
+
+            // Add our item language keys.
+            // We do it here because this method fires earlier than we actually inject item record.
+            //// Since Localization.DuplicateKey just copies key and nothing else, it will do same in inject item record method.
+
+            //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
+            //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
+
+            Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
+
+            // Problem, on game load it doesn't have effect.
+            UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name", $"{affix[0].Text} ", "");
+            UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc", "", $" {affix[1].Text}");
+        }
+
+        private static void UpdateKey(string lookupItemId, string prefix, string suffix)
+        {
+            foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
+            {
+                if (languageToDict.Value.ContainsKey(lookupItemId))
+                {
+                    languageToDict.Value[lookupItemId] = prefix + languageToDict.Value[lookupItemId] + suffix;
+                }
+                else
+                {
+                    Plugin.Logger.LogWarning($"UpdateKey issue. No key {lookupItemId}");
+                }
+            }
         }
     }
 }

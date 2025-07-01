@@ -14,6 +14,12 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static bool Prefix(ref string itemId, bool randomizeConditionAndCapacity, ref BasePickupItem __result, ItemFactory __instance)
             {
+                // If mod not enabled, don't create any more items.
+                if (!Plugin.Config.Enable)
+                {
+                    return true;
+                }
+
                 //Plugin.Logger.Log("ItemFactory_CreateForInventory_Patch :: Prefix :: Start");
                 //Plugin.Logger.Log($"\t CreateForInventory: {itemId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
 
@@ -77,7 +83,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (__result != null)
                     {
-                        magnumProjectsController.raritySystem.ApplyTraits(ref __result);
+                        MagnumPoQProjectsController.raritySystem.ApplyTraits(ref __result);
                     }
                 }
             }

@@ -17,6 +17,12 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ItemSlot __instance, BasePickupItem item, ItemStorage itemStorage)
             {
+                // If mod not enabled, don't create any more backgrounds.
+                if (!Plugin.Config.Enable)
+                {
+                    return;
+                }
+
                 ApplyItemRarityBackground(__instance, item);
             }
         }
@@ -45,7 +51,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (rarity != ItemRarity.Standard)
                 {
-                    rarityComponent.SetRarityColor(magnumProjectsController.raritySystem.RarityToUnityColor(rarity));
+                    rarityComponent.SetRarityColor(MagnumPoQProjectsController.raritySystem.RarityToUnityColor(rarity));
                     rarityComponent.EnableDisableComponent(true);
                 }
                 else

@@ -22,6 +22,8 @@ namespace QM_PathOfQuasimorph
         [JsonIgnore]
         public bool Enable { get; set; } = true;
 
+        [JsonIgnore]
+        public bool CleanupMode { get; set; } = true;
 
         // MCM Related Start
 

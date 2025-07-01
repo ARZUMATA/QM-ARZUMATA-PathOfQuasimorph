@@ -17,7 +17,7 @@ namespace QM_PathOfQuasimorph.Core
         public const long MAGNUM_PROJECT_START_TIME = 1337L;
 
         public static MagnumProjects magnumProjects;
-        public RaritySystem raritySystem = new RaritySystem();
+        public static RaritySystem raritySystem = new RaritySystem();
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
         public List<string> traitsTracker = new List<string>();
 
@@ -157,12 +157,13 @@ namespace QM_PathOfQuasimorph.Core
             // I'ts per item.
             // for: raritySystem.ApplyTraits
             traitsTracker.Add(newId);
-
+            
             //PathOfQuasimorph.InjectItemRecord(newProject);
             MagnumDevelopmentSystem.InjectItemRecord(newProject);
 
             // Add the project to the list
             magnumProjects.Values.Add(newProject);
+            RaritySystem.AddAffixes(newProject);
 
             Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId} with itemId: {newId}");
             return newId;
@@ -210,6 +211,10 @@ namespace QM_PathOfQuasimorph.Core
                 // Item breaks into this, unless it has it's own record.
                 return Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
+
+            // Since this method used during InjectItemRecord, we can safely extra update our language keys.
+            // I don't like making classes static but this won't hurt.
+            RaritySystem.AddAffixes(project);
 
             return record;
         }

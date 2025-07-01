@@ -9,18 +9,6 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
-
-        //Using transpliers now.
-        //[HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
-        //public static class MagnumDevelopmentSystems_InjectItemRecord_Patch
-        //{
-        //    public static bool Prefix(MagnumProject project)
-        //    {
-        //        InjectItemRecord(project);
-        //        return false;
-        //    }
-        //}
-
         [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
         public static class MagnumDevelopmentSystems_InjectItemRecord_Patch
         {
