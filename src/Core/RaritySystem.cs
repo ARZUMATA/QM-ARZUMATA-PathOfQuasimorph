@@ -449,26 +449,29 @@ namespace QM_PathOfQuasimorph.Core
 
             var magnumProjectWrapper = new MagnumProjectWrapper(magnumProject);
 
-            var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType);
-
-            if (affix == null || affix.Count != 2)
+            if (magnumProjectWrapper.PoqItem)
             {
-                Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
-                return;
+                var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType);
+
+                if (affix == null || affix.Count != 2)
+                {
+                    Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
+                    return;
+                }
+
+                // Add our item language keys.
+                // We do it here because this method fires earlier than we actually inject item record.
+                //// Since Localization.DuplicateKey just copies key and nothing else, it will do same in inject item record method.
+
+                //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
+                //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
+
+                Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
+
+                // Problem, on game load it doesn't have effect.
+                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name", $"{affix[0].Text} ", "");
+                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc", "", $" {affix[1].Text}");
             }
-
-            // Add our item language keys.
-            // We do it here because this method fires earlier than we actually inject item record.
-            //// Since Localization.DuplicateKey just copies key and nothing else, it will do same in inject item record method.
-
-            //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
-            //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
-
-            Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
-
-            // Problem, on game load it doesn't have effect.
-            UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name", $"{affix[0].Text} ", "");
-            UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc", "", $" {affix[1].Text}");
         }
 
         private static void UpdateKey(string lookupItemId, string prefix, string suffix)
