@@ -17,7 +17,6 @@ namespace QM_PathOfQuasimorph.Core
 
             public MagnumProjectWrapper(MagnumProject newProject)
             {
-
                 // Generate metadata
                 this.Id = newProject.DevelopId;
 
@@ -62,7 +61,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (poqItem)
                 {
-                    this.CustomId = $"${id}_custom_poq";
+                    this.CustomId = $"{id}_custom_poq";
                 }
                 else
                 {
