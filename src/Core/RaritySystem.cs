@@ -554,11 +554,11 @@ namespace QM_PathOfQuasimorph.Core
                     case "_weight":
                     case "_reload_duration":
                     case "_scatter_angle":
-                    case "_resist":
                         AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam);
                         break;
                     case "_special_ability":
                         break;
+                    case "_resist":
                     case "_damage":
                     case "_crit_damage":
                     case "_max_durability":
