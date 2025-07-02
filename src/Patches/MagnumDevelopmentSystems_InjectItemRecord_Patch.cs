@@ -10,7 +10,7 @@ namespace QM_PathOfQuasimorph.Core
     internal partial class PathOfQuasimorph
     {
         [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
-        public static class MagnumDevelopmentSystems_InjectItemRecord_Patch
+        public static class MagnumDevelopmentSystems_InjectItemRecord_TranspilerPatch
         {
             public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {

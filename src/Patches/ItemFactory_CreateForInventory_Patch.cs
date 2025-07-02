@@ -2,6 +2,7 @@
 using MGSC;
 using System;
 using UnityEngine;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -15,7 +16,7 @@ namespace QM_PathOfQuasimorph.Core
             public static bool Prefix(ref string itemId, bool randomizeConditionAndCapacity, ref BasePickupItem __result, ItemFactory __instance)
             {
                 // If mod not enabled, don't create any more items.
-                if (!Plugin.Config.Enable)
+                if (!Plugin.Config.Enable || Plugin.Config.CleanupMode)
                 {
                     return true;
                 }
