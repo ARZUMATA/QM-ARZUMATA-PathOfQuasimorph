@@ -480,9 +480,14 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (languageToDict.Value.ContainsKey(lookupItemId))
                 {
-                    if (!languageToDict.Value[lookupItemId].StartsWith(prefix) || !languageToDict.Value[lookupItemId].EndsWith(suffix))
+                    if (!languageToDict.Value[lookupItemId].StartsWith(prefix) && suffix.Equals(string.Empty) && lookupItemId.Contains(".name"))
                     {
-                        languageToDict.Value[lookupItemId] = prefix + languageToDict.Value[lookupItemId] + suffix;
+                        languageToDict.Value[lookupItemId] = prefix + languageToDict.Value[lookupItemId];
+                    }
+
+                    if (prefix.Equals(string.Empty) && lookupItemId.Contains(".shortdesc") && !languageToDict.Value[lookupItemId].EndsWith(suffix))
+                    {
+                        languageToDict.Value[lookupItemId] = languageToDict.Value[lookupItemId] + suffix;
                     }
                 }
                 else
