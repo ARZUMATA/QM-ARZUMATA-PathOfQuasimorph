@@ -193,6 +193,18 @@ namespace QM_PathOfQuasimorph.Core
             "none"
         };
 
+        // Define multipliers for each Rarity class
+
+        private Dictionary<ItemRarity, float[]> _rarityModifiers = new Dictionary<ItemRarity, float[]>
+        {
+            { ItemRarity.Standard, new float[] { 1.0f } },  // No change for Standard
+            { ItemRarity.Enhanced, new float[] { 1.2f, 1.3f, 1.5f } },
+            { ItemRarity.Advanced, new float[] { 1.5f, 1.6f, 1.8f } },
+            { ItemRarity.Premium, new float[] { 1.7f, 1.8f, 2.0f } },
+            { ItemRarity.Prototype, new float[] { 2.0f, 2.2f, 2.5f } },
+            { ItemRarity.Quantum, new float[] { 2.5f, 3.0f, 4.0f } },
+            };
+
         // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
         {
@@ -433,7 +445,7 @@ namespace QM_PathOfQuasimorph.Core
         private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam)
         {
             float _defaultValue = 0f;
-
+            bool isResist = false;
             bool boost = false;
 
             if (boostedParam.ParameterName == _projectParameter.ParameterName)
@@ -468,14 +480,36 @@ namespace QM_PathOfQuasimorph.Core
                     }
             }
 
+            switch (_projectParameter.ParameterType)
+            {
+                case MagnumProjectParameterType.ResistBlunt:
+                case MagnumProjectParameterType.ResistPierce:
+                case MagnumProjectParameterType.ResistLacer:
+                case MagnumProjectParameterType.ResistFire:
+                case MagnumProjectParameterType.ResistBeam:
+                case MagnumProjectParameterType.ResistShock:
+                case MagnumProjectParameterType.ResistPoison:
+                case MagnumProjectParameterType.ResistCold:
+                    isResist = true;
+                    break;
+            }
+
+            // Case where we have zero resist, let boost it a bit.
+
+
             project.AppliedModifications.Remove(_projectParameter.Id);
-            project.AppliedModifications.Add(_projectParameter.Id, CalculateParamValue(_defaultValue, itemRarity, increase, boost).ToString());
+            project.AppliedModifications.Add(_projectParameter.Id, CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist).ToString());
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost)
+        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist)
         {
-            float[] rarityModifiers = GetRarityModifiers(rarity);
+            float[] rarityModifiers = _rarityModifiers[rarity];
             float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
+
+            if (isResist && defaultValue == 0)
+            {
+                defaultValue = _random.Next(1,10); // Just give a little new res.
+            }
 
             if (increase)
             {
@@ -484,27 +518,6 @@ namespace QM_PathOfQuasimorph.Core
             else
             {
                 return defaultValue / modifier * (boost == true ? PARAMETER_BOOST : 0);
-            }
-        }
-
-        private float[] GetRarityModifiers(ItemRarity rarity)
-        {
-            // Define multipliers for each Rarity class
-            // Feel free to adjust these values to balance the system
-            switch (rarity)
-            {
-                case ItemRarity.Enhanced:
-                    return new float[] { 1.2f, 1.3f, 1.5f };
-                case ItemRarity.Advanced:
-                    return new float[] { 1.5f, 1.6f, 1.8f };
-                case ItemRarity.Premium:
-                    return new float[] { 1.7f, 1.8f, 2.0f };
-                case ItemRarity.Prototype:
-                    return new float[] { 2.0f, 2.2f, 2.5f };
-                case ItemRarity.Quantum:
-                    return new float[] { 2.5f, 3.0f, 4.0f };
-                default:
-                    return new float[] { 1.0f }; // No change for Standard
             }
         }
 
