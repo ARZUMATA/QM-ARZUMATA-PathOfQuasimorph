@@ -89,6 +89,21 @@ internal static class Helpers
             return randomID;
         }
 
+        public static long GenerateRandomIDWith16Characters()
+        {
+            // Convert to string and ensure it is at least 16 characters long
+            long randomID = GenerateRandomID();
+            string randomIDStr = randomID.ToString();
+
+            if (randomIDStr.Length < 16)    
+            {
+                randomIDStr = randomIDStr.PadLeft(16, '1');
+                randomID = long.Parse(randomIDStr);
+            }
+
+            return randomID;
+        }
+
         private static long GenerateRandomInt64(long min, long max)
         {
             Random random = new Random();
@@ -96,12 +111,13 @@ internal static class Helpers
             // Calculate how many 32-bit chunks are needed to cover the full 64-bit range
             long range = max - min;
             long result = 0;
-            long mask = 0x7FFFFFFF; // Mask for 31 bits (safe for 32-bit Random.Next())
+            long mask = 0x7FFFFFFF; // Mask for 31 bits (safe for 32-bit StandardRandom.Next())
 
             while (true)
             {
                 result = 0;
-                // Use Random.Next() twice to get a 63-bit number (safe for 64-bit long)
+                
+                // Use StandardRandom.Next() twice to get a 63-bit number (safe for 64-bit long)
                 for (int i = 0; i < 2; i++)
                 {
                     result = (result << 31) | (random.Next() & mask);
