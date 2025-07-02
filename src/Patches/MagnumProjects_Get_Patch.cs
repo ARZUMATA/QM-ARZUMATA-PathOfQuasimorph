@@ -16,35 +16,13 @@ namespace QM_PathOfQuasimorph.Core
         [HarmonyPatch(typeof(MagnumProjects), nameof(MagnumProjects.Get))]
         public static class MagnumProjects_Get_Patch
         {
-           // Default method copied here.
-           [HarmonyPrefix]
-           public static bool Get(string devId, ref MagnumProject __result, MagnumProjects __instance)
-           {
-               foreach (MagnumProject magnumProject in __instance.Values)
-               {
-                   if (magnumProject.DevelopId.Equals(devId))
-                   {
-                       __result = magnumProject;
-                       return false; // Return false to skip the original method
-                   }
-
-                   // PathOfQuasimorph ADD START
-                   // DateTime MinValue = new DateTime(0L, DateTimeKind.Unspecified);
-                   // DateTime MaxValue = new DateTime(3155378975999999999L, DateTimeKind.Unspecified);
-                   // Both Int64
-
-                   if (MagnumPoQProjectsController.IsPoqProject(__result))
-                    {
-                       __result = null;
-                       return false; // Return false to skip the original method
-                   }
-
-                   // PathOfQuasimorph END START
-               }
-
-               __result = null;
-               return false; // Return false to skip the original method
-           }
+            public static void Postfix(string devId, ref MagnumProject __result, MagnumProjects __instance)
+            {
+                if (MagnumPoQProjectsController.IsPoqProject(__result))
+                {
+                    __result = null;
+                }
+            }
         }
     }
 }
