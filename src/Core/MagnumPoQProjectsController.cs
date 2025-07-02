@@ -139,7 +139,7 @@ namespace QM_PathOfQuasimorph.Core
             var boostedParamIndex = raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
 
             // Generate a new UID
-            var randomUid = Helpers.UniqueIDGenerator.GenerateRandomID();
+            var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();
             DigitInfo digits = DigitInfo.GetDigits(randomUid);
             digits.FillZeroes();
             digits.Rarity = (int)itemRarity;
