@@ -409,10 +409,6 @@ namespace QM_PathOfQuasimorph.Core
                     default:
                         break;
                 }
-
-                // TODO:
-                // Unbreakable
-                // Traits
             }
         }
 
@@ -441,9 +437,15 @@ namespace QM_PathOfQuasimorph.Core
                 foreach (PickupItemComponent comp in ((PickupItem)item).Components)
                 {
                     var breakableItemComponent = comp as BreakableItemComponent;
+
                     if (breakableItemComponent != null)
                     {
-                        breakableItemComponent.Unbreakable = canAddUnbreakableTrait;
+                        if (canAddUnbreakableTrait)
+                        {
+                            breakableItemComponent.Unbreakable = true;
+                            breakableItemComponent.SetMaxDurability(breakableItemComponent.MaxDurability, true);
+                        }
+
                         break;
                     }
                 }
@@ -454,9 +456,15 @@ namespace QM_PathOfQuasimorph.Core
                 foreach (PickupItemComponent comp in ((PickupItem)item).Components)
                 {
                     var breakableItemComponent = comp as BreakableItemComponent;
+
                     if (breakableItemComponent != null)
                     {
-                        breakableItemComponent.Unbreakable = canAddUnbreakableTrait;
+                        if (canAddUnbreakableTrait)
+                        {
+                            breakableItemComponent.Unbreakable = true;
+                            breakableItemComponent.SetMaxDurability(breakableItemComponent.MaxDurability, true);
+                        }
+
                         break;
                     }
                 }
