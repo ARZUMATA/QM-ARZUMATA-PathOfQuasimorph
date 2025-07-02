@@ -480,7 +480,10 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (languageToDict.Value.ContainsKey(lookupItemId))
                 {
-                    languageToDict.Value[lookupItemId] = prefix + languageToDict.Value[lookupItemId] + suffix;
+                    if (!languageToDict.Value[lookupItemId].Contains(prefix) && !languageToDict.Value[lookupItemId].Contains(suffix))
+                    {
+                        languageToDict.Value[lookupItemId] = prefix + languageToDict.Value[lookupItemId] + suffix;
+                    }
                 }
                 else
                 {
