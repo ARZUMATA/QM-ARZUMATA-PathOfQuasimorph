@@ -47,10 +47,14 @@ namespace QM_PathOfQuasimorph.Core
             CleanObsoleteProjects(context);
         }
 
-        private static void CleanObsoleteProjects(IModContext context)
+        [Hook(ModHookType.DungeonFinished)]
+        public static void CleanupModeDungeonFinished(IModContext context)
         {
-            // Get the current game time (you can also use Time.time or Time.unscaledTime depending on your need)
-            float currentTime = Time.time;
+            CleanObsoleteProjects(context, true);
+        }
+
+        private static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false)
+        {
             List<string> idsToKeep = new List<string>();
 
             var listMagnumCargo = CleanupMagnumCargo(context);
@@ -62,7 +66,17 @@ namespace QM_PathOfQuasimorph.Core
             idsToKeep.AddRange(listMissionRewards);
             idsToKeep.AddRange(listMercenariesCargo);
 
-            CleanupMagnumProjects(context);
+            // Cleanup magnum projects. 
+            if (cleanProjects)
+            {
+                CleanupMagnumProjects(context, idsToKeep);
+            }
+        }
+
+        private static void CleanupMagnumProjects(IModContext context, List<string> idsToKeep)
+        {
+            // Get the current game time (you can also use Time.time or Time.unscaledTime depending on your need)
+            float currentTime = Time.time;
 
             if (currentTime - lastIntervalCheckTime >= interval)
             {
@@ -91,24 +105,6 @@ namespace QM_PathOfQuasimorph.Core
 
                 // Reset the timer
                 lastIntervalCheckTime = currentTime;
-            }
-        }
-
-        private static void CleanupMagnumProjects(IModContext context)
-        {
-            MagnumProjects magnumProjects = context.State.Get<MagnumProjects>();
-
-            if (magnumProjects != null)
-            {
-                foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
-                {
-                    var wrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
-
-                    if (wrapper.PoqItem)
-                    {
-                        magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
-                    }
-                }
             }
         }
 
