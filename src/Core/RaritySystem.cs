@@ -42,6 +42,16 @@ namespace QM_PathOfQuasimorph.Core
         Quantum,
     }
 
+    public enum RarityRolls
+    {
+        StandardRandom,
+        WeightedRolls,
+        D20Rolls,
+        WeightedRollsAndPickWorst,
+        WeightedRollsD20Selector,
+    }
+
+
     internal class RaritySystem
     {
         private readonly Random _random = new Random();
@@ -51,52 +61,81 @@ namespace QM_PathOfQuasimorph.Core
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private bool doD20roll = false;
-        private bool doWeightedRolls = true;
+        private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
         public RaritySystem()
         {
             // Test rolls
 
-            //doD20roll = false;
-            //doWeightedRolls = false;
+            //rarityRoll = RarityRolls.StandardRandom;
             //SimulateDrops(); // Standard approach
 
-            //doD20roll = false;
-            //doWeightedRolls = false;
+            //rarityRoll = RarityRolls.D20Rolls;
             //SimulateDrops(); // D20 approach
 
-            //doD20roll = false;
-            //doWeightedRolls = false;
+            //rarityRoll = RarityRolls.WeightedRolls;
             //SimulateDrops(); // Weighted approach
 
+            //rarityRoll = RarityRolls.WeightedRollsAndPickWorst;
+            //SimulateDrops();
+
+            //rarityRoll = RarityRolls.WeightedRollsD20Selector;
+            //SimulateDrops();
+
             /*
-            Standard approach:
-                Simulated 10000 item drops:
-                    Standard: 4958 (49.58%)
-                    Enhanced: 2447 (24.47%)
-                    Advanced: 1533 (15.33%)
-                    Premium: 758 (7.58%)
-                    Prototype: 254 (2.54%)
-                    Quantum: 50 (0.50%)
+                StandardRandom:
+                    Simulated 10000 item drops:
+                        Standard: 4998 (49.98%)
+                        Enhanced: 2447 (24.47%)
+                        Advanced: 1493 (14.93%)
+                        Premium: 778 (7.78%)
+                        Prototype: 232 (2.32%)
+                        Quantum: 52 (0.52%)
 
-            D20 approach:
-                Simulated 10000 item drops:
-                    Standard: 0 (0.00%)
-                    Enhanced: 0 (0.00%)
-                    Advanced: 0 (0.00%)
-                    Premium: 273 (2.73%)
-                    Prototype: 5043 (50.43%)
-                    Quantum: 4684 (46.84%)
+                D20Rolls: (bad sort but too harsh anyway)
+                    Simulated 10000 item drops:
+                        Standard: 0 (0.00%)
+                        Enhanced: 0 (0.00%)
+                        Advanced: 0 (0.00%)
+                        Premium: 284 (2.84%)
+                        Prototype: 4962 (49.62%)
+                        Quantum: 4754 (47.54%)
 
-            Weighted approach:
-                Simulated 10000 item drops:
-                    Standard: 5590 (55.90%)
-                    Enhanced: 2792 (27.92%)
-                    Advanced: 1085 (10.85%)
-                    Premium: 397 (3.97%)
-                    Prototype: 113 (1.13%)
-                    Quantum: 23 (0.23%)
+                WeightedRolls:
+                    Simulated 10000 item drops:
+                        Standard: 5550 (55.50%)
+                        Enhanced: 2801 (28.01%)
+                        Advanced: 1094 (10.94%)
+                        Premium: 430 (4.30%)
+                        Prototype: 107 (1.07%)
+                        Quantum: 18 (0.18%)
+
+                WeightedRollsAndPickWorst n=1 rolls:
+                    Simulated 10000 item drops:
+                        Standard: 5025 (50.25%)
+                        Enhanced: 2496 (24.96%)
+                        Advanced: 1505 (15.05%)
+                        Premium: 700 (7.00%)
+                        Prototype: 225 (2.25%)
+                        Quantum: 49 (0.49%)
+
+                WeightedRollsAndPickWorst n=3 rolls:
+                    Simulated 10000 item drops:
+                        Standard: 4989 (49.89%)
+                        Enhanced: 2502 (25.02%)
+                        Advanced: 1456 (14.56%)
+                        Premium: 750 (7.50%)
+                        Prototype: 256 (2.56%)
+                        Quantum: 47 (0.47%)
+
+                WeightedRollsD20Selector:
+                    Simulated 10000 item drops:
+                        Standard: 5577 (55.77%)
+                        Enhanced: 2836 (28.36%)
+                        Advanced: 1035 (10.35%)
+                        Premium: 383 (3.83%)
+                        Prototype: 143 (1.43%)
+                        Quantum: 26 (0.26%)
             */
         }
 
@@ -119,7 +158,7 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             // Print the results
-            Console.WriteLine($"Simulated {numTrials} item drops:");
+            Console.WriteLine($"\nSimulated {numTrials} item drops:");
             foreach (var rarityPair in rarityCounts)
             {
                 double percentage = (double)rarityPair.Value / numTrials * 100;
@@ -188,7 +227,7 @@ namespace QM_PathOfQuasimorph.Core
             return color;
         }
 
-        public ItemRarity SelectRarityWithRolls()
+        public ItemRarity SelectRarityWithD20Rolls()
         {
             // Sort rarities by weight in descending order (most common to rarest)
             var sortedRarities = _rarityWeights.OrderByDescending(x => x.Value).ToList();
@@ -245,18 +284,104 @@ namespace QM_PathOfQuasimorph.Core
             return ItemRarity.Standard;
         }
 
+        // Performs N weighted rarity rolls and selects the worst
+        public ItemRarity SelectRarityWeightedAndPickWorst(int rolls = 3)
+        {
+            if (rolls < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rolls), "Number of rolls must be at least 1.");
+            }
+
+            // Initialize with the 'best' possible rarity, so any roll will be 'worse' (lower in enum value) than it.
+            // ItemRarity enum values are ordered where higher int value = better rarity.
+            ItemRarity worstRarityFound = (ItemRarity)Enum.GetValues(typeof(ItemRarity)).Cast<int>().Max();
+
+            for (int i = 0; i < rolls; i++)
+            {
+                ItemRarity currentRollRarity = SelectRarityWeighted();
+
+                // If the current roll's rarity value is less than the worst found, update worstRarityFound.
+                if ((int)currentRollRarity < (int)worstRarityFound)
+                {
+                    worstRarityFound = currentRollRarity;
+                }
+            }
+
+            return worstRarityFound;
+
+        }
+
+        // Selects an item rarity by performing N weighted rolls and then having those rolls
+        // compete using a D20 system modified by their base rarity score.
+        public ItemRarity SelectRarityWeightedRollsD20Selector()
+        {
+            List<ItemRarity> rolledRarities = new List<ItemRarity>();
+
+            rolledRarities.Add(SelectRarityWeighted());
+
+            // Initialize base scores for D20 competition
+            // Higher values mean the D20 roll has less relative impact on the final outcome.
+            // Lower values mean the D20 roll has a greater chance of making a lower rarity win.
+            var _rarityBaseScores = new Dictionary<ItemRarity, int>
+            {
+                { ItemRarity.Standard,  10 },
+                { ItemRarity.Enhanced,  20 },
+                { ItemRarity.Advanced,  30 },
+                { ItemRarity.Premium,   40 },
+                { ItemRarity.Prototype, 50 },
+                { ItemRarity.Quantum,   60 }
+            };
+
+            // Determine the winner using D20 rolls + base rarity scores
+            ItemRarity bestRarity = ItemRarity.Standard; // Default initial best
+            int highestScore = -1; // Use -1 for initial comparison
+
+            foreach (var rarityCandidate in rolledRarities)
+            {
+                // Get the base score for the current rarity candidate
+                int baseScore;
+                if (!_rarityBaseScores.TryGetValue(rarityCandidate, out baseScore))
+                {
+                    // Fallback score if rarity isn't defined in _rarityBaseScores
+                    baseScore = 0;
+                }
+
+                int d20Roll = _random.Next(1, 21); // Roll a D20 (1 to 20 inclusive)
+
+                int currentTotalScore = baseScore + d20Roll;
+
+                // If this candidate's score is higher, it becomes the new best
+                if (currentTotalScore > highestScore)
+                {
+                    highestScore = currentTotalScore;
+                    bestRarity = rarityCandidate;
+                }
+            }
+
+            return bestRarity;
+        }
+
         public ItemRarity SelectRarity()
         {
-            if (doD20roll)
+            switch (rarityRoll)
             {
-                return SelectRarityWithRolls();
+                case RarityRolls.StandardRandom:
+                    return SelectRarityStandardRandom();
+                case RarityRolls.D20Rolls:
+                    return SelectRarityWithD20Rolls();
+                case RarityRolls.WeightedRolls:
+                    return SelectRarityWeighted();
+                case RarityRolls.WeightedRollsAndPickWorst:
+                    return SelectRarityStandardRandom();
+                case RarityRolls.WeightedRollsD20Selector:
+                    return SelectRarityWeightedRollsD20Selector();
             }
 
-            if (doWeightedRolls)
-            {
-                return SelectRarityWeighted();
-            }
+            return ItemRarity.Standard;
+        }
 
+        private ItemRarity SelectRarityStandardRandom()
+        {
             int totalWeight = 0;
             foreach (var weight in _rarityWeights.Values)
             {
