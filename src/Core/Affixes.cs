@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -56,9 +57,9 @@ namespace QM_PathOfQuasimorph.Core
             foreach (string line in lines)
             {
                 string[] parts = line.Split(',');
-                if (parts.Length == 4)
+                if (parts.Length == 5)
                 {
-                    affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3]));
+                    affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3], parts[4]));
                 }
             }
 
@@ -67,7 +68,6 @@ namespace QM_PathOfQuasimorph.Core
 
         Affix[] LoadAffixesFromEmbeddedCSV(string resourceName = "QM_PathOfQuasimorph.Files.Affixes.csv")
         {
-
             List<Affix> affixes = new List<Affix>();
 
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
@@ -77,17 +77,16 @@ namespace QM_PathOfQuasimorph.Core
                 while ((line = reader.ReadLine()) != null)
                 {
                     string[] parts = line.Split(',');
-                    if (parts.Length == 4)
+                    if (parts.Length == 5)
                     {
-                        affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3]));
+                        affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3], parts[4]));
                     }
                 }
             }
-
             return affixes.ToArray();
         }
 
-        internal static List<Affix> GetAffix(ItemRarity rarityClass, MagnumProjectType projectType)
+        internal static List<Affix> GetAffix(ItemRarity rarityClass, MagnumProjectType projectType, int BoostedParam, int RandomizedPrefix)
         {
             var affixRarityTypeToLookFor = (AffixRarityType)rarityClass;
             AffixCategory affixCategoryLookFor = AffixCategory.None;
@@ -127,15 +126,15 @@ namespace QM_PathOfQuasimorph.Core
                 var matchingSuffixes = affixes
                 .Where(affix => affix.AffixRarityType == affixRarityTypeToLookFor &&
                                 affix.AffixCategory == affixCategoryLookFor &&
-                                affix.AffixType == AffixType.Suffix)
+                                affix.AffixType == AffixType.Suffix &&
+                                affix.Parameter == RaritySystem.ParamIdentifiers[BoostedParam]
+                                )
                 .ToList();
 
-
-                if (matchingPrefixes.Any())
+                if (matchingPrefixes.Count > 1 && matchingSuffixes.Count > 1)
                 {
-                    Random random = new Random();
-                    affixesList.Add(matchingPrefixes[random.Next(matchingPrefixes.Count)]);
-                    affixesList.Add(matchingSuffixes[random.Next(matchingSuffixes.Count)]);
+                    affixesList.Add(matchingPrefixes[RandomizedPrefix]);
+                    affixesList.Add(matchingSuffixes[0]); // There will be only one suffix anyway.
 
                     return affixesList;
                 }
@@ -151,13 +150,15 @@ namespace QM_PathOfQuasimorph.Core
         public AffixCategory AffixCategory { get; set; }
         public AffixRarityType AffixRarityType { get; set; }
         public string Text { get; set; }
+        public string Parameter { get; set; }
 
-        public Affix(string affixCategory, string affixType, string affixRarityType, string text)
+        public Affix(string affixCategory, string affixType, string affixRarityType, string text, string parameter)
         {
             this.AffixCategory = (AffixCategory)Enum.Parse(typeof(AffixCategory), affixCategory, true);
             this.AffixType = (AffixType)Enum.Parse(typeof(AffixType), affixType, true);
-            this.AffixRarityType = (AffixRarityType)Enum.Parse(typeof(AffixRarityType), affixRarityType, true);
+            this.AffixRarityType = (AffixRarityType)Int32.Parse(affixRarityType);
             this.Text = text;
+            this.Parameter = parameter;
         }
     }
 }

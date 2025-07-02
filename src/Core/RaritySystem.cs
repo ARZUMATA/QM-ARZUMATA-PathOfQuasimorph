@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Windows;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using Random = System.Random;
 
@@ -57,10 +58,13 @@ namespace QM_PathOfQuasimorph.Core
         private readonly Random _random = new Random();
         internal AffixManager affixManager = new AffixManager();
         private MagnumPoQProjectsController magnumPoQProjectsController;
+        public const int AMOUNT_PREFIXES = 10; // csv has 10 prefixes per rarity
+        public const int AMOUNT_SUFFIXES = 5; // CSV has 5 suffies per rarity param
 
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
+        private const int PARAMETER_BOOST = 5;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
         public RaritySystem()
@@ -165,6 +169,29 @@ namespace QM_PathOfQuasimorph.Core
                 Console.WriteLine($"{rarityPair.Key}: {rarityPair.Value} ({percentage:F2}%)");
             }
         }
+
+        // ParamIdentifires for encoding to UID
+        public static List<string> ParamIdentifiers = new List<string>
+        {
+            "resist_blunt",
+            "resist_pierce",
+            "resist_lacer",
+            "resist_fire",
+            "resist_beam",
+            "resist_shock",
+            "resist_poison",
+            "resist_cold",
+            "weight",
+            "max_durability",
+            "damage",
+            "crit_damage",
+            "accuracy",
+            "scatter_angle",
+            "reload_duration",
+            "magazine_capacity",
+            "special_ability",
+            "none"
+        };
 
         // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
@@ -403,9 +430,16 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Used part of code from  MagnumProjectNumericParameterPanel.Initialize
-        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase)
+        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam)
         {
             float _defaultValue = 0f;
+
+            bool boost = false;
+
+            if (boostedParam.ParameterName == _projectParameter.ParameterName)
+            {
+                boost = true;
+            }
 
             switch (_projectParameter.ParameterType)
             {
@@ -434,34 +468,22 @@ namespace QM_PathOfQuasimorph.Core
                     }
             }
 
-            Plugin.Logger.Log($"project {project.ProjectType}");
-            Plugin.Logger.Log($"\t AppliedModifications:");
-
-            foreach (var mod in project.AppliedModifications)
-            {
-                Plugin.Logger.Log($"\t {mod.Key} - {mod.Value}:");
-            }
-
-            Plugin.Logger.Log($"\t We want:");
-            Plugin.Logger.Log($"\t\t _projectParameter.Id {_projectParameter.Id}");
-            Plugin.Logger.Log($"\t\t _projectParameter.val {CalculateParamValue(_defaultValue, itemRarity, increase).ToString()}");
-
             project.AppliedModifications.Remove(_projectParameter.Id);
-            project.AppliedModifications.Add(_projectParameter.Id, CalculateParamValue(_defaultValue, itemRarity, increase).ToString());
+            project.AppliedModifications.Add(_projectParameter.Id, CalculateParamValue(_defaultValue, itemRarity, increase, boost).ToString());
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase)
+        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost)
         {
             float[] rarityModifiers = GetRarityModifiers(rarity);
             float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
 
             if (increase)
             {
-                return defaultValue * modifier;
+                return (defaultValue * modifier) * (boost == true ? PARAMETER_BOOST : 0);
             }
             else
             {
-                return defaultValue / modifier;
+                return defaultValue / modifier * (boost == true ? PARAMETER_BOOST : 0);
             }
         }
 
@@ -486,7 +508,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        internal void ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
+        internal int[] ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
@@ -496,8 +518,21 @@ namespace QM_PathOfQuasimorph.Core
             int numParamsToAdjust = Mathf.RoundToInt(editableParameters.Count * rarityParamPercentages[itemRarity]);
             numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
 
+            // Get value for randomized Prefix
+            var randomPrefix = _random.Next(0, AMOUNT_PREFIXES - 1);
+
             // Shuffle the dictionary
             var editableParamsShuffled = ShuffleDictionary(editableParameters);
+
+            // Select one parameter to boost more.
+            // This parameter will be boosted more than the others.
+            var boostedParam = editableParamsShuffled.Values.ToArray()[_random.Next(editableParamsShuffled.Count)];
+
+            string[] boostedParamParts = boostedParam.Id.Split('_');
+            string boostedParamResult = string.Join("_", boostedParamParts.Skip(1));
+
+            // We return index of parameter that was boosted for UID
+            int boostedParamIndex = Math.Min(ParamIdentifiers.IndexOf(boostedParamResult), 99); // Just so 99 means not found.
 
             for (int i = 0; i < numParamsToAdjust; i++)
             {
@@ -520,7 +555,7 @@ namespace QM_PathOfQuasimorph.Core
                     case "_reload_duration":
                     case "_scatter_angle":
                     case "_resist":
-                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false);
+                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam);
                         break;
                     case "_special_ability":
                         break;
@@ -529,12 +564,14 @@ namespace QM_PathOfQuasimorph.Core
                     case "_max_durability":
                     case "_accuracy":
                     case "_magazine_capacity":
-                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true);
+                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam);
                         break;
                     default:
                         break;
                 }
             }
+
+            return new int[] { boostedParamIndex, randomPrefix };
         }
 
         // Traits
@@ -740,7 +777,8 @@ namespace QM_PathOfQuasimorph.Core
 
             if (magnumProjectWrapper.PoqItem)
             {
-                var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType);
+                var digitInfo = DigitInfo.GetDigits(magnumProject.FinishTime.Ticks);
+                var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType, digitInfo.BoostedParam, digitInfo.RandomizedPrefix);
 
                 if (affix == null || affix.Count != 2)
                 {

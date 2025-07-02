@@ -135,19 +135,22 @@ namespace QM_PathOfQuasimorph.Core
             // Create a new project
             MagnumProject newProject = new MagnumProject(projectType, projectId);
 
+            // Apply various project related parameters
+            var boostedParamIndex = raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
+
             // Generate a new UID
             var randomUid = Helpers.UniqueIDGenerator.GenerateRandomID();
             DigitInfo digits = DigitInfo.GetDigits(randomUid);
             digits.FillZeroes();
-            digits.D6_Rarity = (int)itemRarity;
+            digits.Rarity = (int)itemRarity;
+            // boostedParamIndex, randomPrefix
+            digits.BoostedParam = boostedParamIndex[0];
+            digits.RandomizedPrefix = boostedParamIndex[1];
             var randomUidInjected = digits.ReturnUID();
 
             // New finish project time
             newProject.StartTime = DateTime.FromBinary(MAGNUM_PROJECT_START_TIME);
             newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
-
-            // Apply various project related parameters
-            raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
 
             // Resulting Uid
             var magnumProjectWrapper = new MagnumProjectWrapper(newProject);
@@ -200,7 +203,7 @@ namespace QM_PathOfQuasimorph.Core
         public static ItemRarity GetItemRarity(long finishTime)
         {
             DigitInfo digits = DigitInfo.GetDigits(finishTime);
-            return (ItemRarity)digits.D6_Rarity;
+            return (ItemRarity)digits.Rarity;
         }
 
         // Yes I dont know to get it right in IL opcodes.

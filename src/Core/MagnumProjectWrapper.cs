@@ -35,7 +35,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     CustomId = $"{Id}_custom_poq";
                     var digitinfo = DigitInfo.GetDigits(newProject.FinishTime.Ticks);
-                    RarityClass = (ItemRarity)digitinfo.D6_Rarity;
+                    RarityClass = (ItemRarity)digitinfo.Rarity;
                     Rarity = RarityClass.ToString().ToLower();
                     StartTime = newProject.StartTime;
                     FinishTime = newProject.FinishTime;
@@ -70,7 +70,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
                 var digitinfo = DigitInfo.GetDigits(finishTime.Ticks);
-                this.RarityClass = (ItemRarity)digitinfo.D6_Rarity;
+                this.RarityClass = (ItemRarity)digitinfo.Rarity;
                 this.Rarity = RarityClass.ToString().ToLower();
                 this.StartTime = startTime;
                 this.FinishTime = finishTime;
