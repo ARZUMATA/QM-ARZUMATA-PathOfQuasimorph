@@ -46,11 +46,86 @@ namespace QM_PathOfQuasimorph.Core
     {
         private readonly Random _random = new Random();
         internal AffixManager affixManager = new AffixManager();
+        private MagnumPoQProjectsController magnumPoQProjectsController;
 
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private bool doD20roll = true;
+        private bool doD20roll = false;
+        private bool doWeightedRolls = true;
+
+        public RaritySystem()
+        {
+            // Test rolls
+
+            //doD20roll = false;
+            //doWeightedRolls = false;
+            //SimulateDrops(); // Standard approach
+
+            //doD20roll = false;
+            //doWeightedRolls = false;
+            //SimulateDrops(); // D20 approach
+
+            //doD20roll = false;
+            //doWeightedRolls = false;
+            //SimulateDrops(); // Weighted approach
+
+            /*
+            Standard approach:
+                Simulated 10000 item drops:
+                    Standard: 4958 (49.58%)
+                    Enhanced: 2447 (24.47%)
+                    Advanced: 1533 (15.33%)
+                    Premium: 758 (7.58%)
+                    Prototype: 254 (2.54%)
+                    Quantum: 50 (0.50%)
+
+            D20 approach:
+                Simulated 10000 item drops:
+                    Standard: 0 (0.00%)
+                    Enhanced: 0 (0.00%)
+                    Advanced: 0 (0.00%)
+                    Premium: 273 (2.73%)
+                    Prototype: 5043 (50.43%)
+                    Quantum: 4684 (46.84%)
+
+            Weighted approach:
+                Simulated 10000 item drops:
+                    Standard: 5590 (55.90%)
+                    Enhanced: 2792 (27.92%)
+                    Advanced: 1085 (10.85%)
+                    Premium: 397 (3.97%)
+                    Prototype: 113 (1.13%)
+                    Quantum: 23 (0.23%)
+            */
+        }
+
+        private void SimulateDrops()
+        {
+            // Simulate 10000 item drops to see the distribution
+
+            Dictionary<ItemRarity, int> rarityCounts = new Dictionary<ItemRarity, int>();
+
+            foreach (ItemRarity rarity in Enum.GetValues(typeof(ItemRarity)))
+            {
+                rarityCounts[rarity] = 0;
+            }
+
+            int numTrials = 10000;
+            for (int i = 0; i < numTrials; i++)
+            {
+                ItemRarity rarity = SelectRarity();
+                rarityCounts[rarity]++;
+            }
+
+            // Print the results
+            Console.WriteLine($"Simulated {numTrials} item drops:");
+            foreach (var rarityPair in rarityCounts)
+            {
+                double percentage = (double)rarityPair.Value / numTrials * 100;
+                Console.WriteLine($"{rarityPair.Key}: {rarityPair.Value} ({percentage:F2}%)");
+            }
+        }
 
         // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
@@ -62,6 +137,16 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Prototype, 5 },
             { ItemRarity.Quantum, 1 }
             };
+
+        private Dictionary<ItemRarity, int> _rarityWeightsForWeighted = new Dictionary<ItemRarity, int>
+        {
+            { ItemRarity.Standard, 1000 },
+            { ItemRarity.Enhanced, 500 },
+            { ItemRarity.Advanced, 200 },
+            { ItemRarity.Premium, 75 },
+            { ItemRarity.Prototype, 20 },
+            { ItemRarity.Quantum, 5 }
+        };
 
         // Define the percentage of parameters to modify per Rarity
         private Dictionary<ItemRarity, float> rarityParamPercentages = new Dictionary<ItemRarity, float>
@@ -85,7 +170,6 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum, 0.25f },    // 50% chance
         };
 
-        private MagnumPoQProjectsController magnumPoQProjectsController;
         public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
         {
             { ItemRarity.Standard,    "#FFFFFF" },         // #FFFFFF (White - common items)
@@ -133,7 +217,31 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            // If no rarity passes all rolls (very unlikely, but possible due to Quantum's low weight), return Standard as a fallback.
+            // Fallback
+            return ItemRarity.Standard;
+        }
+
+        public ItemRarity SelectRarityWeighted()
+        {
+            // Calculate the total weight
+            int totalWeight = _rarityWeightsForWeighted.Values.Sum();
+
+            // Generate a random number within the total weight range
+            int randomNumber = _random.Next(0, totalWeight);
+
+            // Iterate through the rarities and determine which one the random number falls into
+            int cumulativeWeight = 0;
+
+            foreach (var rarityPair in _rarityWeightsForWeighted)
+            {
+                cumulativeWeight += rarityPair.Value;
+                if (randomNumber < cumulativeWeight)
+                {
+                    return rarityPair.Key;
+                }
+            }
+
+            // Fallback
             return ItemRarity.Standard;
         }
 
@@ -142,6 +250,11 @@ namespace QM_PathOfQuasimorph.Core
             if (doD20roll)
             {
                 return SelectRarityWithRolls();
+            }
+
+            if (doWeightedRolls)
+            {
+                return SelectRarityWeighted();
             }
 
             int totalWeight = 0;
