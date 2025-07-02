@@ -792,6 +792,7 @@ namespace QM_PathOfQuasimorph.Core
                 var digitInfo = DigitInfo.GetDigits(magnumProject.FinishTime.Ticks);
                 var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType, digitInfo.BoostedParam, digitInfo.RandomizedPrefix);
 
+                // We got id.name now.
                 if (affix == null || affix.Count != 2)
                 {
                     Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
@@ -808,34 +809,43 @@ namespace QM_PathOfQuasimorph.Core
                 //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
                 //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
 
-                Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
+                //Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
 
                 // Problem, on game load it doesn't have effect.
-                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name", $"{affix[0].Text} ", "", magnumProjectWrapper.ReturnItemUid(true));
-                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc", "", $" {affix[1].Text}", magnumProjectWrapper.ReturnItemUid(true));
+                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name",
+                    affix[0].Text, "",
+                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.RandomizedPrefix);
+                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc",
+                    "", affix[1].Text,
+                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.RandomizedPrefix);
             }
         }
 
-        private static void UpdateKey(string lookupItemId, string prefix, string suffix, string originalUid)
+        private static void UpdateKey(string lookupItemId, string prefix, string suffix, string originalUid, int randomizedPrefix)
         {
-            var originalName = Localization.Get("item." + originalUid + ".name");
-            var originalShortdesc = Localization.Get("item." + originalUid + ".shortdesc");
-
             foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
             {
+                Localization.Lang lang = languageToDict.Key;
+
+                var originalName = Localization.Get("item." + originalUid + ".name", lang);
+                var originalShortdesc = Localization.Get("item." + originalUid + ".shortdesc", lang);
+
+                // Get prefix and suffix based on lang
+                string _prefix = Localization.Get(prefix, lang);
+                string _suffix = Localization.Get(suffix, lang);
+
                 if (languageToDict.Value.ContainsKey(lookupItemId))
                 {
                     // Update prefix
                     if (lookupItemId.Contains(".name"))
                     {
-                        languageToDict.Value[lookupItemId] = prefix + originalName;
+                        languageToDict.Value[lookupItemId] = $"{_prefix} {originalName}";
                     }
 
                     // Update suffix
                     if (lookupItemId.Contains(".shortdesc"))
                     {
-                        languageToDict.Value[lookupItemId] = originalShortdesc + suffix;
-
+                        languageToDict.Value[lookupItemId] = $"{originalShortdesc} {_suffix}";
                     }
                 }
                 else
