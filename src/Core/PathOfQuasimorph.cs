@@ -93,7 +93,7 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
 
-                        if (projectWrapper.PoqItem && idsToKeep.Contains(projectWrapper.ReturnItemUid()))
+                        if (projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
                         {
                             magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
                         }
@@ -166,6 +166,45 @@ namespace QM_PathOfQuasimorph.Core
                 foreach (var merc in mercenaries.Values)
                 {
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.AllContainers)
+                    {
+                        foreach (PickupItem item in storage.Items)
+                        {
+                            items.Add(item.Id);
+
+                            if (Plugin.Config.CleanupMode)
+                            {
+                                CleanupItem(item);
+                            }
+                        }
+                    }
+
+                    foreach (ItemStorage storage in merc.CreatureData.Inventory.Storages)
+                    {
+                        foreach (PickupItem item in storage.Items)
+                        {
+                            items.Add(item.Id);
+
+                            if (Plugin.Config.CleanupMode)
+                            {
+                                CleanupItem(item);
+                            }
+                        }
+                    }
+
+                    foreach (ItemStorage storage in merc.CreatureData.Inventory.Slots)
+                    {
+                        foreach (PickupItem item in storage.Items)
+                        {
+                            items.Add(item.Id);
+
+                            if (Plugin.Config.CleanupMode)
+                            {
+                                CleanupItem(item);
+                            }
+                        }
+                    }
+
+                    foreach (ItemStorage storage in merc.CreatureData.Inventory.WeaponSlots)
                     {
                         foreach (PickupItem item in storage.Items)
                         {
