@@ -194,16 +194,15 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define multipliers for each Rarity class
-
         private Dictionary<ItemRarity, float[]> _rarityModifiers = new Dictionary<ItemRarity, float[]>
         {
-            { ItemRarity.Standard, new float[] { 1.0f } },  // No change for Standard
-            { ItemRarity.Enhanced, new float[] { 1.2f, 1.3f, 1.5f } },
-            { ItemRarity.Advanced, new float[] { 1.5f, 1.6f, 1.8f } },
-            { ItemRarity.Premium, new float[] { 1.7f, 1.8f, 2.0f } },
-            { ItemRarity.Prototype, new float[] { 2.0f, 2.2f, 2.5f } },
-            { ItemRarity.Quantum, new float[] { 2.5f, 3.0f, 4.0f } },
-            };
+            { ItemRarity.Standard,  new float[] { 1.0f } },  // No change for Standard
+            { ItemRarity.Enhanced,  new float[] { 2.0f, 2.5f, 3.0f } },
+            { ItemRarity.Advanced,  new float[] { 3.0f, 4.0f, 5.0f } },
+            { ItemRarity.Premium,   new float[] { 4.5f, 5.5f, 6.5f } },
+            { ItemRarity.Prototype, new float[] { 6.0f, 7.0f, 8.0f } },
+            { ItemRarity.Quantum,   new float[] { 8.0f, 9.5f, 11.0f } },
+        };
 
         // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
@@ -508,7 +507,7 @@ namespace QM_PathOfQuasimorph.Core
 
             if (isResist && defaultValue == 0)
             {
-                defaultValue = _random.Next(1,10); // Just give a little new res.
+                defaultValue = _random.Next(1, 10); // Just give a little new res.
             }
 
             if (increase)
