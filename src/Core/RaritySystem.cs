@@ -783,6 +783,9 @@ namespace QM_PathOfQuasimorph.Core
                 if (affix == null || affix.Count != 2)
                 {
                     Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
+                    Plugin.Logger.LogWarning($"\t\t affix == null {affix == null}");
+                    Plugin.Logger.LogWarning($"\t\t affix.Count {affix?.Count}");
+
                     return;
                 }
 

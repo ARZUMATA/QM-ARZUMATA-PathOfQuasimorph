@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
@@ -131,7 +132,7 @@ namespace QM_PathOfQuasimorph.Core
                                 )
                 .ToList();
 
-                if (matchingPrefixes.Count > 1 && matchingSuffixes.Count > 1)
+                if (matchingPrefixes.Count > 1 && matchingSuffixes.Count >= 1)
                 {
                     affixesList.Add(matchingPrefixes[RandomizedPrefix]);
                     affixesList.Add(matchingSuffixes[0]); // There will be only one suffix anyway.
