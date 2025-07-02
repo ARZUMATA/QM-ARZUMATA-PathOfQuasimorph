@@ -758,25 +758,31 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
 
                 // Problem, on game load it doesn't have effect.
-                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name", $"{affix[0].Text} ", "");
-                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc", "", $" {affix[1].Text}");
+                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name", $"{affix[0].Text} ", "", magnumProjectWrapper.ReturnItemUid(true));
+                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc", "", $" {affix[1].Text}", magnumProjectWrapper.ReturnItemUid(true));
             }
         }
 
-        private static void UpdateKey(string lookupItemId, string prefix, string suffix)
+        private static void UpdateKey(string lookupItemId, string prefix, string suffix, string originalUid)
         {
+            var originalName = Localization.Get("item." + originalUid + ".name");
+            var originalShortdesc = Localization.Get("item." + originalUid + ".shortdesc");
+
             foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
             {
                 if (languageToDict.Value.ContainsKey(lookupItemId))
                 {
-                    if (!languageToDict.Value[lookupItemId].StartsWith(prefix) && suffix.Equals(string.Empty) && lookupItemId.Contains(".name"))
+                    // Update prefix
+                    if (lookupItemId.Contains(".name"))
                     {
-                        languageToDict.Value[lookupItemId] = prefix + languageToDict.Value[lookupItemId];
+                        languageToDict.Value[lookupItemId] = prefix + originalName;
                     }
 
-                    if (prefix.Equals(string.Empty) && lookupItemId.Contains(".shortdesc") && !languageToDict.Value[lookupItemId].EndsWith(suffix))
+                    // Update suffix
+                    if (lookupItemId.Contains(".shortdesc"))
                     {
-                        languageToDict.Value[lookupItemId] = languageToDict.Value[lookupItemId] + suffix;
+                        languageToDict.Value[lookupItemId] = originalShortdesc + suffix;
+
                     }
                 }
                 else

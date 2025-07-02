@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using MGSC;
 
 namespace QM_PathOfQuasimorph.Core
@@ -79,8 +80,13 @@ namespace QM_PathOfQuasimorph.Core
                 //Plugin.Logger.Log($"Created MagnumProjectWrapper with id: {this.Id}, CustomId: {this.CustomId}, Rarity: {this.Rarity}, RarityClass: {this.RarityClass}, StartTime: {this.StartTime.Ticks}, FinishTime: {this.FinishTime.Ticks}, PoqItem: {this.PoqItem}");
             }
 
-            public string ReturnItemUid()
+            public string ReturnItemUid(bool originalId = false)
             {
+                if (originalId)
+                {
+                    return $"{this.Id}";
+                }
+
                 if (PoqItem)
                 {
                     return $"{this.CustomId}_{this.Rarity}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
