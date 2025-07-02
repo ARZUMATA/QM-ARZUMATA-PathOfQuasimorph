@@ -47,6 +47,11 @@ namespace QM_PathOfQuasimorph.Core
         private readonly Random _random = new Random();
         internal AffixManager affixManager = new AffixManager();
 
+        // D20 approach
+        private const int NUM_ROLLS = 3; // Number of dice rolls
+        private const int DICE_SIDES = 20; // Number of sides on the dice
+        private bool doD20roll = true;
+
         // Weights for each Rarity (lower = rarer)
         private Dictionary<ItemRarity, int> _rarityWeights = new Dictionary<ItemRarity, int>
         {
@@ -99,8 +104,46 @@ namespace QM_PathOfQuasimorph.Core
             return color;
         }
 
+        public ItemRarity SelectRarityWithRolls()
+        {
+            // Sort rarities by weight in descending order (most common to rarest)
+            var sortedRarities = _rarityWeights.OrderByDescending(x => x.Value).ToList();
+
+            foreach (var rarityPair in sortedRarities)
+            {
+                ItemRarity rarity = rarityPair.Key;
+                int weight = rarityPair.Value;
+
+                // Perform multiple rolls and check if all are greater than or equal to the rarity's weight.
+                bool allRollsPass = true;
+
+                for (int i = 0; i < NUM_ROLLS; i++)
+                {
+                    int roll = _random.Next(1, DICE_SIDES + 1); // Simulate a d20 roll (1 to 20 inclusive)
+                    if (roll < weight)
+                    {
+                        allRollsPass = false;
+                        break;
+                    }
+                }
+
+                if (allRollsPass)
+                {
+                    return rarity;
+                }
+            }
+
+            // If no rarity passes all rolls (very unlikely, but possible due to Quantum's low weight), return Standard as a fallback.
+            return ItemRarity.Standard;
+        }
+
         public ItemRarity SelectRarity()
         {
+            if (doD20roll)
+            {
+                return SelectRarityWithRolls();
+            }
+
             int totalWeight = 0;
             foreach (var weight in _rarityWeights.Values)
             {
@@ -268,7 +311,7 @@ namespace QM_PathOfQuasimorph.Core
 
             // Calculate the number of parameters to adjust based on the percentage
             int numParamsToAdjust = (int)itemRarity;
-            
+
             //Mathf.RoundToInt(traitsForItemType.Count * rarityParamPercentages[itemRarity]);
             numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
 
