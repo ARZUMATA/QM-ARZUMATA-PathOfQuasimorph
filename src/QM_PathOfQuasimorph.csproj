@@ -27,6 +27,10 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="config.ini" />
+	  <None Remove="Files\Affixes.csv" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="Files\Affixes.csv" />
 	</ItemGroup>
 	<ItemGroup>
 	  <EmbeddedResource Include="config.ini" />
