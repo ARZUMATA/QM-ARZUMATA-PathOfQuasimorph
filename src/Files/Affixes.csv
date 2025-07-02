@@ -1,195 +1,195 @@
-﻿Armor,Suffix,1,of Ablative Resistance,resist_blunt
-Armor,Suffix,2,of Adaptive Camouflage,resist_blunt
-Armor,Suffix,3,of Kinetic Absorption,resist_blunt
-Armor,Suffix,4,of the Bulwark,resist_blunt
-Armor,Suffix,5,of Imperial Guard,resist_blunt
-Armor,Suffix,1,of Bio-Hazard Containment,resist_pierce
-Armor,Suffix,2,of Armored Might,resist_pierce
-Armor,Suffix,3,of Nanite Repair,resist_pierce
-Armor,Suffix,4,of the Crusader,resist_pierce
-Armor,Suffix,5,of Phantom Invisibility,resist_pierce
-Armor,Suffix,1,of Combat Readiness,resist_lacer
-Armor,Suffix,2,of Cyber Security,resist_lacer
-Armor,Suffix,3,of Optimized Combat,resist_lacer
-Armor,Suffix,4,of the Defender,resist_lacer
-Armor,Suffix,5,of the Aegis,resist_lacer
-Armor,Suffix,1,of Composite Integrity,resist_fire
-Armor,Suffix,2,of Energy Dissipation,resist_fire
-Armor,Suffix,3,of Power Amplification,resist_fire
-Armor,Suffix,4,of the Guardian,resist_fire
-Armor,Suffix,5,of the Bastion,resist_fire
-Armor,Suffix,1,of Enhanced Protection,resist_beam
-Armor,Suffix,2,of Exo-Durability,resist_beam
-Armor,Suffix,3,of Reactive Plating,resist_beam
-Armor,Suffix,4,of the Warden,resist_beam
-Armor,Suffix,5,of the Dreadnought,resist_beam
-Armor,Suffix,1,of Environmental Sealing,resist_shock
-Armor,Suffix,2,of Gravitational Shielding,resist_shock
-Armor,Suffix,3,of Sonic Dampening,resist_shock
-Armor,Suffix,4,of Atlas's Burden,resist_shock
-Armor,Suffix,5,of the Indomitable,resist_shock
-Armor,Suffix,1,of Fortification,resist_poison
-Armor,Suffix,2,of Infiltrator,resist_poison
-Armor,Suffix,3,of Stealth Operations,resist_poison
-Armor,Suffix,4,of Colossal Strength,resist_poison
-Armor,Suffix,5,of the Juggernaut,resist_poison
-Armor,Suffix,1,of Hazmat Safeguard,resist_cold
-Armor,Suffix,2,of Ironclad Will,resist_cold
-Armor,Suffix,3,of Tactical Superiority,resist_cold
-Armor,Suffix,4,of Hyper-Density,resist_cold
-Armor,Suffix,5,of the Last Stand,resist_cold
-Armor,Suffix,1,of the Aero-Frame,weight
-Armor,Suffix,2,of the Synthweave,weight
-Armor,Suffix,3,of the Grav-Reduced,weight
-Armor,Suffix,4,of the Quantum-Light,weight
-Armor,Suffix,5,of the Void-Step,weight
-Armor,Suffix,1,of the Reinforced Plate,max_durability
-Armor,Suffix,2,of the Impact-Hardened,max_durability
-Armor,Suffix,3,of the Molecular Bond,max_durability
-Armor,Suffix,4,of the Neutron-Forged,max_durability
-Armor,Suffix,5,of the Stellar Core,max_durability
-Weapon,Suffix,1,of the Balanced Grip,weight
-Weapon,Suffix,2,of the Ergonomic Frame,weight
-Weapon,Suffix,3,of the Zero-G Alloy,weight
-Weapon,Suffix,4,of the Phantom Touch,weight
-Weapon,Suffix,5,of the Void-Drift,weight
-Weapon,Suffix,1,of the Adamant Core,max_durability
-Weapon,Suffix,2,of the Resilient Matrix,max_durability
-Weapon,Suffix,3,of the Plasma-Sealed,max_durability
-Weapon,Suffix,4,of the Chronal Weave,max_durability
-Weapon,Suffix,5,of the Aetheric Shell,max_durability
-Weapon,Suffix,1,of Calibrated Force,damage
-Weapon,Suffix,2,of Armor Penetration,damage
-Weapon,Suffix,3,of High Impact,damage
-Weapon,Suffix,4,of Devastating Force,damage
-Weapon,Suffix,5,of Annihilation,damage
-Weapon,Suffix,1,of Basic Overload,crit_damage
-Weapon,Suffix,2,of Critical Overload,crit_damage
-Weapon,Suffix,3,of Critical Mass,crit_damage
-Weapon,Suffix,4,of Precision Strike,crit_damage
-Weapon,Suffix,5,of Lethal Strike,crit_damage
-Weapon,Suffix,1,of Targeting Assist,accuracy
-Weapon,Suffix,2,of Predictive Algorithms,accuracy
-Weapon,Suffix,3,of Gyro-Stabilization,accuracy
-Weapon,Suffix,4,of Guided Trajectory,accuracy
-Weapon,Suffix,5,of Near-Absolute Aim,accuracy
-Weapon,Suffix,1,of Wide Dispersion,scatter_angle
-Weapon,Suffix,2,of Controlled Spread,scatter_angle
-Weapon,Suffix,3,of Tight Grouping,scatter_angle
-Weapon,Suffix,4,of Focused Emission,scatter_angle
-Weapon,Suffix,5,of Pinpoint Convergence,scatter_angle
-Weapon,Suffix,1,of Quick-Load,reload_duration
-Weapon,Suffix,2,of Tactical Reload,reload_duration
-Weapon,Suffix,3,of Speed Loader,reload_duration
-Weapon,Suffix,4,of Rapid Cycling,reload_duration
-Weapon,Suffix,5,of Instantaneous Refill,reload_duration
-Weapon,Suffix,1,of Enhanced Ammunition,magazine_capacity
-Weapon,Suffix,2,of Dense Payload,magazine_capacity
-Weapon,Suffix,3,of High-Capacity,magazine_capacity
-Weapon,Suffix,4,of the Drum Magazine,magazine_capacity
-Weapon,Suffix,5,of Infinite Reserves,magazine_capacity
-Weapon,Suffix,1,of the Enforcer,special_ability
-Weapon,Suffix,2,of the Hunter,special_ability
-Weapon,Suffix,3,of the Killer,special_ability
-Weapon,Suffix,4,of the Predator,special_ability
-Weapon,Suffix,5,of Omega Protocol,special_ability
-Armor,Prefix,1,Ablative-Coated,none
-Armor,Prefix,1,Armored,none
-Armor,Prefix,1,Bio-Hazard,none
-Armor,Prefix,1,Combat-Ready,none
-Armor,Prefix,1,Composite-Shell,none
-Armor,Prefix,1,Environmental,none
-Armor,Prefix,1,Fortified,none
-Armor,Prefix,1,Hazmat,none
-Armor,Prefix,1,Reinforced,none
-Armor,Prefix,1,Tactical,none
-Armor,Prefix,2,Adaptive,none
-Armor,Prefix,2,Bulwark,none
-Armor,Prefix,2,Crusader's,none
-Armor,Prefix,2,Cybernetic-Reinforced,none
-Armor,Prefix,2,Defender's,none
-Armor,Prefix,2,Energy-Shielded,none
-Armor,Prefix,2,Exo-Frame,none
-Armor,Prefix,2,Grav-Deflecting,none
-Armor,Prefix,2,Guardian's,none
-Armor,Prefix,2,Ironclad,none
-Armor,Prefix,3,Kinetic-Dampening,none
-Armor,Prefix,3,Nano-Weave,none
-Armor,Prefix,3,Optimized,none
-Armor,Prefix,3,Power-Assisted,none
-Armor,Prefix,3,Reactive-Armor,none
-Armor,Prefix,3,Resilient,none
-Armor,Prefix,3,Sonic-Damped,none
-Armor,Prefix,3,Stealth-Ops,none
-Armor,Prefix,3,Warden's,none
-Armor,Prefix,3,Aegis-Pattern,none
-Armor,Prefix,4,Atlas-Rig,none
-Armor,Prefix,4,Bastion's,none
-Armor,Prefix,4,Colossus-Grade,none
-Armor,Prefix,4,Dominator,none
-Armor,Prefix,4,Dreadnought,none
-Armor,Prefix,4,Hyper-Plated,none
-Armor,Prefix,4,Impervious,none
-Armor,Prefix,4,Impregnable,none
-Armor,Prefix,4,Juggernaut,none
-Armor,Prefix,4,Phantom-Skin,none
-Armor,Prefix,5,Sentinel's,none
-Armor,Prefix,5,Steel-Sentinel,none
-Armor,Prefix,5,Titan-Class,none
-Armor,Prefix,5,Unbreakable,none
-Armor,Prefix,5,Unyielding,none
-Armor,Prefix,5,Vanguard's,none
-Armor,Prefix,5,Chrono-Layered,none
-Armor,Prefix,5,Ghost-Weave,none
-Armor,Prefix,5,Quantum-Phased,none
-Armor,Prefix,5,Void-Woven,none
-Weapon,Prefix,1,Assault,none
-Weapon,Prefix,1,Brutal,none
-Weapon,Prefix,1,Burst-Fire,none
-Weapon,Prefix,1,Calibrated,none
-Weapon,Prefix,1,Reinforced,none
-Weapon,Prefix,1,Tactical,none
-Weapon,Prefix,1,Adaptive,none
-Weapon,Prefix,1,Arc-Blaze,none
-Weapon,Prefix,1,Cybernetic-Link,none
-Weapon,Prefix,1,Demolition,none
-Weapon,Prefix,2,Disruptor,none
-Weapon,Prefix,2,Enforcer's,none
-Weapon,Prefix,2,Grav-Pulse,none
-Weapon,Prefix,2,Hunter-Killer,none
-Weapon,Prefix,2,Incinerator,none
-Weapon,Prefix,2,Kinetic-Burst,none
-Weapon,Prefix,2,Nano-Filament,none
-Weapon,Prefix,2,Optimized,none
-Weapon,Prefix,2,Penetrator,none
-Weapon,Prefix,2,Plasma-Charged,none
-Weapon,Prefix,3,Precision,none
-Weapon,Prefix,3,Ragefire,none
-Weapon,Prefix,3,Railgun,none
-Weapon,Prefix,3,Relentless,none
-Weapon,Prefix,3,Shadow-Ops,none
-Weapon,Prefix,3,Shredder,none
-Weapon,Prefix,3,Sonic-Wave,none
-Weapon,Prefix,3,Swiftfire,none
-Weapon,Prefix,3,Alpha-Strike,none
-Weapon,Prefix,3,Annihilation,none
-Weapon,Prefix,4,Apex-Tier,none
-Weapon,Prefix,4,Devastator,none
-Weapon,Prefix,4,Exterminator,none
-Weapon,Prefix,4,Hyper-Velocity,none
-Weapon,Prefix,4,Obliterator,none
-Weapon,Prefix,4,Orbital-Strike,none
-Weapon,Prefix,4,Phantom-Class,none
-Weapon,Prefix,4,Predator's,none
-Weapon,Prefix,4,Pulsar,none
-Weapon,Prefix,4,Sentinel's,none
-Weapon,Prefix,5,Stormcall,none
-Weapon,Prefix,5,Terminator,none
-Weapon,Prefix,5,Vanguard,none
-Weapon,Prefix,5,Beam-Forge,none
-Weapon,Prefix,5,Chrono-Synched,none
-Weapon,Prefix,5,Ghost-Protocol,none
-Weapon,Prefix,5,Doombringer,none
-Weapon,Prefix,5,Omega-Pattern,none
-Weapon,Prefix,5,Quantum-Phase,none
-Weapon,Prefix,5,Void-Infused,none
+﻿Armor,Suffix,1,poq.armor.suffix.resist_blunt.1.tooltip,resist_blunt
+Armor,Suffix,2,poq.armor.suffix.resist_blunt.2.tooltip,resist_blunt
+Armor,Suffix,3,poq.armor.suffix.resist_blunt.3.tooltip,resist_blunt
+Armor,Suffix,4,poq.armor.suffix.resist_blunt.4.tooltip,resist_blunt
+Armor,Suffix,5,poq.armor.suffix.resist_blunt.5.tooltip,resist_blunt
+Armor,Suffix,1,poq.armor.suffix.resist_pierce.1.tooltip,resist_pierce
+Armor,Suffix,2,poq.armor.suffix.resist_pierce.2.tooltip,resist_pierce
+Armor,Suffix,3,poq.armor.suffix.resist_pierce.3.tooltip,resist_pierce
+Armor,Suffix,4,poq.armor.suffix.resist_pierce.4.tooltip,resist_pierce
+Armor,Suffix,5,poq.armor.suffix.resist_pierce.5.tooltip,resist_pierce
+Armor,Suffix,1,poq.armor.suffix.resist_lacer.1.tooltip,resist_lacer
+Armor,Suffix,2,poq.armor.suffix.resist_lacer.2.tooltip,resist_lacer
+Armor,Suffix,3,poq.armor.suffix.resist_lacer.3.tooltip,resist_lacer
+Armor,Suffix,4,poq.armor.suffix.resist_lacer.4.tooltip,resist_lacer
+Armor,Suffix,5,poq.armor.suffix.resist_lacer.5.tooltip,resist_lacer
+Armor,Suffix,1,poq.armor.suffix.resist_fire.1.tooltip,resist_fire
+Armor,Suffix,2,poq.armor.suffix.resist_fire.2.tooltip,resist_fire
+Armor,Suffix,3,poq.armor.suffix.resist_fire.3.tooltip,resist_fire
+Armor,Suffix,4,poq.armor.suffix.resist_fire.4.tooltip,resist_fire
+Armor,Suffix,5,poq.armor.suffix.resist_fire.5.tooltip,resist_fire
+Armor,Suffix,1,poq.armor.suffix.resist_beam.1.tooltip,resist_beam
+Armor,Suffix,2,poq.armor.suffix.resist_beam.2.tooltip,resist_beam
+Armor,Suffix,3,poq.armor.suffix.resist_beam.3.tooltip,resist_beam
+Armor,Suffix,4,poq.armor.suffix.resist_beam.4.tooltip,resist_beam
+Armor,Suffix,5,poq.armor.suffix.resist_beam.5.tooltip,resist_beam
+Armor,Suffix,1,poq.armor.suffix.resist_shock.1.tooltip,resist_shock
+Armor,Suffix,2,poq.armor.suffix.resist_shock.2.tooltip,resist_shock
+Armor,Suffix,3,poq.armor.suffix.resist_shock.3.tooltip,resist_shock
+Armor,Suffix,4,poq.armor.suffix.resist_shock.4.tooltip,resist_shock
+Armor,Suffix,5,poq.armor.suffix.resist_shock.5.tooltip,resist_shock
+Armor,Suffix,1,poq.armor.suffix.resist_poison.1.tooltip,resist_poison
+Armor,Suffix,2,poq.armor.suffix.resist_poison.2.tooltip,resist_poison
+Armor,Suffix,3,poq.armor.suffix.resist_poison.3.tooltip,resist_poison
+Armor,Suffix,4,poq.armor.suffix.resist_poison.4.tooltip,resist_poison
+Armor,Suffix,5,poq.armor.suffix.resist_poison.5.tooltip,resist_poison
+Armor,Suffix,1,poq.armor.suffix.resist_cold.1.tooltip,resist_cold
+Armor,Suffix,2,poq.armor.suffix.resist_cold.2.tooltip,resist_cold
+Armor,Suffix,3,poq.armor.suffix.resist_cold.3.tooltip,resist_cold
+Armor,Suffix,4,poq.armor.suffix.resist_cold.4.tooltip,resist_cold
+Armor,Suffix,5,poq.armor.suffix.resist_cold.5.tooltip,resist_cold
+Armor,Suffix,1,poq.armor.suffix.weight.1.tooltip,weight
+Armor,Suffix,2,poq.armor.suffix.weight.2.tooltip,weight
+Armor,Suffix,3,poq.armor.suffix.weight.3.tooltip,weight
+Armor,Suffix,4,poq.armor.suffix.weight.4.tooltip,weight
+Armor,Suffix,5,poq.armor.suffix.weight.5.tooltip,weight
+Armor,Suffix,1,poq.armor.suffix.max_durability.1.tooltip,max_durability
+Armor,Suffix,2,poq.armor.suffix.max_durability.2.tooltip,max_durability
+Armor,Suffix,3,poq.armor.suffix.max_durability.3.tooltip,max_durability
+Armor,Suffix,4,poq.armor.suffix.max_durability.4.tooltip,max_durability
+Armor,Suffix,5,poq.armor.suffix.max_durability.5.tooltip,max_durability
+Weapon,Suffix,1,poq.weapon.suffix.weight.1.tooltip,weight
+Weapon,Suffix,2,poq.weapon.suffix.weight.2.tooltip,weight
+Weapon,Suffix,3,poq.weapon.suffix.weight.3.tooltip,weight
+Weapon,Suffix,4,poq.weapon.suffix.weight.4.tooltip,weight
+Weapon,Suffix,5,poq.weapon.suffix.weight.5.tooltip,weight
+Weapon,Suffix,1,poq.weapon.suffix.max_durability.1.tooltip,max_durability
+Weapon,Suffix,2,poq.weapon.suffix.max_durability.2.tooltip,max_durability
+Weapon,Suffix,3,poq.weapon.suffix.max_durability.3.tooltip,max_durability
+Weapon,Suffix,4,poq.weapon.suffix.max_durability.4.tooltip,max_durability
+Weapon,Suffix,5,poq.weapon.suffix.max_durability.5.tooltip,max_durability
+Weapon,Suffix,1,poq.weapon.suffix.damage.1.tooltip,damage
+Weapon,Suffix,2,poq.weapon.suffix.damage.2.tooltip,damage
+Weapon,Suffix,3,poq.weapon.suffix.damage.3.tooltip,damage
+Weapon,Suffix,4,poq.weapon.suffix.damage.4.tooltip,damage
+Weapon,Suffix,5,poq.weapon.suffix.damage.5.tooltip,damage
+Weapon,Suffix,1,poq.weapon.suffix.crit_damage.1.tooltip,crit_damage
+Weapon,Suffix,2,poq.weapon.suffix.crit_damage.2.tooltip,crit_damage
+Weapon,Suffix,3,poq.weapon.suffix.crit_damage.3.tooltip,crit_damage
+Weapon,Suffix,4,poq.weapon.suffix.crit_damage.4.tooltip,crit_damage
+Weapon,Suffix,5,poq.weapon.suffix.crit_damage.5.tooltip,crit_damage
+Weapon,Suffix,1,poq.weapon.suffix.accuracy.1.tooltip,accuracy
+Weapon,Suffix,2,poq.weapon.suffix.accuracy.2.tooltip,accuracy
+Weapon,Suffix,3,poq.weapon.suffix.accuracy.3.tooltip,accuracy
+Weapon,Suffix,4,poq.weapon.suffix.accuracy.4.tooltip,accuracy
+Weapon,Suffix,5,poq.weapon.suffix.accuracy.5.tooltip,accuracy
+Weapon,Suffix,1,poq.weapon.suffix.scatter_angle.1.tooltip,scatter_angle
+Weapon,Suffix,2,poq.weapon.suffix.scatter_angle.2.tooltip,scatter_angle
+Weapon,Suffix,3,poq.weapon.suffix.scatter_angle.3.tooltip,scatter_angle
+Weapon,Suffix,4,poq.weapon.suffix.scatter_angle.4.tooltip,scatter_angle
+Weapon,Suffix,5,poq.weapon.suffix.scatter_angle.5.tooltip,scatter_angle
+Weapon,Suffix,1,poq.weapon.suffix.reload_duration.1.tooltip,reload_duration
+Weapon,Suffix,2,poq.weapon.suffix.reload_duration.2.tooltip,reload_duration
+Weapon,Suffix,3,poq.weapon.suffix.reload_duration.3.tooltip,reload_duration
+Weapon,Suffix,4,poq.weapon.suffix.reload_duration.4.tooltip,reload_duration
+Weapon,Suffix,5,poq.weapon.suffix.reload_duration.5.tooltip,reload_duration
+Weapon,Suffix,1,poq.weapon.suffix.magazine_capacity.1.tooltip,magazine_capacity
+Weapon,Suffix,2,poq.weapon.suffix.magazine_capacity.2.tooltip,magazine_capacity
+Weapon,Suffix,3,poq.weapon.suffix.magazine_capacity.3.tooltip,magazine_capacity
+Weapon,Suffix,4,poq.weapon.suffix.magazine_capacity.4.tooltip,magazine_capacity
+Weapon,Suffix,5,poq.weapon.suffix.magazine_capacity.5.tooltip,magazine_capacity
+Weapon,Suffix,1,poq.weapon.suffix.special_ability.1.tooltip,special_ability
+Weapon,Suffix,2,poq.weapon.suffix.special_ability.2.tooltip,special_ability
+Weapon,Suffix,3,poq.weapon.suffix.special_ability.3.tooltip,special_ability
+Weapon,Suffix,4,poq.weapon.suffix.special_ability.4.tooltip,special_ability
+Weapon,Suffix,5,poq.weapon.suffix.special_ability.5.tooltip,special_ability
+Armor,Prefix,1,poq.armor.prefix.none.1.0.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.1.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.2.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.3.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.4.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.5.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.6.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.7.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.8.tooltip,none
+Armor,Prefix,1,poq.armor.prefix.none.1.9.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.0.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.1.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.2.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.3.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.4.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.5.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.6.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.7.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.8.tooltip,none
+Armor,Prefix,2,poq.armor.prefix.none.2.9.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.0.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.1.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.2.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.3.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.4.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.5.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.6.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.7.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.8.tooltip,none
+Armor,Prefix,3,poq.armor.prefix.none.3.9.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.0.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.1.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.2.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.3.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.4.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.5.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.6.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.7.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.8.tooltip,none
+Armor,Prefix,4,poq.armor.prefix.none.4.9.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.0.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.1.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.2.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.3.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.4.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.5.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.6.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.7.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.8.tooltip,none
+Armor,Prefix,5,poq.armor.prefix.none.5.9.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.0.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.1.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.2.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.3.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.4.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.5.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.6.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.7.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.8.tooltip,none
+Weapon,Prefix,1,poq.weapon.prefix.none.1.9.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.0.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.1.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.2.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.3.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.4.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.5.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.6.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.7.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.8.tooltip,none
+Weapon,Prefix,2,poq.weapon.prefix.none.2.9.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.0.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.1.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.2.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.3.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.4.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.5.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.6.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.7.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.8.tooltip,none
+Weapon,Prefix,3,poq.weapon.prefix.none.3.9.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.0.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.1.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.2.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.3.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.4.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.5.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.6.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.7.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.8.tooltip,none
+Weapon,Prefix,4,poq.weapon.prefix.none.4.9.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.0.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.1.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.2.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.3.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.4.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.5.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.6.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.7.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.8.tooltip,none
+Weapon,Prefix,5,poq.weapon.prefix.none.5.9.tooltip,none
