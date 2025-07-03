@@ -10,7 +10,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             public string Id { get; set; }
             public string CustomId { get; set; }
-            public string Rarity { get; set; }
+            //public string Rarity { get; set; }
             public ItemRarity RarityClass { get; set; }
             public DateTime StartTime { get; set; }
             public DateTime FinishTime { get; set; }
@@ -36,7 +36,7 @@ namespace QM_PathOfQuasimorph.Core
                     CustomId = $"{Id}_custom_poq";
                     var digitinfo = DigitInfo.GetDigits(newProject.FinishTime.Ticks);
                     RarityClass = (ItemRarity)digitinfo.Rarity;
-                    Rarity = RarityClass.ToString().ToLower();
+                    //Rarity = RarityClass.ToString().ToLower();
                     StartTime = newProject.StartTime;
                     FinishTime = newProject.FinishTime;
 
@@ -45,7 +45,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     CustomId = $"{Id}_custom";
                     RarityClass = ItemRarity.Standard;
-                    Rarity = RarityClass.ToString().ToLower();
+                    //Rarity = RarityClass.ToString().ToLower();
                     StartTime = newProject.StartTime;
                     FinishTime = newProject.FinishTime;
                 }
@@ -71,7 +71,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 var digitinfo = DigitInfo.GetDigits(finishTime.Ticks);
                 this.RarityClass = (ItemRarity)digitinfo.Rarity;
-                this.Rarity = RarityClass.ToString().ToLower();
+                //this.Rarity = RarityClass.ToString().ToLower();
                 this.StartTime = startTime;
                 this.FinishTime = finishTime;
                 this.PoqItem = poqItem;
@@ -89,7 +89,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (PoqItem)
                 {
-                    return $"{this.CustomId}_{this.Rarity}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
+                    return $"{this.CustomId}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
+                    //return $"{this.CustomId}_{this.Rarity}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
                 }
                 else
                 {
@@ -132,8 +133,8 @@ namespace QM_PathOfQuasimorph.Core
                     var wrapper = new MagnumProjectWrapper(
                         id: realId,
                         poqItem: true,
-                        startTime: new DateTime(Int64.Parse(suffixParts[1])),
-                        finishTime: new DateTime(Int64.Parse(suffixParts[2]))
+                        startTime: new DateTime(Int64.Parse(suffixParts[0])),
+                        finishTime: new DateTime(Int64.Parse(suffixParts[1]))
                         );
 
                     return wrapper;
@@ -146,7 +147,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     Id = realBaseId2,
                     CustomId = customId2,
-                    Rarity = "Standard",
+                    //Rarity = "Standard",
                     RarityClass = ItemRarity.Standard,
                     StartTime = DateTime.MinValue,
                     FinishTime = DateTime.MinValue,
