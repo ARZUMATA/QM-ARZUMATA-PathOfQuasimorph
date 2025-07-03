@@ -134,6 +134,6 @@ Source code is available on [GitHub](https://github.com/ARZUMATA/QM-ARZUMATA-Pat
 Thanks to NBK_RedSpy, Crynano and all the people who make their code open source.
 
 # Change Log
-## 1.0 ()
+## 1.0 (be3c4c6)
 * Initial release
 

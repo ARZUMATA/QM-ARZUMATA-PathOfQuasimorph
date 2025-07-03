@@ -21,6 +21,7 @@ namespace QM_PathOfQuasimorph.Core
                 // So we revert item Id to the baseline if that issue occurs and log it, and let user continue playing.
                 // Log this issue for future fix.
                 CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(__instance.Id, false) as CompositeItemRecord;
+
                 if (compositeItemRecord == null)
                 {
                     Plugin.Logger.LogWarning($"PickupItem: compositeItemRecord == null {compositeItemRecord == null}");
