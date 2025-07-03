@@ -198,10 +198,10 @@ namespace QM_PathOfQuasimorph.Core
         {
             { ItemRarity.Standard,  new float[] { 1.0f } },  // No change for Standard
             { ItemRarity.Enhanced,  new float[] { 2.0f, 2.5f, 3.0f } },
-            { ItemRarity.Advanced,  new float[] { 3.0f, 4.0f, 5.0f } },
-            { ItemRarity.Premium,   new float[] { 4.5f, 5.5f, 6.5f } },
-            { ItemRarity.Prototype, new float[] { 6.0f, 7.0f, 8.0f } },
-            { ItemRarity.Quantum,   new float[] { 8.0f, 9.5f, 11.0f } },
+            { ItemRarity.Advanced,  new float[] { 4.0f, 5.0f, 6.0f } },
+            { ItemRarity.Premium,   new float[] { 8.0f, 10.0f, 12.0f } },
+            { ItemRarity.Prototype, new float[] { 15.0f, 17.0f, 19.0f } },
+            { ItemRarity.Quantum,   new float[] { 19.5f, 20.0f, 30f } }, // Quantum is extremely top-tier with near-maximum boost
         };
 
         // Weights for each Rarity (lower = rarer)
@@ -228,23 +228,34 @@ namespace QM_PathOfQuasimorph.Core
         // Define the percentage of parameters to modify per Rarity
         private Dictionary<ItemRarity, float> rarityParamPercentages = new Dictionary<ItemRarity, float>
         {
-            { ItemRarity.Standard, 0.10f },     // 10% of editableParams
-            { ItemRarity.Enhanced, 0.25f },     // 25%
-            { ItemRarity.Advanced, 0.40f },     // 40%
-            { ItemRarity.Premium, 0.55f },      // 55%
-            { ItemRarity.Prototype, 0.70f },    // 70%
-            { ItemRarity.Quantum, 0.85f }        // 85%
+            { ItemRarity.Standard,  0f },          // 0% of editableParams
+            { ItemRarity.Enhanced,  0.25f },       // 25%
+            { ItemRarity.Advanced,  0.40f },       // 40%
+            { ItemRarity.Premium,   0.55f },       // 55%
+            { ItemRarity.Prototype, 0.85f },       // 85%
+            { ItemRarity.Quantum,   1.00f }        // 100%
+        };
+
+        // Define the percentage of traits to modify per Rarity
+        private Dictionary<ItemRarity, (float Min, float Max)> rarityTraitRanges = new Dictionary<ItemRarity, (float Min, float Max)>
+        {
+            { ItemRarity.Standard,  (0f,     0f) },          // Ignored, no traits applied
+            { ItemRarity.Enhanced,  (0f,     0.0435f) },     // 1 trait (4.35% of max 23 traits)
+            { ItemRarity.Advanced,  (0.087f, 0.13f) },       // 2-3 traits (8.70% to 13.04% of max 23)
+            { ItemRarity.Premium,   (0.13f,  0.174f) },      // 3-4 traits (13.04% to 17.39% of max 23)
+            { ItemRarity.Prototype, (0.174f, 0.217f) },      // 4-5 traits (17.39% to 21.74% of max 23)
+            { ItemRarity.Quantum,   (0.348f, 0.348f) },      // 8 traits (34.78% of max 23)
         };
 
         // Dictionary to store the chance of getting the special trait for each rarity
         private readonly Dictionary<ItemRarity, float> specialTraitChances = new Dictionary<ItemRarity, float>
         {
-            { ItemRarity.Standard, 0f },       // 0% chance
-            { ItemRarity.Enhanced, 0.05f },      // 5% chance
-            { ItemRarity.Advanced, 0.1f },     // 10% chance
-            { ItemRarity.Premium, 0.15f },         // 20% chance
-            { ItemRarity.Prototype, 0.20f },        // 35% chance
-            { ItemRarity.Quantum, 0.25f },    // 50% chance
+            { ItemRarity.Standard,  0f },          // 0% chance
+            { ItemRarity.Enhanced,  0.1f },        // 10% chance
+            { ItemRarity.Advanced,  0.2f },        // 20% chance
+            { ItemRarity.Premium,   0.3f },        // 30% chance
+            { ItemRarity.Prototype, 0.5f },        // 50% chance
+            { ItemRarity.Quantum,   0.75f },       // 75% chance
         };
 
         public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
