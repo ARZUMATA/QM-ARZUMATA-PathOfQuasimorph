@@ -25,6 +25,19 @@ namespace QM_PathOfQuasimorph
         [JsonIgnore]
         public bool CleanupMode { get; set; } = true;
 
+        [JsonIgnore]
+        public string Date { get; set; }
+
+        [JsonIgnore]
+        public string Commit { get; set; }
+
+        [JsonIgnore]
+        public string About1 { get; set; }
+
+        [JsonIgnore]
+        public string About2 { get; set; }
+
+
         // MCM Related Start
 
         public void LoadConfigMCM(string configPath)
