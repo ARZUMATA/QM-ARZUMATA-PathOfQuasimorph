@@ -137,3 +137,7 @@ Thanks to NBK_RedSpy, Crynano and all the people who make their code open source
 ## 1.0 (be3c4c6)
 * Initial release
 
+## 1.1 (8d85683)
+* Fixed new game not starting issue when mod is enabled.
+* Some files were not uploaded to the workshop, making mod inactive.
+* Mod manifest updated, so it doesn't appear in mod list for stable version.

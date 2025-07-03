@@ -74,6 +74,12 @@ namespace QM_PathOfQuasimorph.Core
                 // That's why we have traitsTracker in MagnumPoQProjectsController.
                 // We don't rely on magnum project here so we just look for traits tracker and slap them here.
 
+                // On new game we can't access it yet.
+                if (magnumProjectsController == null)
+                {
+                    return;
+                }
+
                 if (magnumProjectsController.traitsTracker.Contains(__result.Id))
                 {
 

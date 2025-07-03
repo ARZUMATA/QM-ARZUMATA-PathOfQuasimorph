@@ -161,7 +161,7 @@ namespace QM_PathOfQuasimorph.Core
             // I'ts per item.
             // for: raritySystem.ApplyTraits
             traitsTracker.Add(newId);
-            
+
             //PathOfQuasimorph.InjectItemRecord(newProject);
             MagnumDevelopmentSystem.InjectItemRecord(newProject);
 
@@ -189,11 +189,15 @@ namespace QM_PathOfQuasimorph.Core
             }
             else
             {
-                foreach (MagnumProject magnumProject in magnumProjects.Values)
+                // When you start new game magnum project are not yet available.
+                if (magnumProjects != null)
                 {
-                    if (magnumProject.DevelopId == itemId)
+                    foreach (MagnumProject magnumProject in magnumProjects.Values)
                     {
-                        return magnumProject;
+                        if (magnumProject.DevelopId == itemId)
+                        {
+                            return magnumProject;
+                        }
                     }
                 }
             }
