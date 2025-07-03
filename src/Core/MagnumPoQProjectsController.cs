@@ -24,7 +24,7 @@ namespace QM_PathOfQuasimorph.Core
         public MagnumPoQProjectsController(MagnumProjects _magnumProjects)
         {
             magnumProjects = _magnumProjects;
-            AffixManager.LocadlocalizationData();
+            //AffixManager.LocadlocalizationData();
         }
 
         public static bool IsPoqProject(MagnumProject magnumProject)

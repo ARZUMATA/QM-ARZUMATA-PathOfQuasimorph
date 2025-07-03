@@ -37,7 +37,6 @@ namespace QM_PathOfQuasimorph.Core
     internal class AffixManager
     {
         public static Affix[] affixes;
-        private static bool localizationDataLoaded = false;
 
         public AffixManager()
         {
@@ -67,71 +66,6 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return affixes.ToArray();
-        }
-
-        public static void LocadlocalizationData(string resourceName = "QM_PathOfQuasimorph.Files.Localization.csv")
-        {
-            if (localizationDataLoaded)
-            {
-                return;
-            }
-
-            // foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
-            var localizationDb = new Dictionary<Lang, Dictionary<string, string>>();
-
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                string headerLine = reader.ReadLine(); // Read the header line
-                if (headerLine == null)
-                {
-                    return; // No data in CSV, exit early
-                }
-
-                string[] headers = headerLine.Split(','); // Split the headers
-
-                // Map the language names to Lang enum
-                Dictionary<string, Lang> languageMap = new Dictionary<string, Lang>();
-                for (int i = 1; i < headers.Length; i++)
-                {
-                    if (Enum.TryParse(headers[i], out Lang lang))
-                    {
-                        languageMap[headers[i]] = lang;
-                    }
-                }
-
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string[] parts = line.Split(',');
-                    if (parts.Length >= headers.Length)
-                    {
-                        string id = parts[0];
-
-                        // Assign each language string to the dictionary using the header
-                        for (int i = 1; i < headers.Length; i++)
-                        {
-                            string langName = headers[i];
-                            string value = parts[i];
-
-                            // Map language name to Lang enum if possible and add it to the db
-                            if (languageMap.TryGetValue(langName, out Lang lang))
-                            {
-                              
-                                //Console.WriteLine($"try add {lang} / {langName}   {id}   {value}");
-                                Singleton<Localization>.Instance.db[lang].Add(id, value);
-                            }
-                            else
-                            {
-                                // Ignore unknown languages like Id
-                                Console.WriteLine($"Unknown language '{langName}' in Localization.csv");
-                            }
-                        }
-                    }
-                }
-            }
-
-            localizationDataLoaded = true;
         }
 
         Affix[] LoadAffixesFromEmbeddedCSV(string resourceName = "QM_PathOfQuasimorph.Files.Affixes.csv")
