@@ -40,7 +40,7 @@ namespace QM_PathOfQuasimorph.Core
         */
 
 
-       [Hook(ModHookType.AfterSpaceLoaded)]
+        [Hook(ModHookType.AfterSpaceLoaded)]
         public static void CleanupModeAfterSpaceLoaded(IModContext context)
         {
             CleanObsoleteProjects(context);
@@ -59,17 +59,165 @@ namespace QM_PathOfQuasimorph.Core
             var listMagnumCargo = CleanupMagnumCargo(context);
             var listMissionRewards = CleanupMissionRewards(context);
             var listMercenariesCargo = CleanupMercenariesCargo(context);
+            var listCreatureData = CleanupCreatureData(context);
+            var listMagnumDepartmentsData = CleanupItemsMagnumDepartments(context);
 
             // Dedupe? There are not many entries anyway.
             idsToKeep.AddRange(listMagnumCargo);
             idsToKeep.AddRange(listMissionRewards);
             idsToKeep.AddRange(listMercenariesCargo);
+            idsToKeep.AddRange(listCreatureData);
+            idsToKeep.AddRange(listMagnumDepartmentsData);
 
-            // Cleanup magnum projects. 
+            // Cleanup magnum projects.
             if (cleanProjects)
             {
                 CleanupMagnumProjects(context, idsToKeep);
             }
+        }
+
+        private static List<string> CleanupItemsMagnumDepartments(IModContext context)
+        {
+            List<string> items = new List<string>();
+
+            MagnumProgression magnumSpaceship = context.State.Get<MagnumProgression>();
+
+            foreach (var department in magnumSpaceship.Departments)
+            {
+                switch (department._departmentId)
+                {
+                    case "autonomcapsule_department":
+                        CleanItemsInAutonomousCapsuleDepartment(department as AutonomousCapsuleDepartment);
+                        break;
+                    case "cargoshuttle_department":
+                        CleanItemsInShuttleCargoDepartment(department as ShuttleCargoDepartment);
+                        break;
+                    case "tradeshuttle_department":
+                        CleanItemsInTradeShuttleDepartment(department as TradeShuttleDepartment);
+                        break;
+                }
+            }
+
+            return items;
+        }
+
+
+        private static List<string> CleanItemsInTradeShuttleDepartment(TradeShuttleDepartment department)
+        {
+            List<string> items = new List<string>();
+
+            if (department.ResultStorage != null && department.ResultStorage.Items != null)
+            {
+                items.AddRange(CleanupPickupItem(department.ResultStorage.Items));
+            }
+
+            if (department.TradeShuttleStorage != null && department.TradeShuttleStorage.Items != null)
+            {
+                items.AddRange(CleanupPickupItem(department.TradeShuttleStorage.Items));
+            }
+
+            return items;
+        }
+
+        private static List<string> CleanItemsInShuttleCargoDepartment(ShuttleCargoDepartment department)
+        {
+            List<string> items = new List<string>();
+
+            if (department.ShuttleCargo != null && department.ShuttleCargo.Items != null)
+            {
+                items.AddRange(CleanupPickupItem(department.ShuttleCargo.Items));
+            }
+
+            return items;
+        }
+
+        private static List<string> CleanItemsInAutonomousCapsuleDepartment(AutonomousCapsuleDepartment department)
+        {
+            List<string> items = new List<string>();
+
+            if (department.CapsuleStorage != null && department.CapsuleStorage.Items != null)
+            {
+                items.AddRange(CleanupPickupItem(department.CapsuleStorage.Items));
+            }
+
+            return items;
+        }
+
+
+        private static List<string> CleanupItemsOnFloor(IModContext context)
+        {
+            ItemsOnFloor itemsOnFloor = context.State.Get<ItemsOnFloor>();
+            List<string> items = new List<string>();
+
+            if (itemsOnFloor != null)
+            {
+                foreach (var itemOnFloor in itemsOnFloor.Values)
+                {
+                    if (itemOnFloor.Storage != null && itemOnFloor.Storage.Items != null)
+                    {
+                        items.AddRange(CleanupPickupItem(itemOnFloor.Storage.Items));
+                    }
+                }
+            }
+
+            return items;
+        }
+
+        private static List<string> CleanupPickupItem(List<BasePickupItem> basePickupItemsList)
+        {
+            List<string> itemsToReturn = new List<string>();
+
+            foreach (PickupItem item in basePickupItemsList)
+            {
+                itemsToReturn.Add(item.Id);
+
+                if (Plugin.Config.CleanupMode)
+                {
+                    CleanupItem(item);
+                }
+            }
+
+            return itemsToReturn;
+        }
+
+        private static List<string> CleanupCreatureData(IModContext context)
+        {
+            Creatures creatures = context.State.Get<Creatures>();
+            List<string> items = new List<string>();
+
+            if (creatures != null)
+            {
+                foreach (var creature in creatures.Monsters)
+                {
+                    var creatureData = creature.CreatureData;
+                    if (creatureData != null)
+                    {
+                        break;
+                    }
+
+                    foreach (ItemStorage storage in creatureData.Inventory.AllContainers)
+                    {
+                        items.AddRange(CleanupPickupItem(storage.Items));
+                    }
+
+                    foreach (ItemStorage storage in creatureData.Inventory.Storages)
+                    {
+                        items.AddRange(CleanupPickupItem(storage.Items));
+                    }
+
+                    foreach (ItemStorage storage in creatureData.Inventory.Slots)
+                    {
+                        items.AddRange(CleanupPickupItem(storage.Items));
+                    }
+
+                    foreach (ItemStorage storage in creatureData.Inventory.WeaponSlots)
+                    {
+                        items.AddRange(CleanupPickupItem(storage.Items));
+                    }
+                }
+            }
+
+            return items;
         }
 
         private static void CleanupMagnumProjects(IModContext context, List<string> idsToKeep)
@@ -118,15 +266,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 foreach (var misson in missions.Values)
                 {
-                    foreach (PickupItem item in misson.RewardItems)
-                    {
-                        items.Add(item.Id);
-
-                        if (Plugin.Config.CleanupMode)
-                        {
-                            CleanupItem(item);
-                        }
-                    }
+                    items.AddRange(CleanupPickupItem(misson.RewardItems));
                 }
             }
 
@@ -142,15 +282,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 foreach (var cargo in magnumCargo.ShipCargo)
                 {
-                    foreach (PickupItem item in cargo.Items)
-                    {
-                        items.Add(item.Id);
-
-                        if (Plugin.Config.CleanupMode)
-                        {
-                            CleanupItem(item);
-                        }
-                    }
+                    items.AddRange(CleanupPickupItem(cargo.Items));
                 }
             }
 
@@ -168,54 +300,22 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.AllContainers)
                     {
-                        foreach (PickupItem item in storage.Items)
-                        {
-                            items.Add(item.Id);
-
-                            if (Plugin.Config.CleanupMode)
-                            {
-                                CleanupItem(item);
-                            }
-                        }
+                        items.AddRange(CleanupPickupItem(storage.Items));
                     }
 
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.Storages)
                     {
-                        foreach (PickupItem item in storage.Items)
-                        {
-                            items.Add(item.Id);
-
-                            if (Plugin.Config.CleanupMode)
-                            {
-                                CleanupItem(item);
-                            }
-                        }
+                        items.AddRange(CleanupPickupItem(storage.Items));
                     }
 
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.Slots)
                     {
-                        foreach (PickupItem item in storage.Items)
-                        {
-                            items.Add(item.Id);
-
-                            if (Plugin.Config.CleanupMode)
-                            {
-                                CleanupItem(item);
-                            }
-                        }
+                        items.AddRange(CleanupPickupItem(storage.Items));
                     }
 
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.WeaponSlots)
                     {
-                        foreach (PickupItem item in storage.Items)
-                        {
-                            items.Add(item.Id);
-
-                            if (Plugin.Config.CleanupMode)
-                            {
-                                CleanupItem(item);
-                            }
-                        }
+                        items.AddRange(CleanupPickupItem(storage.Items));
                     }
                 }
             }
