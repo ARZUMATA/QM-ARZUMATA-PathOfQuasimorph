@@ -94,6 +94,8 @@ namespace QM_PathOfQuasimorph.Core
 
                         if (projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
                         {
+                            Plugin.Logger.Log($"Removing {project.FinishTime} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
+
                             magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
                         }
                     }
