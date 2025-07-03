@@ -25,15 +25,18 @@
 	  <EmbeddedResource Remove="Move To Root\**" />
 	  <None Remove="Move To Root\**" />
 	</ItemGroup>
-	<ItemGroup>
+		<ItemGroup>
 	  <None Remove="config.ini" />
 	  <None Remove="Files\Affixes.csv" />
+	  <None Remove="Files\Localization.csv" />
+	  <None Remove="Files\Prefixes.csv" />
 	</ItemGroup>
 	<ItemGroup>
 	  <EmbeddedResource Include="Files\Affixes.csv" />
 	</ItemGroup>
 	<ItemGroup>
 	  <EmbeddedResource Include="config.ini" />
+	  <EmbeddedResource Include="Files\Localization.csv" />
 	</ItemGroup>
 
 	<ItemGroup>

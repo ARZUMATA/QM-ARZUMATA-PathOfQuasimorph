@@ -39,9 +39,8 @@ namespace QM_PathOfQuasimorph.Core
         * This is where we intercept that logic and create our items.
         */
 
-        // cleanup garbage after a while
 
-        [Hook(ModHookType.AfterSpaceLoaded)]
+       [Hook(ModHookType.AfterSpaceLoaded)]
         public static void CleanupModeAfterSpaceLoaded(IModContext context)
         {
             CleanObsoleteProjects(context);
