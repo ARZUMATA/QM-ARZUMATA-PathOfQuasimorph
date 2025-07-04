@@ -367,3 +367,6 @@ FodyWeavers.xsd
 /SteamMod
 
 /QM_*
+Steam*.txt
+/.config
+/.continue
