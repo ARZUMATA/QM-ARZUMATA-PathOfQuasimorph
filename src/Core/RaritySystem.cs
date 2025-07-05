@@ -1,10 +1,13 @@
 ﻿using MGSC;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -64,8 +67,10 @@ namespace QM_PathOfQuasimorph.Core
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private const float PARAMETER_BOOST_MIN = 1.2f;
-        private const float PARAMETER_BOOST_MAX = 1.8f;
+        private float PARAMETER_BOOST_MIN = 1.2f;
+        private float PARAMETER_BOOST_MAX = 1.8f;
+        private float AVERAGE_RESIST_APPLY_CHANCE = 50;
+        private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
         public RaritySystem()
@@ -142,6 +147,108 @@ namespace QM_PathOfQuasimorph.Core
                         Prototype: 143 (1.43%)
                         Quantum: 26 (0.26%)
             */
+
+            LoadCustomWeights();
+        }
+
+        private void LoadCustomWeights()
+        {
+            string weightPath = Path.Combine(Plugin.ConfigDirectories.ModPersistenceFolder, "Rarities.csv");
+            long fileSize = 0;
+
+            if (File.Exists(weightPath))
+            {
+                fileSize = new FileInfo(weightPath).Length;
+                if (fileSize == 0)
+                {
+
+                }
+            }
+            // If we don't have our rarities csv configs, dump a new file for user.
+
+            if (!File.Exists(weightPath) || fileSize == 0)
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("QM_PathOfQuasimorph.Files.Rarities.csv"))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    File.WriteAllText(weightPath, reader.ReadToEnd());
+                }
+            }
+
+            if (Plugin.Config.CustomWeights)
+            {
+                // Load the custom weights from the CSV file
+                LoadRaritiesFromCSV(weightPath);
+            }
+        }
+
+        private void LoadRaritiesFromCSV(string filePath)
+        {
+            Plugin.Logger.Log($"Loading rarity data from CSV {filePath}");
+
+            string line;
+            bool inArbitrarySection = false;
+            string[] headers = null;
+
+            Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
+
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+
+                    // Skip empty lines if any
+                    if (string.IsNullOrEmpty(line)) continue;
+                    // If the line is the header
+
+                    if (line.StartsWith("Rarity"))
+                    {
+                        headers = line.Split(',');
+                        continue;
+                    }
+
+                    // Check if the line starts the Arbitrary Values section
+                    if (line.StartsWith("Arbitrary Values"))
+                    {
+                        inArbitrarySection = true;
+                        continue;
+                    }
+
+                    if (inArbitrarySection)
+                    {
+                        string[] parts = line.Split(',');
+                        string key = parts[0].Trim();
+                        float value = float.Parse(parts[1].Trim());
+                        Plugin.Logger.Log($"Writing arbitrary data {key} {value}");
+
+                        arbitraryValues[key] = value;
+                    }
+                    else
+                    {
+                        string[] parts = line.Split(',');
+                        string rarityName = parts[0].Trim();
+
+                        if (Enum.TryParse(rarityName, out ItemRarity rarity))
+                        {
+                            // Assign values to dictionaries.
+                            _rarityModifiers[rarity] = (float.Parse(parts[1]), float.Parse(parts[2]));
+                            _rarityModifiers[rarity] = (float.Parse(parts[1]), float.Parse(parts[2]));
+                            _rarityWeightsForWeighted[rarity] = int.Parse(parts[3]);
+                            rarityParamPercentages[rarity] = (float.Parse(parts[4]) / 100f, float.Parse(parts[5]) / 100f);
+                            rarityTraitRanges[rarity] = (float.Parse(parts[6]) / 100f, float.Parse(parts[7]) / 100f);
+                            unbreakableTraitPercent[rarity] = float.Parse(parts[7]);
+                        }
+                    }
+                }
+
+            }
+
+            PARAMETER_BOOST_MIN = arbitraryValues["PARAMETER_BOOST_MIN"];
+            PARAMETER_BOOST_MAX = arbitraryValues["PARAMETER_BOOST_MAX"];
+            AVERAGE_RESIST_APPLY_CHANCE = arbitraryValues["AVERAGE_RESIST_APPLY_CHANCE"];
+            UNBREAKABLE_ENTRY_CHANCE = arbitraryValues["UNBREAKABLE_ENTRY_CHANCE"];
+
         }
 
         private void SimulateDrops()
@@ -233,14 +340,14 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define the percentage of parameters to modify per Rarity
-        private Dictionary<ItemRarity, float> rarityParamPercentages = new Dictionary<ItemRarity, float>
+        private Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
         {
-            { ItemRarity.Standard,  0f },          // 0% of editableParams
-            { ItemRarity.Enhanced,  0.25f },       // 25%
-            { ItemRarity.Advanced,  0.40f },       // 40%
-            { ItemRarity.Premium,   0.55f },       // 55%
-            { ItemRarity.Prototype, 0.85f },       // 85%
-            { ItemRarity.Quantum,   1.00f }        // 100%
+            { ItemRarity.Standard,  (0f    , 0f   ) },          // 0% of editableParams
+            { ItemRarity.Enhanced,  (0.25f , 0.25f) },       // 25%
+            { ItemRarity.Advanced,  (0.40f , 0.40f) },       // 40%
+            { ItemRarity.Premium,   (0.55f , 0.55f) },       // 55%
+            { ItemRarity.Prototype, (0.85f , 0.85f) },       // 85%
+            { ItemRarity.Quantum,   (1.00f , 1.00f) }        // 100%
         };
 
         // Define the percentage of traits to modify per Rarity
@@ -254,27 +361,15 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum,   (0.348f, 0.348f) },      // 8 traits (34.78% of max 23)
         };
 
-        // Dictionary to store the chance of getting the special trait for each rarity
-        private readonly Dictionary<ItemRarity, float> specialTraitChances = new Dictionary<ItemRarity, float>
-        {
-            { ItemRarity.Standard,  0f },          // 0% chance
-            { ItemRarity.Enhanced,  0.1f },        // 10% chance
-            { ItemRarity.Advanced,  0.2f },        // 20% chance
-            { ItemRarity.Premium,   0.3f },        // 30% chance
-            { ItemRarity.Prototype, 0.5f },        // 50% chance
-            { ItemRarity.Quantum,   0.75f },       // 75% chance
-        };
-
-        private readonly Dictionary<ItemRarity, float> unbreakableTraitWeights = new Dictionary<ItemRarity, float>
+        private readonly Dictionary<ItemRarity, float> unbreakableTraitPercent = new Dictionary<ItemRarity, float>
         {
             { ItemRarity.Standard,  0f },       // 0% (never gets unbreakable)
             { ItemRarity.Enhanced,  0.1f },      // 0.1% in eligible pool
             { ItemRarity.Advanced,  1f },        // 1% in eligible pool
             { ItemRarity.Premium,   5f },        // 5% in eligible pool
             { ItemRarity.Prototype, 20f },       // 20% in eligible pool
-            { ItemRarity.Quantum,   75f },     // 73.8% in eligible pool
+            { ItemRarity.Quantum,   75f },     // 75% in eligible pool
         };
-
 
         public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
         {
@@ -327,10 +422,10 @@ namespace QM_PathOfQuasimorph.Core
             return ItemRarity.Standard;
         }
 
-        public ItemRarity SelectRarityWeighted()
+        public ItemRarity SelectRarityWeighted(Dictionary<ItemRarity, int> weights)
         {
             // Calculate the total weight
-            int totalWeight = _rarityWeightsForWeighted.Values.Sum();
+            int totalWeight = weights.Values.Sum();
 
             // Generate a random number within the total weight range
             int randomNumber = _random.Next(0, totalWeight);
@@ -338,7 +433,7 @@ namespace QM_PathOfQuasimorph.Core
             // Iterate through the rarities and determine which one the random number falls into
             int cumulativeWeight = 0;
 
-            foreach (var rarityPair in _rarityWeightsForWeighted)
+            foreach (var rarityPair in weights)
             {
                 cumulativeWeight += rarityPair.Value;
                 if (randomNumber < cumulativeWeight)
@@ -365,7 +460,7 @@ namespace QM_PathOfQuasimorph.Core
 
             for (int i = 0; i < rolls; i++)
             {
-                ItemRarity currentRollRarity = SelectRarityWeighted();
+                ItemRarity currentRollRarity = SelectRarityWeighted(_rarityWeightsForWeighted);
 
                 // If the current roll's rarity _defaultValue is less than the worst found, update worstRarityFound.
                 if ((int)currentRollRarity < (int)worstRarityFound)
@@ -384,7 +479,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             List<ItemRarity> rolledRarities = new List<ItemRarity>();
 
-            rolledRarities.Add(SelectRarityWeighted());
+            rolledRarities.Add(SelectRarityWeighted(_rarityWeightsForWeighted));
 
             // Initialize base scores for D20 competition
             // Higher values mean the D20 roll has less relative impact on the final outcome.
@@ -437,7 +532,7 @@ namespace QM_PathOfQuasimorph.Core
                 case RarityRolls.D20Rolls:
                     return SelectRarityWithD20Rolls();
                 case RarityRolls.WeightedRolls:
-                    return SelectRarityWeighted();
+                    return SelectRarityWeighted(_rarityWeightsForWeighted);
                 case RarityRolls.WeightedRollsAndPickWorst:
                     return SelectRarityStandardRandom();
                 case RarityRolls.WeightedRollsD20Selector:
@@ -587,7 +682,7 @@ namespace QM_PathOfQuasimorph.Core
                 if (averageResistApplied == false)
                 {
                     // Roll random
-                    var canApply = _random.Next(0, 100) < 50;
+                    var canApply = _random.Next(0, 100) < AVERAGE_RESIST_APPLY_CHANCE;
                     if (canApply)
                     {
                         averageResistAppliedResult = true;
@@ -629,9 +724,12 @@ namespace QM_PathOfQuasimorph.Core
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
+            var (Min, Max) = rarityParamPercentages[itemRarity];
+            int minParams = Math.Max(0, (int)Math.Floor(Min * editableParameters.Count));
+            int maxParams = (int)Math.Ceiling(Max * editableParameters.Count);
+
             // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = Mathf.RoundToInt(editableParameters.Count * rarityParamPercentages[itemRarity]);
-            numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
+            int numParamsToAdjust = _random.Next(minParams, maxParams);
 
             // Get _defaultValue for randomized Prefix
             var randomPrefix = _random.Next(0, AMOUNT_PREFIXES - 1);
@@ -748,12 +846,12 @@ namespace QM_PathOfQuasimorph.Core
             var canAddUnbreakableTrait = false;
 
             // Only 20% of all items are eligible for unbreakable trait
-            if (new Random().NextDouble() <= 0.20f &&
-                unbreakableTraitWeights.TryGetValue(itemRarity, out float weight) &&
+            if (new Random().NextDouble() <= UNBREAKABLE_ENTRY_CHANCE &&
+                unbreakableTraitPercent.TryGetValue(itemRarity, out float weight) &&
                 weight > 0)
             {
                 // Get the list of eligible rarities and their weights
-                var eligibleRarities = unbreakableTraitWeights
+                var eligibleRarities = unbreakableTraitPercent
                     .Where(kv => kv.Value > 0)
                     .ToDictionary(kv => kv.Key, kv => kv.Value);
 
