@@ -265,6 +265,17 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum,   0.75f },       // 75% chance
         };
 
+        private readonly Dictionary<ItemRarity, float> unbreakableTraitWeights = new Dictionary<ItemRarity, float>
+        {
+            { ItemRarity.Standard,  0f },       // 0% (never gets unbreakable)
+            { ItemRarity.Enhanced,  0.1f },      // 0.1% in eligible pool
+            { ItemRarity.Advanced,  1f },        // 1% in eligible pool
+            { ItemRarity.Premium,   5f },        // 5% in eligible pool
+            { ItemRarity.Prototype, 20f },       // 20% in eligible pool
+            { ItemRarity.Quantum,   75f },     // 73.8% in eligible pool
+        };
+
+
         public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
         {
             { ItemRarity.Standard,    "#FFFFFF" },         // #FFFFFF (White - common items)
@@ -557,7 +568,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist, 
+        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
             float averageResist,
             bool averageResistApplied,
             out bool averageResistAppliedResult
@@ -566,7 +577,7 @@ namespace QM_PathOfQuasimorph.Core
             //float[] rarityModifiers = _rarityModifiers[rarity];
             //float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
             var (Min, Max) = _rarityModifiers[rarity];
-            float modifier = (float)Math.Round(_random.Next((int)Min*100, (int)Max * 100) / 100f, 2);
+            float modifier = (float)Math.Round(_random.Next((int)Min * 100, (int)Max * 100) / 100f, 2);
 
             averageResistAppliedResult = false;
 
@@ -736,10 +747,27 @@ namespace QM_PathOfQuasimorph.Core
 
             var canAddUnbreakableTrait = false;
 
-            if (specialTraitChances.TryGetValue(itemRarity, out float chance) && (new Random().Next(1, 100) / 100f) >= chance)
+            // Only 20% of all items are eligible for unbreakable trait
+            if (new Random().NextDouble() <= 0.20f &&
+                unbreakableTraitWeights.TryGetValue(itemRarity, out float weight) &&
+                weight > 0)
             {
-                canAddUnbreakableTrait = true;
+                // Get the list of eligible rarities and their weights
+                var eligibleRarities = unbreakableTraitWeights
+                    .Where(kv => kv.Value > 0)
+                    .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+                // Calculate total weight among eligible rarities
+                float totalWeight = eligibleRarities.Values.Sum();
+
+                // Check if this specific item wins based on its weight
+                if (new Random().NextDouble() * totalWeight <= weight)
+                {
+                    canAddUnbreakableTrait = true;
+                }
             }
+
+            Plugin.Logger.Log($"\t\t  Unbreakable: {canAddUnbreakableTrait}");
 
             if (itemTraitType == ItemTraitType.ArmorTrait)
             {
