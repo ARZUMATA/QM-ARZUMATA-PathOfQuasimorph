@@ -141,3 +141,11 @@ Thanks to NBK_RedSpy, Crynano and all the people who make their code open source
 * Fixed new game not starting issue when mod is enabled.
 * Some files were not uploaded to the workshop, making mod inactive.
 * Mod manifest updated, so it doesn't appear in mod list for stable version.
+
+## 1.2 (92e9f12)
+- Rarity mods are now better applied.
+- One stat is boosted little more that defines it's suffix.
+- Improved resist boosts to use min and max values for better consistency.
+- Armor now uses an average resist value to determine which resist is randomly added if the roll is successful.
+- Fixed incorrect boost logic.
+- Enhanced logging for easier debugging and tracking of changes.
