@@ -209,7 +209,7 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     // Check if the line starts the Arbitrary Values section
-                    if (line.StartsWith("Arbitrary Values"))
+                    if (line.StartsWith("Arbitrary"))
                     {
                         inArbitrarySection = true;
                         continue;
