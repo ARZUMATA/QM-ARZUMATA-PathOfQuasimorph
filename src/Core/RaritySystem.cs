@@ -1,10 +1,13 @@
 ﻿using MGSC;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -64,7 +67,10 @@ namespace QM_PathOfQuasimorph.Core
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private const int PARAMETER_BOOST = 5;
+        private float PARAMETER_BOOST_MIN = 1.2f;
+        private float PARAMETER_BOOST_MAX = 1.8f;
+        private float AVERAGE_RESIST_APPLY_CHANCE = 50;
+        private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
         public RaritySystem()
@@ -141,6 +147,108 @@ namespace QM_PathOfQuasimorph.Core
                         Prototype: 143 (1.43%)
                         Quantum: 26 (0.26%)
             */
+
+            LoadCustomWeights();
+        }
+
+        private void LoadCustomWeights()
+        {
+            string weightPath = Path.Combine(Plugin.ConfigDirectories.ModPersistenceFolder, "Rarities.csv");
+            long fileSize = 0;
+
+            if (File.Exists(weightPath))
+            {
+                fileSize = new FileInfo(weightPath).Length;
+                if (fileSize == 0)
+                {
+
+                }
+            }
+            // If we don't have our rarities csv configs, dump a new file for user.
+
+            if (!File.Exists(weightPath) || fileSize == 0)
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("QM_PathOfQuasimorph.Files.Rarities.csv"))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    File.WriteAllText(weightPath, reader.ReadToEnd());
+                }
+            }
+
+            if (Plugin.Config.CustomWeights)
+            {
+                // Load the custom weights from the CSV file
+                LoadRaritiesFromCSV(weightPath);
+            }
+        }
+
+        private void LoadRaritiesFromCSV(string filePath)
+        {
+            Plugin.Logger.Log($"Loading rarity data from CSV {filePath}");
+
+            string line;
+            bool inArbitrarySection = false;
+            string[] headers = null;
+
+            Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
+
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+
+                    // Skip empty lines if any
+                    if (string.IsNullOrEmpty(line)) continue;
+                    // If the line is the header
+
+                    if (line.StartsWith("Rarity"))
+                    {
+                        headers = line.Split(',');
+                        continue;
+                    }
+
+                    // Check if the line starts the Arbitrary Values section
+                    if (line.StartsWith("Arbitrary"))
+                    {
+                        inArbitrarySection = true;
+                        continue;
+                    }
+
+                    if (inArbitrarySection)
+                    {
+                        string[] parts = line.Split(',');
+                        string key = parts[0].Trim();
+                        float value = float.Parse(parts[1].Trim());
+                        Plugin.Logger.Log($"Writing arbitrary data {key} {value}");
+
+                        arbitraryValues[key] = value;
+                    }
+                    else
+                    {
+                        string[] parts = line.Split(',');
+                        string rarityName = parts[0].Trim();
+
+                        if (Enum.TryParse(rarityName, out ItemRarity rarity))
+                        {
+                            // Assign values to dictionaries.
+                            _rarityModifiers[rarity] = (float.Parse(parts[1]), float.Parse(parts[2]));
+                            _rarityModifiers[rarity] = (float.Parse(parts[1]), float.Parse(parts[2]));
+                            _rarityWeightsForWeighted[rarity] = int.Parse(parts[3]);
+                            rarityParamPercentages[rarity] = (float.Parse(parts[4]) / 100f, float.Parse(parts[5]) / 100f);
+                            rarityTraitRanges[rarity] = (float.Parse(parts[6]) / 100f, float.Parse(parts[7]) / 100f);
+                            unbreakableTraitPercent[rarity] = float.Parse(parts[7]);
+                        }
+                    }
+                }
+
+            }
+
+            PARAMETER_BOOST_MIN = arbitraryValues["PARAMETER_BOOST_MIN"];
+            PARAMETER_BOOST_MAX = arbitraryValues["PARAMETER_BOOST_MAX"];
+            AVERAGE_RESIST_APPLY_CHANCE = arbitraryValues["AVERAGE_RESIST_APPLY_CHANCE"];
+            UNBREAKABLE_ENTRY_CHANCE = arbitraryValues["UNBREAKABLE_ENTRY_CHANCE"];
+
         }
 
         private void SimulateDrops()
@@ -194,14 +302,20 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define multipliers for each Rarity class
-        private Dictionary<ItemRarity, float[]> _rarityModifiers = new Dictionary<ItemRarity, float[]>
+
+        private Dictionary<ItemRarity, (float Min, float Max)> _rarityModifiers = new Dictionary<ItemRarity, (float Min, float Max)>
         {
-            { ItemRarity.Standard,  new float[] { 1.0f } },  // No change for Standard
-            { ItemRarity.Enhanced,  new float[] { 2.0f, 2.5f, 3.0f } },
-            { ItemRarity.Advanced,  new float[] { 3.0f, 4.0f, 5.0f } },
-            { ItemRarity.Premium,   new float[] { 4.5f, 5.5f, 6.5f } },
-            { ItemRarity.Prototype, new float[] { 6.0f, 7.0f, 8.0f } },
-            { ItemRarity.Quantum,   new float[] { 8.0f, 9.5f, 11.0f } },
+            { ItemRarity.Standard,   ( 1.0f,   1.0f  ) },  // Standard = Common // No change for Standard 
+            { ItemRarity.Enhanced,   ( 1.05f,  1.15f ) },  // Enhanced = Magic
+            { ItemRarity.Advanced,   ( 1.15f,  1.25f ) },  // Advanced = Rare
+            { ItemRarity.Premium,    ( 1.30f,  1.40f ) },  // Premium = Epic
+            { ItemRarity.Prototype,  ( 1.5f,   1.7f ) },  // Prototype = Legendary
+            { ItemRarity.Quantum,    ( 2f,     3f ) },  // Quantum = Mythic
+
+            //{ ItemRarity.Premium,   new float[] { 8.0f, 10.0f, 12.0f } }, // Premium = Epic
+            //{ ItemRarity.Prototype, new float[] { 15.0f, 17.0f, 19.0f } }, // Prototype = Legendary
+            //{ ItemRarity.Quantum,   new float[] { 19.5f, 20.0f, 30f } }, // Quantum = Mythic
+            // Quantum is extremely top-tier with near-maximum boost
         };
 
         // Weights for each Rarity (lower = rarer)
@@ -226,25 +340,35 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define the percentage of parameters to modify per Rarity
-        private Dictionary<ItemRarity, float> rarityParamPercentages = new Dictionary<ItemRarity, float>
+        private Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
         {
-            { ItemRarity.Standard, 0.10f },     // 10% of editableParams
-            { ItemRarity.Enhanced, 0.25f },     // 25%
-            { ItemRarity.Advanced, 0.40f },     // 40%
-            { ItemRarity.Premium, 0.55f },      // 55%
-            { ItemRarity.Prototype, 0.70f },    // 70%
-            { ItemRarity.Quantum, 0.85f }        // 85%
+            { ItemRarity.Standard,  (0f    , 0f   ) },          // 0% of editableParams
+            { ItemRarity.Enhanced,  (0.25f , 0.25f) },       // 25%
+            { ItemRarity.Advanced,  (0.40f , 0.40f) },       // 40%
+            { ItemRarity.Premium,   (0.55f , 0.55f) },       // 55%
+            { ItemRarity.Prototype, (0.85f , 0.85f) },       // 85%
+            { ItemRarity.Quantum,   (1.00f , 1.00f) }        // 100%
         };
 
-        // Dictionary to store the chance of getting the special trait for each rarity
-        private readonly Dictionary<ItemRarity, float> specialTraitChances = new Dictionary<ItemRarity, float>
+        // Define the percentage of traits to modify per Rarity
+        private Dictionary<ItemRarity, (float Min, float Max)> rarityTraitRanges = new Dictionary<ItemRarity, (float Min, float Max)>
         {
-            { ItemRarity.Standard, 0f },       // 0% chance
-            { ItemRarity.Enhanced, 0.05f },      // 5% chance
-            { ItemRarity.Advanced, 0.1f },     // 10% chance
-            { ItemRarity.Premium, 0.15f },         // 20% chance
-            { ItemRarity.Prototype, 0.20f },        // 35% chance
-            { ItemRarity.Quantum, 0.25f },    // 50% chance
+            { ItemRarity.Standard,  (0f,     0f) },          // Ignored, no traits applied
+            { ItemRarity.Enhanced,  (0f,     0.0435f) },     // 1 trait (4.35% of max 23 traits)
+            { ItemRarity.Advanced,  (0.087f, 0.13f) },       // 2-3 traits (8.70% to 13.04% of max 23)
+            { ItemRarity.Premium,   (0.13f,  0.174f) },      // 3-4 traits (13.04% to 17.39% of max 23)
+            { ItemRarity.Prototype, (0.174f, 0.217f) },      // 4-5 traits (17.39% to 21.74% of max 23)
+            { ItemRarity.Quantum,   (0.348f, 0.348f) },      // 8 traits (34.78% of max 23)
+        };
+
+        private readonly Dictionary<ItemRarity, float> unbreakableTraitPercent = new Dictionary<ItemRarity, float>
+        {
+            { ItemRarity.Standard,  0f },       // 0% (never gets unbreakable)
+            { ItemRarity.Enhanced,  0.1f },      // 0.1% in eligible pool
+            { ItemRarity.Advanced,  1f },        // 1% in eligible pool
+            { ItemRarity.Premium,   5f },        // 5% in eligible pool
+            { ItemRarity.Prototype, 20f },       // 20% in eligible pool
+            { ItemRarity.Quantum,   75f },     // 75% in eligible pool
         };
 
         public static readonly Dictionary<ItemRarity, string> Colors = new Dictionary<ItemRarity, string>()
@@ -298,10 +422,10 @@ namespace QM_PathOfQuasimorph.Core
             return ItemRarity.Standard;
         }
 
-        public ItemRarity SelectRarityWeighted()
+        public ItemRarity SelectRarityWeighted(Dictionary<ItemRarity, int> weights)
         {
             // Calculate the total weight
-            int totalWeight = _rarityWeightsForWeighted.Values.Sum();
+            int totalWeight = weights.Values.Sum();
 
             // Generate a random number within the total weight range
             int randomNumber = _random.Next(0, totalWeight);
@@ -309,7 +433,7 @@ namespace QM_PathOfQuasimorph.Core
             // Iterate through the rarities and determine which one the random number falls into
             int cumulativeWeight = 0;
 
-            foreach (var rarityPair in _rarityWeightsForWeighted)
+            foreach (var rarityPair in weights)
             {
                 cumulativeWeight += rarityPair.Value;
                 if (randomNumber < cumulativeWeight)
@@ -330,15 +454,15 @@ namespace QM_PathOfQuasimorph.Core
                 throw new ArgumentOutOfRangeException(nameof(rolls), "Number of rolls must be at least 1.");
             }
 
-            // Initialize with the 'best' possible rarity, so any roll will be 'worse' (lower in enum value) than it.
-            // ItemRarity enum values are ordered where higher int value = better rarity.
+            // Initialize with the 'best' possible rarity, so any roll will be 'worse' (lower in enum _defaultValue) than it.
+            // ItemRarity enum values are ordered where higher int _defaultValue = better rarity.
             ItemRarity worstRarityFound = (ItemRarity)Enum.GetValues(typeof(ItemRarity)).Cast<int>().Max();
 
             for (int i = 0; i < rolls; i++)
             {
-                ItemRarity currentRollRarity = SelectRarityWeighted();
+                ItemRarity currentRollRarity = SelectRarityWeighted(_rarityWeightsForWeighted);
 
-                // If the current roll's rarity value is less than the worst found, update worstRarityFound.
+                // If the current roll's rarity _defaultValue is less than the worst found, update worstRarityFound.
                 if ((int)currentRollRarity < (int)worstRarityFound)
                 {
                     worstRarityFound = currentRollRarity;
@@ -355,7 +479,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             List<ItemRarity> rolledRarities = new List<ItemRarity>();
 
-            rolledRarities.Add(SelectRarityWeighted());
+            rolledRarities.Add(SelectRarityWeighted(_rarityWeightsForWeighted));
 
             // Initialize base scores for D20 competition
             // Higher values mean the D20 roll has less relative impact on the final outcome.
@@ -408,7 +532,7 @@ namespace QM_PathOfQuasimorph.Core
                 case RarityRolls.D20Rolls:
                     return SelectRarityWithD20Rolls();
                 case RarityRolls.WeightedRolls:
-                    return SelectRarityWeighted();
+                    return SelectRarityWeighted(_rarityWeightsForWeighted);
                 case RarityRolls.WeightedRollsAndPickWorst:
                     return SelectRarityStandardRandom();
                 case RarityRolls.WeightedRollsD20Selector:
@@ -441,14 +565,16 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Used part of code from  MagnumProjectNumericParameterPanel.Initialize
-        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam)
+        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam, float averageResist = 0)
         {
             float _defaultValue = 0f;
             bool isResist = false;
             bool boost = false;
+            bool averageResistApplied = false;
 
-            if (boostedParam.ParameterName == _projectParameter.ParameterName)
+            if (boostedParam.Id == _projectParameter.Id)
             {
+                Plugin.Logger.Log($"\t\t Bosting {boostedParam.Id}");
                 boost = true;
             }
 
@@ -495,46 +621,163 @@ namespace QM_PathOfQuasimorph.Core
 
             // Case where we have zero resist, let boost it a bit.
 
-
             project.AppliedModifications.Remove(_projectParameter.Id);
-            project.AppliedModifications.Add(_projectParameter.Id, CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist).ToString());
+            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied);
+            var clampedValue = Mathf.Clamp(
+                    calculatedValue,
+                    _projectParameter.MinValue,
+                    _projectParameter.MaxValue
+                    );
+
+            Plugin.Logger.Log($"\t\t AppliedModifications");
+            Plugin.Logger.Log($"\t\t\t {_projectParameter.Id}");
+            Plugin.Logger.Log($"\t\t\t\t Default: {_defaultValue}");
+            Plugin.Logger.Log($"\t\t\t\t ClampedValue: {clampedValue}\n");
+
+            // Apply back
+            switch (_projectParameter.ParameterType)
+            {
+                case MagnumProjectParameterType.Integer:
+                case MagnumProjectParameterType.Damage:
+                    project.AppliedModifications.Add(_projectParameter.Id, ((int)Math.Round(clampedValue, 0)).ToString());
+                    break;
+                case MagnumProjectParameterType.Float:
+                case MagnumProjectParameterType.CritDamage:
+                case MagnumProjectParameterType.WeaponAccuracy:
+                case MagnumProjectParameterType.WeaponScatterAngle:
+                    project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString());
+                    break;
+                case MagnumProjectParameterType.ResistBlunt:
+                case MagnumProjectParameterType.ResistPierce:
+                case MagnumProjectParameterType.ResistLacer:
+                case MagnumProjectParameterType.ResistFire:
+                case MagnumProjectParameterType.ResistBeam:
+                case MagnumProjectParameterType.ResistShock:
+                case MagnumProjectParameterType.ResistPoison:
+                case MagnumProjectParameterType.ResistCold:
+                    project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString());
+                    break;
+                default:
+                    Plugin.Logger.Log($"unknown parameter type {_projectParameter.ParameterType}");
+                    return;
+            }
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist)
+        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
+            float averageResist,
+            bool averageResistApplied,
+            out bool averageResistAppliedResult
+            )
         {
-            float[] rarityModifiers = _rarityModifiers[rarity];
-            float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
+            //float[] rarityModifiers = _rarityModifiers[rarity];
+            //float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
+            var (Min, Max) = _rarityModifiers[rarity];
+            float modifier = (float)Math.Round(_random.Next((int)Min * 100, (int)Max * 100) / 100f, 2);
 
+            averageResistAppliedResult = false;
+
+            // Since armor reistances gotta be higher and this is the only thing we can do for armor.
             if (isResist && defaultValue == 0)
             {
-                defaultValue = _random.Next(1, 10); // Just give a little new res.
+                if (averageResistApplied == false)
+                {
+                    // Roll random
+                    var canApply = _random.Next(0, 100) < AVERAGE_RESIST_APPLY_CHANCE;
+                    if (canApply)
+                    {
+                        averageResistAppliedResult = true;
+                        Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
+                        defaultValue = averageResist;
+                    }
+                }
+                else
+                {
+                    Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist) already applied. SKIPPING.");
+                }
+
             }
+            else if (isResist && defaultValue != 0)
+            {
+                Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, SKIPPING AND NOT setting to {averageResist}");
+            }
+
+            float result = 0;
+            float boostAmount = (float)Math.Round(_random.Next((int)PARAMETER_BOOST_MIN * 100, (int)PARAMETER_BOOST_MAX * 100) / 100f, 2);
+
+            Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}");
 
             if (increase)
             {
-                return (defaultValue * modifier) * (boost == true ? PARAMETER_BOOST : 0);
+                result = (defaultValue * modifier) * (boost == true ? boostAmount : 1);
             }
             else
             {
-                return defaultValue / modifier * (boost == true ? PARAMETER_BOOST : 0);
+                result = defaultValue / modifier * (boost == true ? boostAmount : 1);
             }
+
+            Plugin.Logger.Log($"\t\t Result {result}");
+
+            return result;
         }
 
         internal int[] ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
-            int maxParamsToAdjust = editableParameters.Count;
+            var (Min, Max) = rarityParamPercentages[itemRarity];
+            int minParams = Math.Max(0, (int)Math.Floor(Min * editableParameters.Count));
+            int maxParams = (int)Math.Ceiling(Max * editableParameters.Count);
 
             // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = Mathf.RoundToInt(editableParameters.Count * rarityParamPercentages[itemRarity]);
-            numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
+            int numParamsToAdjust = _random.Next(minParams, maxParams);
 
-            // Get value for randomized Prefix
+            // Get _defaultValue for randomized Prefix
             var randomPrefix = _random.Next(0, AMOUNT_PREFIXES - 1);
 
             // Shuffle the dictionary
             var editableParamsShuffled = ShuffleDictionary(editableParameters);
+
+            // Get average resist for armor.
+            float averageResist = 0;
+            int resistCount = 0;
+
+            Plugin.Logger.Log($"\n\n#FF0000 ApplyProjectParameters");
+            Plugin.Logger.Log($" {magnumProject.ProjectType}");
+            Plugin.Logger.Log($"\t {magnumProject.DevelopId}");
+            Plugin.Logger.Log($"\t\t Rarity: {itemRarity}");
+
+            if (
+                magnumProject.ProjectType == MagnumProjectType.Armor ||
+                magnumProject.ProjectType == MagnumProjectType.Helmet ||
+                magnumProject.ProjectType == MagnumProjectType.Boots ||
+                magnumProject.ProjectType == MagnumProjectType.Leggings
+              )
+            {
+                Plugin.Logger.Log($"\t\t  Getting average resistances");
+
+                foreach (var param in editableParameters.Values)
+                {
+                    if (param.Id.Contains("_resist"))
+                    {
+                        //Plugin.Logger.Log($"\t\t Resist: {param.Id}");
+
+                        var _defaultValue = magnumProject.GetParameterDefaultValue(param);
+
+                        if (_defaultValue != null)
+                        {
+                            float value = Convert.ToSingle(_defaultValue);
+                            if (value > 0)
+                            {
+                                averageResist += value;
+                                resistCount++;
+                            }
+                        }
+                    }
+                }
+
+                averageResist = (float)Math.Round(averageResist / resistCount, 2);
+                Plugin.Logger.Log($"\t\t Average resist {averageResist} for total count {resistCount}");
+            }
 
             // Select one parameter to boost more.
             // This parameter will be boosted more than the others.
@@ -561,29 +804,32 @@ namespace QM_PathOfQuasimorph.Core
                 // Special case
                 // _special_ability
 
-                switch (defaultParamValue.Id)
+                if (new[] { "_weight", "_reload_duration", "_scatter_angle" }.Any(defaultParamValue.Id.Contains))
                 {
-                    case "_weight":
-                    case "_reload_duration":
-                    case "_scatter_angle":
-                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam);
-                        break;
-                    case "_special_ability":
-                        break;
-                    case "_resist":
-                    case "_damage":
-                    case "_crit_damage":
-                    case "_max_durability":
-                    case "_accuracy":
-                    case "_magazine_capacity":
-                        AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam);
-                        break;
-                    default:
-                        break;
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam);
+                }
+                else if (new[] { "_resist", "_damage", "_crit_damage", "_max_durability", "_accuracy", "_magazine_capacity" }
+                         .Any(defaultParamValue.Id.Contains))
+                {
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist);
+                }
+                else if (defaultParamValue.Id.Contains("_special_ability"))
+                {
+                    // Nothing we got here for now.
                 }
             }
 
             return new int[] { boostedParamIndex, randomPrefix };
+        }
+
+        public int GetTraitCountByRarity(ItemRarity rarity, int maxTraits)
+        {
+            var (Min, Max) = rarityTraitRanges[rarity];
+            int minTraits = Math.Max(0, (int)Math.Floor(Min * maxTraits));
+            int maxTraitsInclusive = (int)Math.Ceiling(Max * maxTraits);
+
+            // For fixed values, min and max traits will be the same
+            return _random.Next(minTraits, maxTraitsInclusive + 1);
         }
 
         // Traits
@@ -592,18 +838,34 @@ namespace QM_PathOfQuasimorph.Core
             var traitsForItemType = GetAddeableTraits(itemTraitType);
             var traitsForItemTypeShuffled = ShuffleDictionary(traitsForItemType);
 
-            // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = (int)itemRarity;
+            var traitCount = GetTraitCountByRarity(itemRarity, traitsForItemType.Count);
 
-            //Mathf.RoundToInt(traitsForItemType.Count * rarityParamPercentages[itemRarity]);
-            numParamsToAdjust = Mathf.Max(1, numParamsToAdjust); // Ensure at least 1 parameter is adjusted
+            // Calculate the number of traits to adjust based on the percentage
+            int numParamsToAdjust = Mathf.Max(1, traitCount); // Ensure at least 1 parameter is adjusted
 
             var canAddUnbreakableTrait = false;
 
-            if (specialTraitChances.TryGetValue(itemRarity, out float chance) && (new Random().Next(1, 100) / 100f) >= chance)
+            // Only 20% of all items are eligible for unbreakable trait
+            if (new Random().NextDouble() <= UNBREAKABLE_ENTRY_CHANCE &&
+                unbreakableTraitPercent.TryGetValue(itemRarity, out float weight) &&
+                weight > 0)
             {
-                canAddUnbreakableTrait = true;
+                // Get the list of eligible rarities and their weights
+                var eligibleRarities = unbreakableTraitPercent
+                    .Where(kv => kv.Value > 0)
+                    .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+                // Calculate total weight among eligible rarities
+                float totalWeight = eligibleRarities.Values.Sum();
+
+                // Check if this specific item wins based on its weight
+                if (new Random().NextDouble() * totalWeight <= weight)
+                {
+                    canAddUnbreakableTrait = true;
+                }
             }
+
+            Plugin.Logger.Log($"\t\t  Unbreakable: {canAddUnbreakableTrait}");
 
             if (itemTraitType == ItemTraitType.ArmorTrait)
             {

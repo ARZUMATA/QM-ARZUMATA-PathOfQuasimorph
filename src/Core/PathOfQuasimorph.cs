@@ -23,6 +23,7 @@ namespace QM_PathOfQuasimorph.Core
         private static bool isInitialized = false;
         private static bool enabled = false;
         private static MagnumPoQProjectsController magnumProjectsController;
+        private static TooltipGeneratorPoq tooltipGeneratorPoq = new TooltipGeneratorPoq();
         private static bool done = false;
 
         /* All magnum project are recipes that are always available in the game. You get access to exact recipe via chip.

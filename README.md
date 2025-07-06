@@ -128,6 +128,12 @@ CleanupMode works this way:
 Once enabled, load game, be in "space" mode, it will try to cleanup all items made by mod making them "standard", save the game. Then you can keep playing without mod enabled and clean item pool.
 (This will be improved)
 
+# External files
+
+| File             | Description                                 | Documentation |
+|------------------|---------------------------------------------|---------------|
+| Rarities.csv     | Contains rarity-related parameters for items. | [EN version](docs/Rarities_CSV_EN.md) / [RU version](docs/Rarities_CSV_RU.md) |
+
 # Source Code
 Source code is available on [GitHub](https://github.com/ARZUMATA/QM-ARZUMATA-PathOfQuasimorph)
 
@@ -141,3 +147,18 @@ Thanks to NBK_RedSpy, Crynano and all the people who make their code open source
 * Fixed new game not starting issue when mod is enabled.
 * Some files were not uploaded to the workshop, making mod inactive.
 * Mod manifest updated, so it doesn't appear in mod list for stable version.
+
+## 1.2 (92e9f12)
+- Rarity mods are now better applied.
+- One stat is boosted little more that defines it's suffix.
+- Improved resist boosts to use min and max values for better consistency.
+- Armor now uses an average resist value to determine which resist is randomly added if the roll is successful.
+- Fixed incorrect boost logic.
+- Enhanced logging for easier debugging and tracking of changes.
+
+## 1.3 (850ae94)
+ - Unbreakable trait now has weighed chance.
+ - Parameters to modify are now selected within percentage range, rather than a fixed percent.
+ - Fixed one issue where some items were not processed and were reset to vanilla ones. Loooking into it anyway.
+ - Rarity csv file is now available for editing and overrides internal data. See mod config to enable it.
+ - Tooltips for weapons to compare PoQ one with vanilla. Hotkey 'left shift'.

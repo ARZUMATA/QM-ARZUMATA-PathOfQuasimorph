@@ -30,6 +30,7 @@
 	  <None Remove="Files\Affixes.csv" />
 	  <None Remove="Files\Localization.csv" />
 	  <None Remove="Files\Prefixes.csv" />
+	  <None Remove="Files\Rarities.csv" />
 	</ItemGroup>
 	<ItemGroup>
 	  <EmbeddedResource Include="Files\Affixes.csv" />
@@ -37,6 +38,7 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="config.ini" />
 	  <EmbeddedResource Include="Files\Localization.csv" />
+	  <EmbeddedResource Include="Files\Rarities.csv" />
 	</ItemGroup>
 
 	<ItemGroup>
