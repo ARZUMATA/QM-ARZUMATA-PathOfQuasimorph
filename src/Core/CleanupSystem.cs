@@ -84,34 +84,57 @@ namespace QM_PathOfQuasimorph.Core
 
             if (creatures != null)
             {
+                Plugin.Logger.Log($"CleanupCreatureData");
+
+                Plugin.Logger.Log($"player creature {creatures.Player.CreatureData.UniqueId}");
+
+                // Cleanup player data in raid
+                foreach (ItemStorage storage in creatures.Player.CreatureData.Inventory.AllContainers)
+                {
+                    items.AddRange(CleanupPickupItem(storage.Items));
+                }
+
+                foreach (ItemStorage storage in creatures.Player.CreatureData.Inventory.WeaponSlots)
+                {
+                    items.AddRange(CleanupPickupItem(storage.Items));
+                }
+
+                // Cleanup monsters
                 foreach (var creature in creatures.Monsters)
                 {
                     var creatureData = creature.CreatureData;
-                    if (creatureData != null)
+                    if (creatureData == null)
                     {
-                        break;
+                        continue;
                     }
+
+                    Plugin.Logger.Log($"monster creature {creatureData.UniqueId}");
 
                     foreach (ItemStorage storage in creatureData.Inventory.AllContainers)
                     {
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
+                   
+                    // Part of all containers
+                    //foreach (ItemStorage storage in creatureData.Inventory.Storages)
+                    //{
+                    //    items.AddRange(CleanupPickupItem(storage.Items));
+                    //}
 
-                    foreach (ItemStorage storage in creatureData.Inventory.Storages)
-                    {
-                        items.AddRange(CleanupPickupItem(storage.Items));
-                    }
-
-                    foreach (ItemStorage storage in creatureData.Inventory.Slots)
-                    {
-                        items.AddRange(CleanupPickupItem(storage.Items));
-                    }
+                    //foreach (ItemStorage storage in creatureData.Inventory.Slots)
+                    //{
+                    //    items.AddRange(CleanupPickupItem(storage.Items));
+                    //}
 
                     foreach (ItemStorage storage in creatureData.Inventory.WeaponSlots)
                     {
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
                 }
+
+
+
+
             }
 
             return items;
@@ -216,16 +239,19 @@ namespace QM_PathOfQuasimorph.Core
                 // LINQ maybe?
 
                 MagnumProjects magnumProjects = context.State.Get<MagnumProjects>();
+                Plugin.Logger.Log("CleanupMagnumProjects");
 
                 if (magnumProjects != null)
                 {
+                    Plugin.Logger.Log($"magnumProjects != null");
                     foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
                     {
                         var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
+                        Plugin.Logger.Log($"magnumProjects != null");
 
                         if (projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
                         {
-                            Plugin.Logger.Log($"Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
+                            Plugin.Logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
 
                             magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
                         }
@@ -244,25 +270,33 @@ namespace QM_PathOfQuasimorph.Core
         {
             Mercenaries mercenaries = context.State.Get<Mercenaries>();
             List<string> items = new List<string>();
+            Plugin.Logger.Log("CleanupMercenariesCargo");
 
             if (mercenaries != null)
             {
+                Plugin.Logger.Log("mercenaries != null");
+
                 foreach (var merc in mercenaries.Values)
                 {
+                    Plugin.Logger.Log($"merc {merc.ProfileId}");
+
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.AllContainers)
                     {
+                        //Plugin.Logger.Log($"storage {storage}");
+
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
 
-                    foreach (ItemStorage storage in merc.CreatureData.Inventory.Storages)
-                    {
-                        items.AddRange(CleanupPickupItem(storage.Items));
-                    }
+                    // Part of all containers
+                    //foreach (ItemStorage storage in merc.CreatureData.Inventory.Storages)
+                    //{
+                    //    items.AddRange(CleanupPickupItem(storage.Items));
+                    //}
 
-                    foreach (ItemStorage storage in merc.CreatureData.Inventory.Slots)
-                    {
-                        items.AddRange(CleanupPickupItem(storage.Items));
-                    }
+                    //foreach (ItemStorage storage in merc.CreatureData.Inventory.Slots)
+                    //{
+                    //    items.AddRange(CleanupPickupItem(storage.Items));
+                    //}
 
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.WeaponSlots)
                     {
@@ -292,15 +326,21 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static List<string> CleanupPickupItem(List<BasePickupItem> basePickupItemsList)
         {
+            //Plugin.Logger.Log($"CleanupPickupItem");
+
             List<string> itemsToReturn = new List<string>();
 
             foreach (PickupItem item in basePickupItemsList)
             {
-                itemsToReturn.Add(item.Id);
-
-                if (Plugin.Config.CleanupMode)
+                if (item.Id.Contains("_poq"))
                 {
-                    CleanupItem(item);
+                    itemsToReturn.Add(item.Id);
+                    Plugin.Logger.Log($"item.Id {item.Id}");
+
+                    if (Plugin.Config.CleanupMode)
+                    {
+                        CleanupItem(item);
+                    }
                 }
             }
 
