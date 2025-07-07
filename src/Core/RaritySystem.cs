@@ -301,8 +301,23 @@ namespace QM_PathOfQuasimorph.Core
             "none"
         };
 
-        // Define multipliers for each Rarity class
 
+        private List<string> rangedTraitsBlacklist = new List<string> {
+            "perfect_throw",
+            "piercing_throw",
+            "cleave",
+            "unthrowable",
+            "critical_throw",
+
+        };
+        private List<string> meleeTraitsBlacklist = new List<string>(){
+            "suppressor",
+            "ramp_up",
+            "bipod",
+            "optic_sight",
+        };
+
+        // Define multipliers for each Rarity class
         private Dictionary<ItemRarity, (float Min, float Max)> _rarityModifiers = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,   ( 1.0f,   1.0f  ) },  // Standard = Common // No change for Standard 
@@ -428,7 +443,7 @@ namespace QM_PathOfQuasimorph.Core
             int totalWeight = weights.Values.Sum();
 
             // Generate a random number within the total weight range
-            int randomNumber = _random.Next(0, totalWeight);
+            int randomNumber = _random.Next(0, totalWeight + 1);
 
             // Iterate through the rarities and determine which one the random number falls into
             int cumulativeWeight = 0;
@@ -508,7 +523,7 @@ namespace QM_PathOfQuasimorph.Core
                     baseScore = 0;
                 }
 
-                int d20Roll = _random.Next(1, 21); // Roll a D20 (1 to 20 inclusive)
+                int d20Roll = _random.Next(1, DICE_SIDES + 1); // Roll a D20 (1 to 20 inclusive)
 
                 int currentTotalScore = baseScore + d20Roll;
 
@@ -550,7 +565,7 @@ namespace QM_PathOfQuasimorph.Core
                 totalWeight += weight;
             }
 
-            int randomValue = _random.Next(totalWeight);
+            int randomValue = _random.Next(totalWeight + 1);
             int cumulativeWeight = 0;
 
             foreach (var rarity in Enum.GetValues(typeof(ItemRarity)))
@@ -672,7 +687,8 @@ namespace QM_PathOfQuasimorph.Core
             //float[] rarityModifiers = _rarityModifiers[rarity];
             //float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
             var (Min, Max) = _rarityModifiers[rarity];
-            float modifier = (float)Math.Round(_random.Next((int)Min * 100, (int)Max * 100) / 100f, 2);
+            // float modifier = (float)Math.Round(_random.Next((int)(Min * 100), (int)(Max * 100) + 1) / 100f, 2);
+            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
 
             averageResistAppliedResult = false;
 
@@ -682,7 +698,7 @@ namespace QM_PathOfQuasimorph.Core
                 if (averageResistApplied == false)
                 {
                     // Roll random
-                    var canApply = _random.Next(0, 100) < AVERAGE_RESIST_APPLY_CHANCE;
+                    var canApply = _random.Next(0, 100 + 1) < AVERAGE_RESIST_APPLY_CHANCE;
                     if (canApply)
                     {
                         averageResistAppliedResult = true;
@@ -702,17 +718,18 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             float result = 0;
-            float boostAmount = (float)Math.Round(_random.Next((int)PARAMETER_BOOST_MIN * 100, (int)PARAMETER_BOOST_MAX * 100) / 100f, 2);
+            // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
+            float boostAmount = boost == true ? (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
 
             Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}");
 
             if (increase)
             {
-                result = (defaultValue * modifier) * (boost == true ? boostAmount : 1);
+                result = (defaultValue * modifier) * boostAmount;
             }
             else
             {
-                result = defaultValue / modifier * (boost == true ? boostAmount : 1);
+                result = defaultValue / modifier * boostAmount;
             }
 
             Plugin.Logger.Log($"\t\t Result {result}");
@@ -729,10 +746,10 @@ namespace QM_PathOfQuasimorph.Core
             int maxParams = (int)Math.Ceiling(Max * editableParameters.Count);
 
             // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = _random.Next(minParams, maxParams);
+            int numParamsToAdjust = _random.Next(minParams, maxParams + 1);
 
             // Get _defaultValue for randomized Prefix
-            var randomPrefix = _random.Next(0, AMOUNT_PREFIXES - 1);
+            var randomPrefix = _random.Next(0, AMOUNT_PREFIXES);
 
             // Shuffle the dictionary
             var editableParamsShuffled = ShuffleDictionary(editableParameters);
@@ -837,6 +854,44 @@ namespace QM_PathOfQuasimorph.Core
         {
             var traitsForItemType = GetAddeableTraits(itemTraitType);
             var traitsForItemTypeShuffled = ShuffleDictionary(traitsForItemType);
+
+            // Determine if the item is a melee weapon
+            bool isMelee = false;
+
+            var record = item.Record<WeaponRecord>();
+            Plugin.Logger.Log($"\t\t  WeaponRecord Exist: {record != null}");
+
+            if (record != null)
+            {
+                isMelee = record.IsMelee;
+            }
+            Plugin.Logger.Log($"\t\t  isMelee: {isMelee}");
+
+            // Apply traits blacklist
+            if (isMelee)
+            {
+                for (int i = traitsForItemTypeShuffled.Count - 1; i >= 0; i--)
+                {
+                    var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
+                    if (meleeTraitsBlacklist.Contains(key))
+                    {
+                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
+                        traitsForItemTypeShuffled.Remove(key);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = traitsForItemTypeShuffled.Count - 1; i >= 0; i--)
+                {
+                    var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
+                    if (rangedTraitsBlacklist.Contains(key))
+                    {
+                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
+                        traitsForItemTypeShuffled.Remove(key);
+                    }
+                }
+            }
 
             var traitCount = GetTraitCountByRarity(itemRarity, traitsForItemType.Count);
 
