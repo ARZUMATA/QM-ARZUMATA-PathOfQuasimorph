@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -26,18 +27,15 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (isShiftKeyDown)
                 {
-                    Console.WriteLine("hi there isShiftKeyDown");
-
                     _factory = SingletonMonoBehaviour<TooltipFactory>.Instance;
                     _factory._state.Resolve(_factory._itemTooltipBuilder);
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
                     var wrappedItem = MagnumProjectWrapper.SplitItemUid(_factory._lastShowedItem.Id);
-                    Console.WriteLine($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
+                    Plugin.Logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
 
                     if (wrappedItem.PoqItem)
                     {
-
                         _tooltip = _factory.BuildEmptyTooltip();
                         _tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
                         _tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
@@ -50,27 +48,21 @@ namespace QM_PathOfQuasimorph.Core
 
                         if (_factory._lastShowedItem.Is<WeaponRecord>())
                         {
-                            WeaponComponent weaponComponent;
-
-                            //_factory._itemTooltipBuilder.InitWeapon(weaponRecordGeneric, _factory._lastShowedItem, null, null);
-                            //_factory._itemTooltipBuilder.InitWeapon(_factory._lastShowedItem.Record<WeaponRecord>(), _factory._lastShowedItem, null, null);
-                            InitWeaponComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+                            InitItemComparsionWeapon(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
                         }
-                        _factory._tooltip.IsAdditionalTooltip = true;
+                        else if (_factory._lastShowedItem.Is<BreakableItemRecord>())
+                        {
+                            InitItemComparsionArmor(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+                        }
 
-                        //_factory._lastItemMousePos = Input.mousePosition;
+                        _factory._tooltip.IsAdditionalTooltip = true;
                     }
                 }
 
                 if (isShiftKeyUp)
                 {
-                    Console.WriteLine("hi there isShiftKeyUp");
-                    //propertiesTooltip.crea
-                    //SingletonMonoBehaviour<TooltipFactory>.Instance.HideTooltip();//
                     SingletonMonoBehaviour<TooltipFactory>.Instance.RestoreItemTooltip();
-
                 }
-                //SingletonMonoBehaviour<TooltipFactory>.Instance.RestoreItemTooltip();
             }
         }
 
@@ -107,12 +99,46 @@ namespace QM_PathOfQuasimorph.Core
             return $"<color=#{color}>{sign}{label}</color>";
         }
 
-        private static void InitWeaponComparsion(PickupItem item, string genericId)
+        private static void InitItemComparsionWeapon(PickupItem item, string genericId)
         {
             InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
             InitWeapon(item.Record<WeaponRecord>(), genericId, item);
-            InitWeight(item.Record<WeaponRecord>(), genericId, item);
             InitTraits(item.Record<WeaponRecord>(), genericId, item);
+            InitWeight(item.Record<ItemRecord>(), genericId, item);
+        }
+
+        private static void InitItemComparsionArmor(PickupItem item, string genericId)
+        {
+            InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
+            InitArmor(item.Record<ResistRecord>(), genericId, item);
+            InitWeight(item.Record<ItemRecord>(), genericId, item);
+        }
+
+
+        private static void InitArmor(ResistRecord recordPoq, string genericId, PickupItem item)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(genericId, true);
+
+            Plugin.Logger.Log($"genericRecord ResistRecord is {genericRecord == null}");
+
+            // blunt 5 pierce 0 lacer 0 fire 0 cold 5 poison 0 shock 0 beam 0
+            for (int i = 0; i < genericRecord.ResistSheet.Count; i++)
+            {
+                var resistPoq = recordPoq.ResistSheet[i];
+                var resistGeneric = genericRecord.ResistSheet[i];
+                var resistDifference = (float)Math.Round(resistPoq.resistPercent - resistGeneric.resistPercent, 2);
+
+                if (resistDifference != 0)
+                {
+                    //var value = $"{FormatHelper.To100Percent(resistPoq.resistPercent, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(resistDifference, false).ToString(), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{resistPoq.resistPercent.ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
+
+                    _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
+                     LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
+                     .SetValue(value, true)
+                     .SetComparsionValue(resistGeneric.resistPercent.ToString());
+                }
+            }
         }
 
         private static void InitTraits(WeaponRecord weaponRecord, string genericId, PickupItem item)
@@ -131,13 +157,13 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitWeight(WeaponRecord weaponRecord, string genericId, PickupItem item)
+        private static void InitWeight(ItemRecord itemRecord, string genericId, PickupItem item)
         {
             if (item.TotalWeight > 0)
             {
-                var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
+                var genericRecord = Data.Items.GetSimpleRecord<ItemRecord>(genericId, true);
 
-                float singleWeightPoq = weaponRecord.Weight;
+                float singleWeightPoq = itemRecord.Weight;
                 float singleWeightGeneric = genericRecord.Weight;
                 float weightDifference = singleWeightPoq - singleWeightGeneric;
 

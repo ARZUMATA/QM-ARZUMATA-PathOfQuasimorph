@@ -702,7 +702,8 @@ namespace QM_PathOfQuasimorph.Core
                     if (canApply)
                     {
                         averageResistAppliedResult = true;
-                        Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
+                        Plugin.Logger.Log($"---");
+                        Plugin.Logger.Log($"\t\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
                         defaultValue = averageResist;
                     }
                 }
@@ -729,10 +730,10 @@ namespace QM_PathOfQuasimorph.Core
             }
             else
             {
-                result = defaultValue / modifier * boostAmount;
+                result = (defaultValue / modifier) / boostAmount;
             }
 
-            Plugin.Logger.Log($"\t\t Result {result}");
+            //Plugin.Logger.Log($"\t\t\t Result: {result}");
 
             return result;
         }
@@ -770,7 +771,7 @@ namespace QM_PathOfQuasimorph.Core
                 magnumProject.ProjectType == MagnumProjectType.Leggings
               )
             {
-                Plugin.Logger.Log($"\t\t  Getting average resistances");
+                Plugin.Logger.Log($"\t\t\t Getting average resistances:");
 
                 foreach (var param in editableParameters.Values)
                 {
@@ -783,17 +784,19 @@ namespace QM_PathOfQuasimorph.Core
                         if (_defaultValue != null)
                         {
                             float value = Convert.ToSingle(_defaultValue);
-                            if (value > 0)
-                            {
+                            
+                            // If there is only one resist, it leads to imbalance as it can get applied to others.
+                            //if (value > 0)
+                            //{
                                 averageResist += value;
                                 resistCount++;
-                            }
+                            //}
                         }
                     }
                 }
 
                 averageResist = (float)Math.Round(averageResist / resistCount, 2);
-                Plugin.Logger.Log($"\t\t Average resist {averageResist} for total count {resistCount}");
+                Plugin.Logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
             }
 
             // Select one parameter to boost more.
