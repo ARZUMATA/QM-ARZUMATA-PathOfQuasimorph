@@ -219,7 +219,7 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         string[] parts = line.Split(',');
                         string key = parts[0].Trim();
-                        float value = float.Parse(parts[1].Trim());
+                         float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
                         Plugin.Logger.Log($"Writing arbitrary data {key} {value}");
 
                         arbitraryValues[key] = value;
@@ -232,16 +232,17 @@ namespace QM_PathOfQuasimorph.Core
                         if (Enum.TryParse(rarityName, out ItemRarity rarity))
                         {
                             // Assign values to dictionaries.
-                            _rarityModifiers[rarity] = (float.Parse(parts[1]), float.Parse(parts[2]));
-                            _rarityModifiers[rarity] = (float.Parse(parts[1]), float.Parse(parts[2]));
-                            _rarityWeightsForWeighted[rarity] = int.Parse(parts[3]);
-                            rarityParamPercentages[rarity] = (float.Parse(parts[4]) / 100f, float.Parse(parts[5]) / 100f);
-                            rarityTraitRanges[rarity] = (float.Parse(parts[6]) / 100f, float.Parse(parts[7]) / 100f);
-                            unbreakableTraitPercent[rarity] = float.Parse(parts[7]);
+                            _rarityModifiers[rarity] = (float.Parse(parts[1], CultureInfo.InvariantCulture),
+                                                       float.Parse(parts[2], CultureInfo.InvariantCulture));
+                            _rarityWeightsForWeighted[rarity] = int.Parse(parts[3], CultureInfo.InvariantCulture);
+                            rarityParamPercentages[rarity] = (float.Parse(parts[4], CultureInfo.InvariantCulture) / 100f,
+                                                            float.Parse(parts[5], CultureInfo.InvariantCulture) / 100f);
+                            rarityTraitRanges[rarity] = (float.Parse(parts[6], CultureInfo.InvariantCulture) / 100f,
+                                                       float.Parse(parts[7], CultureInfo.InvariantCulture) / 100f);
+                            unbreakableTraitPercent[rarity] = float.Parse(parts[7], CultureInfo.InvariantCulture);
                         }
                     }
                 }
-
             }
 
             PARAMETER_BOOST_MIN = arbitraryValues["PARAMETER_BOOST_MIN"];
@@ -654,13 +655,13 @@ namespace QM_PathOfQuasimorph.Core
             {
                 case MagnumProjectParameterType.Integer:
                 case MagnumProjectParameterType.Damage:
-                    project.AppliedModifications.Add(_projectParameter.Id, ((int)Math.Round(clampedValue, 0)).ToString());
+                    project.AppliedModifications.Add(_projectParameter.Id, ((int)Math.Round(clampedValue, 0)).ToString(CultureInfo.InvariantCulture));
                     break;
                 case MagnumProjectParameterType.Float:
                 case MagnumProjectParameterType.CritDamage:
                 case MagnumProjectParameterType.WeaponAccuracy:
                 case MagnumProjectParameterType.WeaponScatterAngle:
-                    project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString());
+                    project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString(CultureInfo.InvariantCulture));
                     break;
                 case MagnumProjectParameterType.ResistBlunt:
                 case MagnumProjectParameterType.ResistPierce:
@@ -670,7 +671,7 @@ namespace QM_PathOfQuasimorph.Core
                 case MagnumProjectParameterType.ResistShock:
                 case MagnumProjectParameterType.ResistPoison:
                 case MagnumProjectParameterType.ResistCold:
-                    project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString());
+                    project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString(CultureInfo.InvariantCulture));
                     break;
                 default:
                     Plugin.Logger.Log($"unknown parameter type {_projectParameter.ParameterType}");
