@@ -738,7 +738,7 @@ namespace QM_PathOfQuasimorph.Core
             return result;
         }
 
-        internal int[] ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
+        internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
@@ -749,8 +749,8 @@ namespace QM_PathOfQuasimorph.Core
             // Calculate the number of parameters to adjust based on the percentage
             int numParamsToAdjust = _random.Next(minParams, maxParams + 1);
 
-            // Get _defaultValue for randomized Prefix
-            var randomPrefix = _random.Next(0, AMOUNT_PREFIXES);
+            //// Get _defaultValue for randomized Prefix
+            //var randomPrefix = _random.Next(0, AMOUNT_PREFIXES);
 
             // Shuffle the dictionary
             var editableParamsShuffled = ShuffleDictionary(editableParameters);
@@ -784,12 +784,12 @@ namespace QM_PathOfQuasimorph.Core
                         if (_defaultValue != null)
                         {
                             float value = Convert.ToSingle(_defaultValue);
-                            
+
                             // If there is only one resist, it leads to imbalance as it can get applied to others.
                             //if (value > 0)
                             //{
-                                averageResist += value;
-                                resistCount++;
+                            averageResist += value;
+                            resistCount++;
                             //}
                         }
                     }
@@ -839,7 +839,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            return new int[] { boostedParamIndex, randomPrefix };
+            return boostedParamIndex;
         }
 
         public int GetTraitCountByRarity(ItemRarity rarity, int maxTraits)
@@ -1106,11 +1106,12 @@ namespace QM_PathOfQuasimorph.Core
             // English as of time being.
 
             var magnumProjectWrapper = new MagnumProjectWrapper(magnumProject);
+            Plugin.Logger.LogWarning($"AddAffixes for {magnumProjectWrapper.ReturnItemUid()}.");
 
             if (magnumProjectWrapper.PoqItem)
             {
                 var digitInfo = DigitInfo.GetDigits(magnumProject.FinishTime.Ticks);
-                var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject.ProjectType, digitInfo.BoostedParam, digitInfo.RandomizedPrefix);
+                var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject, digitInfo.BoostedParam);
 
                 // We got id.name now.
                 if (affix == null || affix.Count != 2)
@@ -1134,10 +1135,10 @@ namespace QM_PathOfQuasimorph.Core
                 // Problem, on game load it doesn't have effect.
                 UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name",
                     affix[0].Text, "",
-                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.RandomizedPrefix);
+                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.UnusedData2);
                 UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc",
                     "", affix[1].Text,
-                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.RandomizedPrefix);
+                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.UnusedData2);
             }
         }
 
