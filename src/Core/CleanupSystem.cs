@@ -16,6 +16,8 @@ namespace QM_PathOfQuasimorph.Core
         {
             List<string> items = new List<string>();
 
+            Plugin.Logger.Log("CleanItemsInAutonomousCapsuleDepartment");
+
             if (department.CapsuleStorage != null && department.CapsuleStorage.Items != null)
             {
                 items.AddRange(CleanupPickupItem(department.CapsuleStorage.Items));
@@ -28,6 +30,8 @@ namespace QM_PathOfQuasimorph.Core
         {
             List<string> items = new List<string>();
 
+            Plugin.Logger.Log("CleanItemsInShuttleCargoDepartment");
+
             if (department.ShuttleCargo != null && department.ShuttleCargo.Items != null)
             {
                 items.AddRange(CleanupPickupItem(department.ShuttleCargo.Items));
@@ -39,6 +43,8 @@ namespace QM_PathOfQuasimorph.Core
         internal static List<string> CleanItemsInTradeShuttleDepartment(TradeShuttleDepartment department)
         {
             List<string> items = new List<string>();
+
+            Plugin.Logger.Log("CleanItemsInTradeShuttleDepartment");
 
             if (department.ResultStorage != null && department.ResultStorage.Items != null)
             {
@@ -82,10 +88,10 @@ namespace QM_PathOfQuasimorph.Core
             Creatures creatures = context.State.Get<Creatures>();
             List<string> items = new List<string>();
 
+            Plugin.Logger.Log("CleanupCreatureData");
+
             if (creatures != null)
             {
-                Plugin.Logger.Log($"CleanupCreatureData");
-
                 Plugin.Logger.Log($"player creature {creatures.Player.CreatureData.UniqueId}");
 
                 // Cleanup player data in raid
@@ -131,10 +137,6 @@ namespace QM_PathOfQuasimorph.Core
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
                 }
-
-
-
-
             }
 
             return items;
@@ -172,18 +174,20 @@ namespace QM_PathOfQuasimorph.Core
 
             MagnumProgression magnumSpaceship = context.State.Get<MagnumProgression>();
 
+            Plugin.Logger.Log("CleanupItemsMagnumDepartments");
+
             foreach (var department in magnumSpaceship.Departments)
             {
                 switch (department._departmentId)
                 {
                     case "autonomcapsule_department":
-                        CleanItemsInAutonomousCapsuleDepartment(department as AutonomousCapsuleDepartment);
+                        items.AddRange(CleanItemsInAutonomousCapsuleDepartment(department as AutonomousCapsuleDepartment));
                         break;
                     case "cargoshuttle_department":
-                        CleanItemsInShuttleCargoDepartment(department as ShuttleCargoDepartment);
+                        items.AddRange(CleanItemsInShuttleCargoDepartment(department as ShuttleCargoDepartment));
                         break;
                     case "tradeshuttle_department":
-                        CleanItemsInTradeShuttleDepartment(department as TradeShuttleDepartment);
+                        items.AddRange(CleanItemsInTradeShuttleDepartment(department as TradeShuttleDepartment));
                         break;
                 }
             }
@@ -214,6 +218,8 @@ namespace QM_PathOfQuasimorph.Core
         {
             MagnumCargo magnumCargo = context.State.Get<MagnumCargo>();
             List<string> items = new List<string>();
+
+            Plugin.Logger.Log("CleanupMercenariesCargo");
 
             if (magnumCargo != null)
             {
@@ -270,6 +276,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             Mercenaries mercenaries = context.State.Get<Mercenaries>();
             List<string> items = new List<string>();
+
             Plugin.Logger.Log("CleanupMercenariesCargo");
 
             if (mercenaries != null)
@@ -313,6 +320,8 @@ namespace QM_PathOfQuasimorph.Core
             Missions missions = context.State.Get<Missions>();
             List<string> items = new List<string>();
 
+            Plugin.Logger.Log("CleanupMissionRewards");
+
             if (missions != null)
             {
                 foreach (var misson in missions.Values)
@@ -335,10 +344,12 @@ namespace QM_PathOfQuasimorph.Core
                 if (item.Id.Contains("_poq"))
                 {
                     itemsToReturn.Add(item.Id);
-                    Plugin.Logger.Log($"item.Id {item.Id}");
+                    Plugin.Logger.Log($"CleanupPickupItem: item.Id {item.Id}");
 
                     if (Plugin.Config.CleanupMode)
                     {
+                        Plugin.Logger.Log($"\t\t Skipped");
+
                         CleanupItem(item);
                     }
                 }
