@@ -672,7 +672,8 @@ namespace QM_PathOfQuasimorph.Core
             //float[] rarityModifiers = _rarityModifiers[rarity];
             //float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
             var (Min, Max) = _rarityModifiers[rarity];
-            float modifier = (float)Math.Round(_random.Next((int)Min * 100, (int)Max * 100) / 100f, 2);
+            // float modifier = (float)Math.Round(_random.Next((int)(Min * 100), (int)(Max * 100)) / 100f, 2);
+            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
 
             averageResistAppliedResult = false;
 
@@ -702,7 +703,8 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             float result = 0;
-            float boostAmount = (float)Math.Round(_random.Next((int)PARAMETER_BOOST_MIN * 100, (int)PARAMETER_BOOST_MAX * 100) / 100f, 2);
+            // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100)) / 100f, 2);
+            float boostAmount = (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2);
 
             Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}");
 
