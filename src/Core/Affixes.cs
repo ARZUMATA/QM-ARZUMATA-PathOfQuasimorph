@@ -61,7 +61,7 @@ namespace QM_PathOfQuasimorph.Core
                 string[] parts = line.Split(',');
                 if (parts.Length == 5)
                 {
-                    affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3], parts[4]));
+                    affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
                 }
             }
 
@@ -81,31 +81,37 @@ namespace QM_PathOfQuasimorph.Core
                     string[] parts = line.Split(',');
                     if (parts.Length == 5)
                     {
-                        affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3], parts[4]));
+                        affixes.Add(new Affix(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]));
                     }
                 }
             }
             return affixes.ToArray();
         }
 
-        internal static List<Affix> GetAffix(ItemRarity rarityClass, MagnumProjectType projectType, int BoostedParam, int RandomizedPrefix)
+        internal static List<Affix> GetAffix(ItemRarity rarityClass, MagnumProject magnumProject, int BoostedParam, int RandomizedPrefix)
         {
             var affixRarityTypeToLookFor = (AffixRarityType)rarityClass;
             AffixCategory affixCategoryLookFor = AffixCategory.None;
 
             var affixesList = new List<Affix>();
 
-            switch (projectType)
+            string itemClass = string.Empty;
+
+            switch (magnumProject.ProjectType)
             {
                 case MagnumProjectType.RangeWeapon:
                 case MagnumProjectType.MeleeWeapon:
                     affixCategoryLookFor = AffixCategory.Weapon;
+                    var genericWeaponRecord = Data.Items.GetSimpleRecord<WeaponRecord>(magnumProject.DevelopId, true);
+                    itemClass = genericWeaponRecord.WeaponSubClass.ToString();
                     break;
                 case MagnumProjectType.Armor:
                 case MagnumProjectType.Helmet:
                 case MagnumProjectType.Boots:
                 case MagnumProjectType.Leggings:
                     affixCategoryLookFor = AffixCategory.Armor;
+                    var genericArmorRecord = Data.Items.GetSimpleRecord<ArmorRecord>(magnumProject.DevelopId, true);
+                    itemClass = genericArmorRecord.ArmorClass.ToString();
                     break;
                 default:
                     break;
@@ -120,9 +126,10 @@ namespace QM_PathOfQuasimorph.Core
             {
                 // Filter affixes by rarity and project type and prefixes, suffixes
                 var matchingPrefixes = affixes
-                    .Where(affix => affix.AffixRarityType == affixRarityTypeToLookFor &&
-                                    affix.AffixCategory == affixCategoryLookFor &&
-                                    affix.AffixType == AffixType.Prefix)
+                    .Where(affix => affix.AffixCategory == affixCategoryLookFor &&
+                           affix.AffixType == AffixType.Prefix &&
+                           affix.AffixRarityType == affixRarityTypeToLookFor &&
+                           affix.Class == itemClass)
                     .ToList();
 
                 var matchingSuffixes = affixes
@@ -132,6 +139,7 @@ namespace QM_PathOfQuasimorph.Core
                                 affix.Parameter == RaritySystem.ParamIdentifiers[BoostedParam]
                                 )
                 .ToList();
+
 
                 if (matchingPrefixes.Count > 1 && matchingSuffixes.Count >= 1)
                 {
@@ -151,14 +159,16 @@ namespace QM_PathOfQuasimorph.Core
         public AffixType AffixType { get; set; }
         public AffixCategory AffixCategory { get; set; }
         public AffixRarityType AffixRarityType { get; set; }
+        public string Class { get; set; }
         public string Text { get; set; }
         public string Parameter { get; set; }
 
-        public Affix(string affixCategory, string affixType, string affixRarityType, string text, string parameter)
+        public Affix(string affixCategory, string affixType, string affixRarityType, string _class, string text, string parameter)
         {
             this.AffixCategory = (AffixCategory)Enum.Parse(typeof(AffixCategory), affixCategory, true);
             this.AffixType = (AffixType)Enum.Parse(typeof(AffixType), affixType, true);
             this.AffixRarityType = (AffixRarityType)Int32.Parse(affixRarityType);
+            this.Class = _class;
             this.Text = text;
             this.Parameter = parameter;
         }
