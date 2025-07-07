@@ -94,106 +94,111 @@ poq.weapon.suffix.special_ability.2.tooltip,of the Hunter,Охотника,von d
 poq.weapon.suffix.special_ability.3.tooltip,of the Killer,Убийцы,von dem Killer,du Tueur,del Asesino,Zabójcy,Katil,do Matador,의 킬러,のキラー,的杀手
 poq.weapon.suffix.special_ability.4.tooltip,of the Predator,Хищника,von dem Raubtier,du Prédateur,del Depredador,Drapieżnika,Yırtıcı,do Predator,의 포식자,のプレデター,的掠食者
 poq.weapon.suffix.special_ability.5.tooltip,of Omega Protocol,Протокола Омега,von dem Omega-Protokoll,du Protocole Oméga,del Protocolo Omega,Protokołu Omegi,Omega Protokolü,do Protocolo Ômega,의 오메가 프로토콜,のオメガプロトコル,的欧米伽协议
-poq.armor.prefix.none.1.0.tooltip,Ablative-Coated,Аблятивно-коатированный,Ablativ-Beschichtet,Revêtement Ablatif,Recubrimiento Ablativo,Pokrycie Ablacyjne,Ablatif Kaplama,Revestimento Ablativo,탈리브 코팅,アブレイティブコーティング,脫落涂層
-poq.armor.prefix.none.1.1.tooltip,Armored,Бронированный,Gepanzert,Blindé,Blindado,Opancerzony,Zırhlı,Blindado,장갑,装甲,装甲
-poq.armor.prefix.none.1.2.tooltip,Bio-Hazard,Биологическая угроза,Bio-Gefahr,Bio-Danger,Bio-Peligro,Bio-Zagrożenie,Biyolojik Tehlike,Bio-Risco,생물 위험,バイオハザード,生物危害
-poq.armor.prefix.none.1.3.tooltip,Combat-Ready,Готовый к бою,Kampfbereit,Prêt au Combat,Listo para Combate,Gotowy do Walki,Savaş Durumunda,Pronto para Combate,전투 준비 완료,戦闘準備完了,战斗准备就绪
-poq.armor.prefix.none.1.4.tooltip,Composite-Shell,Композитная оболочка,Verbundschale,Coque Composite,Concha Compuesta,Powłoka Kompozytowa,Kompozit Kabuk,Concha Composta,복합 껍질,コンポジットシェル,复合壳
-poq.armor.prefix.none.1.5.tooltip,Environmental,Экологичный,Umweltfreundlich,Environnemental,Ambiental,Środowiskowy,Çevresel,Ambiental,환경 친화적인,環境対応型,环境友好
-poq.armor.prefix.none.1.6.tooltip,Fortified,Укрепленный,Befestigt,Fortifié,Fortificado,Umocniony,Güçlendirilmiş,Fortificado,강화된,強化された,加固的
-poq.armor.prefix.none.1.7.tooltip,Hazmat,Химически опасный,Hazmat,Hazmat,Material Peligroso,Hazmat,Hazmat,Hazmat,해저드 물질,ハザードマテリアル,危害材料
-poq.armor.prefix.none.1.8.tooltip,Reinforced,Укрепленный,Verstärkt,Renforcé,Reforzado,Wzmocniony,Takviye Edilmiş,Reforçado,보강된,補強された,强化的
-poq.armor.prefix.none.1.9.tooltip,Tactical,Тактический,Taktisch,Tactique,Táctico,Taktyczny,Taktik,Tático,전술,タクティカル,战术
-poq.armor.prefix.none.2.0.tooltip,Adaptive,Адаптивный,Adaptiv,Adaptatif,Adaptativo,Adaptacyjny,Uyumlu,Adaptativo,적응형,アダプティブ,自适应
-poq.armor.prefix.none.2.1.tooltip,Bulwark,Убежище,Bollwerk,Rempart,Muralla,Bastion,Siper,Muralha,방벽,バルワーク,防御墙
-poq.armor.prefix.none.2.2.tooltip,Crusader's,Крестоносца,Kreuzfahrer,Croisé,Cruzado,Krzyżowiec,Haçlı,Cruzado,십자군의,十字軍の,十字军的
-poq.armor.prefix.none.2.3.tooltip,Cybernetic-Reinforced,Кибернетически усиленный,Cybernetisch-Verstärkt,Renforcé Cybernétique,Reforzado Cibernético,Wzmocniony Cybernetycznie,Sibernetik Takviye,Reforçado Ciberneticamente,사이버네틱 강화,サイボーグ強化,赛博强化
-poq.armor.prefix.none.2.4.tooltip,Defender's,Защитника,Verteidiger,Défenseur,Defensor,Obrońca,Savunucu,Defensor,수호자의,ディフェンダーの,防御者的
-poq.armor.prefix.none.2.5.tooltip,Energy-Shielded,Энергетически защитный,Energie-geschützt,Blindé Énergétique,Protegido por Energía,Chroniony Energią,Enerji Kalkanı,Protegido por Energia,에너지 방패,エネルギーシールド,能量护盾
-poq.armor.prefix.none.2.6.tooltip,Exo-Frame,Экзокадр,Exo-Rahmen,Exo-Cadre,Exo-Estructura,Egzoszkielet,Ekso-Kafes,Estrutura Exo,엑소 프레임,エクソフレーム,外骨骼框架
-poq.armor.prefix.none.2.7.tooltip,Grav-Deflecting,Гравитационно-отражающий,Gravitationsablenkend,Déviation Gravitationnelle,Desviación Gravitacional,Odbijający Grawitację,Gravitasyon Düşürme,Desviador Gravitacional,중력 반사,軌道反射,重力反射
-poq.armor.prefix.none.2.8.tooltip,Guardian's,Стража,Wächter,Gardien,Guardia,Strażnik,Koruyucu,Guardião,수호자의,ガーディアンの,卫士的
-poq.armor.prefix.none.2.9.tooltip,Ironclad,Непобедимый,Panzern,Cloué,Blindado,Żelazny,Demir gibi,Ferro,철갑,鉄壁,铁壁
-poq.armor.prefix.none.3.0.tooltip,Kinetic-Dampening,Кинетически демпфирующий,Kinetisch-Dämpfend,Atténuation Cinétique,Atenuación Cinética,Tłumiący Kinetykę,Kinetik Damping,Amortecimento Cinético,운동 저감,運動減衰,动能减震
-poq.armor.prefix.none.3.1.tooltip,Nano-Weave,Наноплетение,Nano-Gewebe,Nano-Tissage,Nano-Tejido,Nano-Tkanina,Nano-Net,Nano-Teia,나노 직물,ナノ繊維,纳米编织
-poq.armor.prefix.none.3.2.tooltip,Optimized,Оптимизированный,Optimiert,Optimisé,Optimizando,Optymalizowany,Optimize Edilmiş,Otimizados,최적화된,最適化された,优化的
-poq.armor.prefix.none.3.3.tooltip,Power-Assisted,С мощной поддержкой,Leistungsunterstützt,Assisté par la Puissance,Asistido por Poder,Wspomagany Mocą,Güç Yardımlı,Assistido por Potência,파워 보조,パワーアシスト,动力辅助
-poq.armor.prefix.none.3.4.tooltip,Reactive-Armor,Реактивная броня,Reaktive-Rüstung,Armure Réactive,Armadura Reactiva,Pancerz Reaktywny,Reaktif Zırh,Armadura Reativa,반응 갑옷,反応装甲,反应装甲
-poq.armor.prefix.none.3.5.tooltip,Resilient,Устойчивый,Resilient,Résilient,Resiliente,Elastyczny,Dayanıklı,Resiliente,탄력 있는,回復力のある,韧性
-poq.armor.prefix.none.3.6.tooltip,Sonic-Damped,Звуковик,Sonic-Dämpfung,Atténué Sonique,Atención Sónica,Tłumienie Soniczne,Sonic Damped,Impulsado Sonicamente,음향 댐프,音波減衰,声波减弱
-poq.armor.prefix.none.3.7.tooltip,Stealth-Ops,Операции скрытности,Stealth-Einsätze,Opérations Stealth,Operaciones Sigilosas,Operacje Stealth,Gizli Operasyonlar,Operações Stealth,은폐 작전,ステルス作戦,隐蔽行动
-poq.armor.prefix.none.3.8.tooltip,Warden's,Дозорного,Wächter,Gardien,Guardia,Warden,İzci,Guardião,관리자의,ウォーデンの,看护者的
-poq.armor.prefix.none.3.9.tooltip,Aegis-Pattern,Модель Эгиды,Aegis-Muster,Modèle Aegis,Patrón Aegis,Wzór Aegis,Aegis Deseni,Padrão Aegis,아이기스 패턴,エイジスパターン,保护模式
-poq.armor.prefix.none.4.0.tooltip,Atlas-Rig,Атласный комплект,Atlas-Rig,Atlas-Rig,Atlas-Rig,Atlas-Rig,Atlas-Rig,Atlas-Rig,아틀라스 장비,アトラス装備,大力神装备
-poq.armor.prefix.none.4.1.tooltip,Bastion's,Бастионный,Bastion,Bastion,Bastión,Bastion,Bastion,Bastião,요새의,バスティオンの,不可动摇的
-poq.armor.prefix.none.4.2.tooltip,Colossus-Grade,Колоссального класса,Kolosse-Güte,Grade Colosse,Grado Coloso,Klasa Kolosa,Kolos Sınıfı,Classe Colosso,거대한 등급,コロッサスグレード,巨型等级
-poq.armor.prefix.none.4.3.tooltip,Dominator,Подавляющий,Dominator,Dominant,Dominador,Dominator,Dominator,Dominador,지배자,ドミネーター,统治者
-poq.armor.prefix.none.4.4.tooltip,Dreadnought,Дредноут,Schreckensschiff,Dreadnought,Acorazado,Dreadnought,Korkunç Gemisi,Dreadnought,공포함,戦艦,战舰
-poq.armor.prefix.none.4.5.tooltip,Hyper-Plated,Гиперпластиковый,Hyper-Plattiert,Hyper-Plat,Hiper-Platado,Hiper-Płytowy,Hiper Kaplama,Hiper-Protegido,하이퍼 플레이트,ハイパープレート,超级铠甲
-poq.armor.prefix.none.4.6.tooltip,Impervious,Непроницаемый,Unverwundbar,Impassible,Impenetrable,Niezawodny,Geçirimsiz,Impassível,완벽한,完全無欠な,无懈可击
-poq.armor.prefix.none.4.7.tooltip,Impregnable,Неприступный,Unbezwingbar,Impénétrable,Inexpugnable,Nieprzenikniony,Geçilemez,Inexpugnável,무적의,侵攻不可能な,不可征服的
-poq.armor.prefix.none.4.8.tooltip,Juggernaut,Нерушимый,Koloss,Colosse,Coloso,Juggernaut,Yüksek Güç,Colosso,거대 전차,ジャガーノート,撞击者
-poq.armor.prefix.none.4.9.tooltip,Phantom-Skin,Фантомная оболочка,Phantom-Haut,Peau Fantôme,Piel Fantasma,Skóra Fantoma,Hayalet Derisi,Pele Fantasma,유령 피부,ファントムスキン,幽灵皮肤
-poq.armor.prefix.none.5.0.tooltip,Sentinel's,Стража,Sentinel,Sentinelle,Centinela,Sentinel,Gözcü,Sentinela,감시자의,センティネルの,哨兵的
-poq.armor.prefix.none.5.1.tooltip,Steel-Sentinel,Стальной страж,Stahl-Sentinel,Sentinelle en Acier,Centinela de Acero,Stalowy Sentinel,Çelik Gözcü,Sentinela de Aço,강철 감시자,スチールセンティネル,钢铁哨兵
-poq.armor.prefix.none.5.2.tooltip,Titan-Class,Титанового класса,Titan-Klasse,Classe Titan,Clase Titán,Klasa Tytana,Titangibi,Classe Titã,타이탄 클래스,タイタン級,泰坦级
-poq.armor.prefix.none.5.3.tooltip,Unbreakable,Ненарушимый,Unzerbrechlich,Incassable,Inquebrantable,Niezłomny,Kırılmaz,Inquebrantável,깨지지 않는,壊れない,无法打破
-poq.armor.prefix.none.5.4.tooltip,Unyielding,Непоколебимый,Zäh,Inflexible,Indócil,Nieustępliwy,Yılmazyayı,Inflexível,굽히지 않는,抗えない,不屈服
-poq.armor.prefix.none.5.5.tooltip,Vanguard's,Передового,Vanguard,Avant-Garde,Vanguardia,Vanguard,Öncü,Vanguarda,전위 군의,ヴァンガードの,先锋的
-poq.armor.prefix.none.5.6.tooltip,Chrono-Layered,Хронослойный,Chrono-Schichten,Chrono-Couche,Capa Crono,Chrono-Warstwa,Kronik Katman,Camada Crono,크로노 레이어드,クロノレイヤード,时间层叠
-poq.armor.prefix.none.5.7.tooltip,Ghost-Weave,Призрачное плетение,Geist-Gewebe,Tissage de Fantôme,Tejido Fantasma,Duch-Tkanina,Hayalet Dokuma,Teceiro Fantasma,유령 짜임,ゴーストウィーブ,幽灵编织
-poq.armor.prefix.none.5.8.tooltip,Quantum-Phased,Квантовая фаза,Quantum-Phasen,Phase Quantique,Fase Cuántica,Kwadrat-Faza,Kuantum Fazı,Fase Quântica,양자 단계,量子位相,量子相位
-poq.armor.prefix.none.5.9.tooltip,Void-Woven,Плетение пустоты,Leer-Gewoben,Tissé du Vide,Tejido de Vacío,Wyplatający Pustkę,Boşluk Dokuma,Tecido do Vazio,공허 짜임,虚無編成,虚空编织
-poq.weapon.prefix.none.1.0.tooltip,Assault,Штурм,Angriff,Assaut,Asalto,Atak,Saldırı,Ataque,공격,攻撃,攻击
-poq.weapon.prefix.none.1.1.tooltip,Brutal,Жестокий,Brutal,Brutal,Brutal,Brutalny,Sert,Brutal,잔인한,残忍な,残忍的
-poq.weapon.prefix.none.1.2.tooltip,Burst-Fire,Очередной огонь,Burst-Feuer,Tir en Rafale,Tiro en Ráfaga,Strzał Wybuchowy,Patlama Ateşi,Disparo em Rajada,폭발 사격,バーストファイア,突发火力
-poq.weapon.prefix.none.1.3.tooltip,Calibrated,Калиброванный,Kalibriert,Calibré,Calibrado,Kalibrowany,Kalibre,Calibrado,측정된,校正された,校准的
-poq.weapon.prefix.none.1.4.tooltip,Reinforced,Укрепленный,Verstärkt,Renforcé,Reforzado,Wzmocniony,Güçlendirilmiş,Reforçado,보강된,補強された,强化的
-poq.weapon.prefix.none.1.5.tooltip,Tactical,Тактический,Taktisch,Tactique,Táctico,Taktyczny,Taktik,Tático,전술,タクティカル,战术
-poq.weapon.prefix.none.1.6.tooltip,Adaptive,Адаптивный,Adaptiv,Adaptatif,Adaptativo,Adaptacyjny,Uyumlu,Adaptativo,적응형,アダプティブ,自适应
-poq.weapon.prefix.none.1.7.tooltip,Arc-Blaze,Арковое пламя,Bogen-Glanz,Arc-Flamme,Arco-Llama,Łuk-Płomień,Ateş Arkı,Chama Arqueada,아크 화염,アークブレイズ,电弧火焰
-poq.weapon.prefix.none.1.8.tooltip,Cybernetic-Link,Кибернетическая связь,Cybernetischer-Link,Lien Cybernétique,Enlace Cibernético,Cybernetyczne Połączenie,Sibernetik Bağlantı,Conexão Cibernética,사이버네틱 링크,サイボーグリンク,赛博链接
-poq.weapon.prefix.none.1.9.tooltip,Demolition,Демолизация,Demolitions-,Démolition,Demoliciones,Dekompozycja,Yıkım,Derrubada,철거,解体,拆除
-poq.weapon.prefix.none.2.0.tooltip,Disruptor,Подрывник,Störer,Disrupteur,Disruptor,Zakłócacz,Bozucu,Interferidor,방해자,ディスラプター,干扰器
-poq.weapon.prefix.none.2.1.tooltip,Enforcer's,Исполнителя,Durchsetzungs-,Appliqué,Impositor,Egzekutor,Uygulayıcı,Aplicador,집행관의,エンフォーサーの,行动者的
-poq.weapon.prefix.none.2.2.tooltip,Grav-Pulse,Гравитационный импульс,Grav-Puls,Pulsation Gravitationnelle,Pulso Gravitacional,Graw-Puls,Grav-Puls,Pulso de Gravidade,중력 펄스,重力パルス,重力脉冲
-poq.weapon.prefix.none.2.3.tooltip,Hunter-Killer,Охотник-убийца,Jäger-Killer,Chasseur-Tueur,Cazador-Asesino,Łowca-Zabójca,Avcı-Katiller,Caçador-Matador,헌터 킬러,ハンターキラー,猎杀者
-poq.weapon.prefix.none.2.4.tooltip,Incinerator,Инсинератор,Verbrenner,Incinérateur,Incinerador,Incynerator,İnfazcı,Incinerador,소각기,焼却炉,烧夷弹
-poq.weapon.prefix.none.2.5.tooltip,Kinetic-Burst,Кинетический взрыв,Kinetisch-Burst,Éclair Cinétique,Explosión Cinética,Kinetic-Wybuch,Kinetik Patlama,Explosão Cinética,운동 폭발,運動バースト,动能爆发
-poq.weapon.prefix.none.2.6.tooltip,Nano-Filament,Нанонить,Nano-Filament,Filament Nano,Filamento Nano,Filament Nano,Nano-IP,Filamento Nano,나노 필라멘트,ナノフィラメント,纳米纤维
-poq.weapon.prefix.none.2.7.tooltip,Optimized,Оптимизированный,Optimiert,Optimisé,Optimizando,Optymalizowany,Optimize Edilmiş,Otimizados,최적화된,最適化された,优化的
-poq.weapon.prefix.none.2.8.tooltip,Penetrator,Проникатель,Durchdringend,Pénétreur,Penetrador,Przenikacz,Delici,Penetrador,관통자,侵入者,穿透者
-poq.weapon.prefix.none.2.9.tooltip,Plasma-Charged,Плазменно заряженный,Plasma-geladen,Chargé Plasma,Cargado de Plasma,Naładowany Plazmą,Plazma Yüklü,Carregado com Plasma,플라즈마 충전,プラズマ充電,等离子充电
-poq.weapon.prefix.none.3.0.tooltip,Precision,Точность,Präzision,Précision,Precisión,Precyzja,Keskinlik,Precisão,정밀,精密,精度
-poq.weapon.prefix.none.3.1.tooltip,Ragefire,Ярость огня,Wutfeuer,Flamme de Rage,Fuego de Ira,Ogniem Wściekłości,Öfke Ateşi,Incêndio de Raiva,분노의 불,ラージファイア,愤怒之火
-poq.weapon.prefix.none.3.2.tooltip,Railgun,Рельсотрон,Schienenkanone,Fusil à Rail,Cañón de Riel,Railgun,Ray Tabancası,Canhão de Trilha,레일건,レールガン,磁轨炮
-poq.weapon.prefix.none.3.3.tooltip,Relentless,Безжалостный,Unerbittlich,Implacable,Implacable,Niezłomny,Taviz Vermez,Implacável,끈질긴,揺るがない,不屈不挠
-poq.weapon.prefix.none.3.4.tooltip,Shadow-Ops,Теневые операции,Schatten-Einsätze,Opérations Ombre,Operaciones Sombra,Cienie Operacje,Gölge Operasyonları,Operações Sombras,그림자 작전,シャドーオプス,影子行动
-poq.weapon.prefix.none.3.5.tooltip,Shredder,Разрушитель,Zerschneider,Déchireur,Desgarrador,Rozdrabniacz,Yarık,Destruidor,잘게 썰기,ショレッダー,撕裂者
-poq.weapon.prefix.none.3.6.tooltip,Sonic-Wave,Звуковая волна,Sonic-Welle,Onde Sonique,Onda Sónica,Fala Soniczna,Sonic Dalga,Onda Sônica,음파,ソニックウェーブ,声波
-poq.weapon.prefix.none.3.7.tooltip,Swiftfire,Быстротечный огонь,Schnellfeuer,Tir Rapide,Fuego Rápido,Szybki Ogień,Hızlı Ateş,Incêndio Rápido,신속한 불,スウィフトファイア,快速火力
-poq.weapon.prefix.none.3.8.tooltip,Alpha-Strike,Альфа-удар,Alpha-Angriff,Frappé Alpha,Ataque Alpha,Atak Alpha,Alpha Vuruşu,Ataque Alpha,알파 스트라이크,アルファストライク,阿尔法打击
-poq.weapon.prefix.none.3.9.tooltip,Annihilation,Полное уничтожение,Vernichtung,Annihilation,Aniquilación,Anihilacja,İmha,Aniquilação,전멸,アナイアレイション,毁灭
-poq.weapon.prefix.none.4.0.tooltip,Apex-Tier,Высшего уровня,Gipfelklasse,Niveau Apex,Nivel Apex,Klasa Apex,Zirve Seviye,Classe Apex,정점 계층,アペックスティア,顶级
-poq.weapon.prefix.none.4.1.tooltip,Devastator,Уничтожитель,Zerstörer,Dévastateur,Devastador,Dezorganizator,Yıkıcı,Devastador,파괴자,デヴァステーター,毁灭者
-poq.weapon.prefix.none.4.2.tooltip,Exterminator,Истребитель,Ausrottungs-,Exterminateur,Exterminador,Wykonawca,Yok Edici,Exterminador,박멸자,エクスターミネーター,消灭者
-poq.weapon.prefix.none.4.3.tooltip,Hyper-Velocity,Гиперскоростной,Hyper-Geschwindigkeit,Hyper-Vélocité,Hiper-Velocidad,Hiper-Prędkość,Hiper Hız,Hiper-Velocidade,하이퍼 속도,ハイパーベロシティ,超高速度
-poq.weapon.prefix.none.4.4.tooltip,Obliterator,Уничтожитель,Vernichter,Oblitérateur,Obliterador,Wybuchacz,Eldiven,Obliterador,말살자,オブリタレーター,根绝者
-poq.weapon.prefix.none.4.5.tooltip,Orbital-Strike,Орбитальный удар,Orbital-Schock,Frappe Orbitale,Impacto Orbital,Orbitalny-Atak,Yörüngesel Darbe,Ataque Orbital,궤도 타격,軌道攻撃,轨道打击
-poq.weapon.prefix.none.4.6.tooltip,Phantom-Class,Фантомного класса,Phantom-Klasse,Classe Fantôme,Clase Fantasma,Klasa Fantom,Hayalet Sınıfı,Classe Fantasma,유령 클래스,ファントムクラス,幽灵级
-poq.weapon.prefix.none.4.7.tooltip,Predator's,Хищника,Prädator,Prédateur,Depredador,Drapieżnik,Avcı,Predador,포식자의,プレデターの,捕食者的
-poq.weapon.prefix.none.4.8.tooltip,Pulsar,Пульсар,Pulsar,Pulsar,Pulsar,Pulsar,Pulsar,Pulsar,펄서,パルサー,脉冲星
-poq.weapon.prefix.none.4.9.tooltip,Sentinel's,Стража,Sentinel,Sentinelle,Centinela,System Obserwatora,Gözlemcinin,Sentinela,감시자의,センティネルの,哨兵的
-poq.weapon.prefix.none.5.0.tooltip,Stormcall,Призыв шторма,Sturmrufer,Appel de Tempête,Llamada de Tormenta,Zwołanie Burzy,Fırtına Çağırışı,Chamado da Tempestade,폭풍 소환,ストームコール,风暴召唤
-poq.weapon.prefix.none.5.1.tooltip,Terminator,Терминатор,Terminator,Terminator,Terminador,Terminatrix,Terminatör,Terminador,종말자,ターミネーター,终结者
-poq.weapon.prefix.none.5.2.tooltip,Vanguard,Передовой,Vanguard,Avant-Garde,Vanguardia,Vanguard,Öncü,Vanguarda,전위군,ヴァンガード,先锋
-poq.weapon.prefix.none.5.3.tooltip,Beam-Forge,Лучевая ковка,Laser-Schmiede,Forge de Faisceau,Forja de Rayo,Warsztat Promienia,Işın Üretimi,Forja de Feixe,빔 대장,ビームフォージ,射线锻造
-poq.weapon.prefix.none.5.4.tooltip,Chrono-Synched,Хроносинхронный,Chrono-Synchronisiert,Chrono-Synchronisé,Sincronizado Crono,Chrono-Zsynchronizowane,Kronik Senkronizasyon,Crono-Sincronizado,크로노 동기화,クロノシンク,时间同步
-poq.weapon.prefix.none.5.5.tooltip,Ghost-Protocol,Призрачный протокол,Geist-Protokoll,Protocole Fantôme,Protocolo Fantasma,Duch-Protokół,Hayalet Protokolü,Protocolo Fantasma,유령 프로토콜,ゴーストプロトコル,幽灵协议
-poq.weapon.prefix.none.5.6.tooltip,Doombringer,Принесущий гибель,Untergangsbringer,Apporte-Destruction,Portador de Doom,Niosiciel Zagłady,Kırılma Getiren,Portador de Doom,운명 가져오는 자,ドゥームブリンガー,厄运使者
-poq.weapon.prefix.none.5.7.tooltip,Omega-Pattern,Омега-шаблон,Omega-Muster,Modèle Omega,Patrón Omega,Wzór Omega,Omega Deseni,Padrão Ômega,오메가 패턴,オメガパターン,终极模式
-poq.weapon.prefix.none.5.8.tooltip,Quantum-Phase,Квантовая фаза,Quantum-Phase,Phase Quantique,Fase Cuántica,Kwadrat-Phas,Kuantum Fazı,Fase Quântica,양자 단계,量子位相,量子阶段
-poq.weapon.prefix.none.5.9.tooltip,Void-Infused,Наполненный пустотой,Leer-Durchtränkt,Infusé du Vide,Infundido de Vacío,Nasycony Pustką,Boşluktan Dolu,Infundido de Vazio ,공허 주입,虚無注入,虚空注入
+poq.armor.prefix.1.cloth.tooltip,Worn,Изношенный,Abgenutzt,Usé,Usado,Zużyty,Eskimiş,Usado,닳은,擦り切れた,磨损的
+poq.armor.prefix.2.cloth.tooltip,Bio-Hazard,Биологическая угроза,Biogefährdung,Risque biologique,Peligro biológico,Zagrożenie biologiczne,Biyolojik tehlike,Perigo biológico,바이오 위험,生物危険,生物危害
+poq.armor.prefix.3.cloth.tooltip,Silkbound,Связанный шелком,Seidengebunden,Lié de soie,Atado con seda,Związany jedwabiem,İpekle bağlanmış,Amarrado em seda,실로 묶인,絹で結ばれた,丝绸系的
+poq.armor.prefix.4.cloth.tooltip,Shadow-Embraced,Обнятый тенью,Schattenumarmt,Étreint par l'ombre,Abrigado por la sombra,Objęty cieniem,Gölgeye sarılmış,Abraçado pela sombra,그림자에 안긴,影に抱かれた,被阴影拥抱的
+poq.armor.prefix.5.cloth.tooltip,The Drifter's Cloak,Плащ Бродяги,Der Umhang des Herumtreibers,Le manteau du vagabond,La capa del errante,Płaszcz Wędrowca,Göçebe'nin Pelerini,A capa do errante,방랑자의 망토,流浪者のマント,漂泊者的斗篷
+poq.armor.prefix.1.heavy_armor.tooltip,Dented,Вмятый,Eingedellt,Bosselé,Abollado,Wgnieciony,Çökük,Amassado,움푹 패인,凹んだ,凹陷的
+poq.armor.prefix.2.heavy_armor.tooltip,Cracked,Трещина,Rissig,Fissuré,Agrietado,Pęknięty,Çatlak,Rachado,금이 간,亀裂が入った,有裂缝的
+poq.armor.prefix.3.heavy_armor.tooltip,Battle-worn,Боевой износ,Kampfgebeutzt,Éprouvé par la bataille,Gastado por la batalla,Zużyty w walce,Savaşta kullanılmış,Gasto pela batalha,전투로 닳은,戦闘で傷んだ,战斗磨损的
+poq.armor.prefix.4.heavy_armor.tooltip,Reinforced,Укрепленный,Verstärkt,Renforcé,Reforzado,Wzmocniony,Takviye edilmiş,Reforçado,강화된,強化された,加固的
+poq.armor.prefix.5.heavy_armor.tooltip,Forged-in-Hellfire,Кованный в адском огне,Geschmiedet im Höllenfeuer,Forgé dans le feu de l'enfer,Forjado en fuego infernal,Wykuwany w piekielnym ogniu,Cehennem ateşinde dövülmüş,Forjado no fogo do inferno,지옥의 불 속에서 단조된,地獄の火で鍛えた,在地狱烈火中锻造的
+poq.armor.prefix.1.light_armor.tooltip,Swift,Быстрый,Schnell,Rapide,Rápido,Szybki,Hızlı,Rápido,빠른,迅速な,迅速的
+poq.armor.prefix.2.light_armor.tooltip,Ender,Завершитель,Beender,Fendeur,Acabador,Kończący,Sonlandırıcı,Acabador,끝내는 자,終わらせる者,结束者
+poq.armor.prefix.3.light_armor.tooltip,Combat-Ready,Готов к бою,Kampferprobt,Prêt au combat,Listo para combate,Gotowy do walki,Savaşa hazır,Pronto para combate,전투 준비 완료,戦闘準備完了,准备战斗的
+poq.armor.prefix.4.light_armor.tooltip,Ember-Woven,Сшитый из углей,Glutgewebt,Tissé de braises,Tejido de brasas,Tkaniny ogników,Kızgın ateşten dokunmuş,Tecido de brasas,불꽃으로 짠,炎で織られた,灰烬编织的
+poq.armor.prefix.5.light_armor.tooltip,The Skyfire's Grace,Благодать Небесного Огня,Die Anmut des Himmelsfeuers,La grâce du feu céleste,La gracia del fuego celeste,Łaska Niebieskiego Ognia,Gökyüzü ateşinin zarafeti,A graça do fogo celeste,하늘의 불꽃의 은총,空の炎の優雅さ,天空之火的优雅
+poq.armor.prefix.1.medium_armor.tooltip,Resilient,Устойчивый,Widerstandsfähig,Résilient,Resiliente,Odporny,Dayanıklı,Resiliente,회복력 있는,回復力のある,韧性的
+poq.armor.prefix.2.medium_armor.tooltip,Salvaged,Спасённый,Geborgen,Sauvé,Recuperado,Ocalały,Kurtarılmış,Recuperado,구출된,救出された,拯救的
+poq.armor.prefix.3.medium_armor.tooltip,Stormforged,Кованный в буре,Sturmgeschmiedet,Forgé dans la tempête,Forjado en tormenta,Kurowany w burzy,Fırtınada dövülmüş,Forjado na tempestade,폭풍 속에서 단조된,嵐で鍛えた,风暴锻造的
+poq.armor.prefix.4.medium_armor.tooltip,Thunder-Linked,Соединённый с громом,Mit Donner verbunden,Lien avec le tonnerre,Vinculado al trueno,Połączony z piorunem,Gök gürültüsüne bağlı,Vinculado ao trovão,천둥과 연결된,雷と結びついた,雷声相连的
+poq.armor.prefix.5.medium_armor.tooltip,The Hollow Bastion's Legacy,Наследие Пустой Бастилии,Das Erbe der Hohlbastion,L'héritage de la bastion creux,El legado de la bastión hueco,Dziedzictwo Pustej Bastionu,Boş Siper'in Mirası,O legado da bastião oca,공허의 요새의 유산,空の砦の遺産,空心碉堡的遗产
+poq.armor.prefix.1.power_armor.tooltip,Sharded,Разбитый,Gesplittert,Éclaté,Fragmentado,Rozbity,Parçalanmış,Fragmentado,조각난,破片がある,破碎的
+poq.armor.prefix.2.power_armor.tooltip,Coreweave,Ядровое переплетение,Kerngewebe,Tissage de noyau,Tejido central,Tkactwo rdzenia,Çekirdek dokuma,Tecido central,핵직물,コア織り,核织
+poq.armor.prefix.3.power_armor.tooltip,Solarmend,Солнечное исцеление,Sonnenheilung,Guérison solaire,Sanación solar,Uzdrawianie słoneczne,Güneş iyileştirmesi,Sarcófago solar,태양 치료,太陽治療,太阳疗愈
+poq.armor.prefix.4.power_armor.tooltip,Plasma-Touched,Затронутый плазмой,Plasmakontakt,Touché par le plasma,Tocado por plasma,Dotknięty plazmą,Plazma ile temas etmiş,Tocado por plasma,플라즈마에 닿은,プラズマに触れた,触及等离子的
+poq.armor.prefix.5.power_armor.tooltip,Prototype-Adamantium,Прототип-адамант,Prototyp-Adamantium,Prototype-Adamantium,Prototipo-de-Adamantium,Prototyp-Adamantium,Prototip-Adamantium,Protótipo de adamantium,프로토타입 아다만티움,プロトタイプアダマンチウム,原型亚当
+poq.weapon.prefix.1.industrial.tooltip,Shredder,Резак,Zerschneider,Déchireur,Desgarrador,Rozdzieracz,Parçalayıcı,Destruidor,파괴기,裂け目,剪切者
+poq.weapon.prefix.1.firearm.tooltip,Overpressure,Избыточное давление,Überdruck,Surpression,Sobrecarga,Nadciśnienie,Aşırı Basınç,Sobrecarga,과압,過圧,超压
+poq.weapon.prefix.1.rail.tooltip,Resonant,Резонирующий,Resonant,Résonnant,Resonante,Rezonansowy,Yankı,Resonante,공명하는,共鳴する,共鸣
+poq.weapon.prefix.1.laser.tooltip,Focused,Сфокусированный,Fokussiert,Focalisé,Enfocado,Skoncentrowany,Odaklanmış,Focalizado,집중된,集中した,集中
+poq.weapon.prefix.1.toxic.tooltip,Venenous,Ядовитый,Giftig,Vénéneux,Venenoso,Trujący,Zehirli,Venenoso,독성을 가진,毒のある,有毒的
+poq.weapon.prefix.1.plasma.tooltip,Flare,Вспышка,Signalfeuer,Éclair,Destello,Zespół,Işık Patlaması,Sinalizador,불꽃,フレア,闪光
+poq.weapon.prefix.1.quasi.tooltip,Filament,Нить,Faden,Filament,Filamento,Włókno,İplik,Filamento,필라멘트,繊維,细丝
+poq.weapon.prefix.1.coldgun.tooltip,Frostbite,Ушиб,Erfrierung,Gelure,Congelamiento,Odmrożenie,Donma,Congelante,동상,凍傷,冻伤
+poq.weapon.prefix.1.electric.tooltip,Shortcircuited,Короткое замыкание,Kurzgeschlossen,Court-circuité,Cortocircuitado,Krótkie spięcie,Kısa Devre Yapmış,Em Curto,단락된,短絡した,短路
+poq.weapon.prefix.1.entropic.tooltip,Void,Пустота,Leere,Vide,Vacío,Pustka,Boşluk,Vazio,공허,虚無,虚空
+poq.weapon.prefix.1.launcher.tooltip,Breach,Нарушение,Verstoß,Brèche,Brecha,Naruszenie,Açık Yer,Brecha,돌파구,侵入,突破
+poq.weapon.prefix.2.industrial.tooltip,Ironclad,Железный,Eisenhart,Cuirassé,Acorazado,Żelazny,Demir Gibi Sağlam,Inabalável,철갑의,鉄製の,铁甲的
+poq.weapon.prefix.2.firearm.tooltip,Suppressed,Подавленный,Unterdrückt,Suppressé,Suprimido,Tłumiony,Bastırılmış,Suprimido,억제된,抑制された,压制
+poq.weapon.prefix.2.rail.tooltip,Magnetic,Магнитный,Magnetisch,Magnétique,Magnético,Magnetyczny,Manyetik,Magnético,자성의,磁気の,磁性的
+poq.weapon.prefix.2.laser.tooltip,Refracted,Преломлённый,Brechend,Réfracté,Refractado,Refrakcyjny,Kırılmış,Refratado,굴절된,屈折した,折射
+poq.weapon.prefix.2.toxic.tooltip,Contagion,Зараза,Ansteckung,Contagion,Contagio,Zakażenie,Bulaşıcı,Contágio,전염,感染,传染
+poq.weapon.prefix.2.plasma.tooltip,Overheated,Перегретый,Überhitzt,Surchauffé,Sobrecalentado,Przegrzany,Aşırı Isınmış,Superaquecido,과열된,過熱された,过热
+poq.weapon.prefix.2.quasi.tooltip,Intangible,Нереальный,Immateriell,Intangible,Intangible,Nienamacalny,Somut Olmayan,Intangível,무형의,無形の,无形的
+poq.weapon.prefix.2.coldgun.tooltip,Icereaver,Ледяной резак,Eisschneider,Brise-glace,Rompehielos,Lodołamacz,Buz Yırtıcı,Quebra-gelo,얼음 파괴자,氷の破壊者,冰裂者
+poq.weapon.prefix.2.electric.tooltip,Overcharged,Переполненный,Überladen,Surcharge,Sobrecargado,Nadładowany,Aşırı Yüklenmiş,Sobrecarga,과충전된,過充電された,过载
+poq.weapon.prefix.2.entropic.tooltip,Pulsar,Пульсар,Pulsar,Pulsar,Pulsar,Pulsar,Pulsar,Pulsar,펄사,パルサー,脉冲星
+poq.weapon.prefix.2.launcher.tooltip,Projectile,Снаряд,Geschoss,Projectile,Proyecto,Pocisk,Mermi,Projétil,투사체,弾丸,弹丸
+poq.weapon.prefix.3.industrial.tooltip,Forgebeast,Кузнечное чудовище,Schmiedebestie,Bête forge,Bestia forjada,Potwór z kuźni,Dövme Canavarı,Besta Forjada,제련 괴물,鍛冶獣,锻造兽
+poq.weapon.prefix.3.firearm.tooltip,Smokeclaw,Дымчатый коготь,Rauchkrallen,Griffe de fumée,Garra de humo,Dymna pazur,Duman Pençesi,Garra de Fumaça,연기 발톱,煙の爪,烟爪
+poq.weapon.prefix.3.rail.tooltip,Hyper-Velocity,Гиперскорость,Hypergeschwindigkeit,Hyper-vitesse,Hiper-velocidad,Hyper-prędkość,Süper Hız,Hiper-Velocidade,초고속,超速度,超高速
+poq.weapon.prefix.3.laser.tooltip,Beam Core,Ядро луча,Strahlkern,Cœur de faisceau,Núcleo del haz,Rdzeń wiązki,Işın Çekirdeği,Núcleo de Feixe,빔 핵,ビームのコア,射线核心
+poq.weapon.prefix.3.toxic.tooltip,Plague,Чума,Plage,Peste,Plaga,Plaga,Veba,Praga,역병,疫病,瘟疫
+poq.weapon.prefix.3.plasma.tooltip,Scorched,Обожжённый,Versengt,Calciné,Quemado,Spalony,Yanmış,Queimado,타버린,焼けた,灼烧
+poq.weapon.prefix.3.quasi.tooltip,Ethereal,Эфирный,Ethereal,Éthéré,Etéreo,Eteryczny,Etherik,Etéreo,에테리얼,エーテリアルな,虚无的
+poq.weapon.prefix.3.coldgun.tooltip,Cryosurge,Ледяной всплеск,Kryovorschub,Cryosurge,Cryosurge,Kryoskurcz,Dondurucu Patlama,Surto de Gelo,냉각 파동,凍結の衝撃,冰霜激增
+poq.weapon.prefix.3.electric.tooltip,Shocking,Шокирующий,Schockierend,Choquant,Impactante,Szokujący,Şok Edici,Chocante,충격적인,衝撃的な,震撼的
+poq.weapon.prefix.3.entropic.tooltip,Gravitonic,Гравитонный,Gravitonisch,Gravitonique,Gravitónico,Gravitonowy,Yerçekimsel,Gravitônico,중력의,重力の,引力的
+poq.weapon.prefix.3.launcher.tooltip,Explosive,Взрывчатый,Explosiv,Explosif,Explosivo,Eksplozjowy,Patlayıcı,Explosivo,폭발성의,爆発性,爆炸的
+poq.weapon.prefix.4.industrial.tooltip,Molten Drill,Расплавленный бур,Geschmolzener Bohrer,Foreuse fondue,Taladro fundido,Cieplny wiertło,Erimiş Matkap,Broca Derretida,녹은 드릴,溶融ドリル,熔化钻头
+poq.weapon.prefix.4.firearm.tooltip,Devastator,Разрушитель,Verwüster,Dévastateur,Devastador,Dewastator,Yıkıcı,Devastador,대파괴자,破壊者,毁灭者
+poq.weapon.prefix.4.rail.tooltip,Kinetic-Burst,Кинетический взрыв,Kinetischer Ausbruch,Éclat cinétique,Explosión cinética,Eksplozja kinetyczna,Kinetik Patlama,Explosão Cinética,운동에너지 폭발,運動エネルギー爆発,动能爆发
+poq.weapon.prefix.4.laser.tooltip,Pulse Annihilator,Аннигилятор пульса,Puls-Annihilator,Annihilateur d'impulsions,Aniquilador de pulsos,Annihilator impulsów,Nabız Yok Edici,Aniquilador de Pulso,펄스 멸망자,パルス完全破壊者,脉冲歼灭者
+poq.weapon.prefix.4.toxic.tooltip,Ebonscourge Ashenbinder ,Чёрный бич Пепельного свода,Schwärzendaumen Aschenbinder,Fléau ébène Lien des cendres,Azote de ébano Conector de cenizas,Zgubny czarny więziciel popiołu,Kara Lanet Küllerle Bağlayıcı,Constritor de Cinzas da Praga Ebony,검은 재의 애쉬바인더,エボーンの灰結びつける者,黑暗灾厄灰烬绑定者
+poq.weapon.prefix.4.plasma.tooltip,Obliterator,Обелиск,Vernichter,Oblitérateur,Obliterador,Obliteracja,Yok Edici,Obliterador,제거자,消滅者,消灭者
+poq.weapon.prefix.4.quasi.tooltip,Crumbling Infinity,Распадающаяся бесконечность,Zerfallende Unendlichkeit,Infini qui s'effondre,Infinito desmoronándose,Krusząca się nieskończoność,Çöken Sonsuzluk,Infinidade Ameaçante,부서지는 무한,崩れる無限,崩溃的无尽
+poq.weapon.prefix.4.coldgun.tooltip,Voidchill,Холода пустоты,Leere-Kälte,Frisson du vide,Frío del vacío,Zimno pustki,Boşluk Soğuması,Frio do Vazio,공허한 냉기,虚無の冷気,虚空寒冷
+poq.weapon.prefix.4.electric.tooltip,Stormspark,Искра шторма,Sturmfunke,Étincelle de tempête,Chispa de tormenta,Iskra burzy,Fırtına Kıvılcımı,Faísca de Tempestade,폭풍의 번개,嵐の火花,暴风火花
+poq.weapon.prefix.4.entropic.tooltip,Devouring Blackhole,Поглощающее черное дыра,Verschlingendes schwarzes Loch,Trou noir dévorant,Agujero negro devorador,Pożerający czarny otwór,Yutan Kara Delik,Buraco Negro Devorador,먹이사슬 블랙홀,飲み込むブラックホール,吞噬黑洞
+poq.weapon.prefix.4.launcher.tooltip,Warhead,Боеголовка,Sprengkopf,Tête chercheuse,Cabeza de guerra,Główka pocisku,Savaş Başlığı,Cabeça de Guerra,전투부,戦闘部,弹头
+poq.weapon.prefix.5.industrial.tooltip,Oath of the Forge,Клятва кузни,Schwur der Schmiede,Serment de la forge,Juramento de la forja,Przysięga kuźni,Dövme Yemin,Juramento da Forja,대장간의 맹세,鍛冶の誓い,锻造的誓言
+poq.weapon.prefix.5.firearm.tooltip,Exterminator’s Oath,Клятва истребителя,Schwur des Exterminators,Serment de l'exterminateur,Juramento del exterminador,Przysięga eksterminatora,Yok Edici Yemin,Juramento do Exterminador,제거자의 맹세,絶滅者の誓い,执行者的誓言
+poq.weapon.prefix.5.rail.tooltip,Fragmaster's Friend,Друг мастера фрагментов,Freund des Fragmentmeisters,Ami du maitre des frag,Amigo del maestro de frag,Przyjaciel mistrza kruszyciela,Frag Ustası'nın Arkadaşı,Amigo do Mestre de Fragmentos,프래그 마스터의 친구,フラグマスターの友,破碎大师的朋友
+poq.weapon.prefix.5.laser.tooltip,Beam Orion’s Resolve,Решение луча Ориона,Strahl des Orion-Entschlusses,Résolution du faisceau d'Orion,Resolución del haz de Orion,Determinacja promienia Oriona,Işın Orion’un Azmi,Resolução de Feixe Orion,오리온의 결의,ビームオリオンの決意,光束猎户座的决心
+poq.weapon.prefix.5.toxic.tooltip,Plaguebringer of Death,Носитель чумы смерти,Plagebringer des Todes,Porteur de peste de la mort,Portador de plagas de la muerte,Niosący plagę śmierci,Ölüm Veba Getireni,Portador da Praga da Morte,죽음의 역병 가져오는 자,死の疫病をもたらす者,死亡的瘟疫带来者
+poq.weapon.prefix.5.plasma.tooltip,Apex-Tier Plasmoid,Плазмоид высшего уровня,Spitzenklasse-Plasmoid,Plasmoïde de niveau supérieur,Plasmoide de nivel superior,Plazmoidy najwyższego poziomu,Zirve Düzey Plasmoid,Plasmoide de Nível Apex,최상위 플라스모이드,アペックスティアプラスモイド,顶级等离子体
+poq.weapon.prefix.5.quasi.tooltip,Embracing Eternity,Обнимая вечность,Ewigkeit umarmen,Étreindre l'éternité,Abrazando la eternidad,Przytulanie wieczności,Ebediyeti Kucaklama,Abraçando a Eternidade,영원을 포옹하는,永遠を受け入れる,拥抱永恒
+poq.weapon.prefix.5.coldgun.tooltip,Frostweaver's Embrace,Объятие ткача холода,Umarmung des Frostwebers,Étreinte du tisseur de gel,Abrazo del tejedor de hielo,Uścisk tkacza mrozu,Buz Dokuyucu'nun Kucaklaması,Abraço do Tecelão de Gelo,얼음 직조자의 포옹,凍気の織り手の抱擁,冰织者的怀抱
+poq.weapon.prefix.5.electric.tooltip,Electroflux Maximus,Электрофлюкс максимус,Elektroflux Maximus,Électroflux maximum,Electroflujo máximo,Maksymalny elektroprzepływ,Elektroakış Maksimum,Fluxo Eletromáximo,전류의 최대,最大電流,电流最大化
+poq.weapon.prefix.5.entropic.tooltip,Serpentine`s Void,Пустота змеи,Serpentinenleere,Vide serpentin,Vacío serpentino,Pustka wężowa,Yılan Benzerinin Boşluğu,Vazio Serpentino,뱀 모양의 공허,蛇形の虚無,蛇形虚空
+poq.weapon.prefix.5.launcher.tooltip,Morbid Doombringer,Ужасный носитель doom,Morbider Untergangsbringer,Porteur de mort morbide,Portador de doom mórbido,Mroczny przynosiciel zagłady,Ölümcül Felaket Getirici,Portador da Morte Macabra,비극적 재앙의 전파자,不気味な破滅を運ぶ者,病态的 doom 使者
+poq.weapon.prefix.1.knife.tooltip,Bloodied,Обагрённый,Blutgetränkt,Sanglant,Sangriento,Krwawiący,Kanlı,Manchado de Sangue,핏자국이 난,血の跡のある,血腥的
+poq.weapon.prefix.2.knife.tooltip,Whispering,Шёпот,Flüstern,Murmure,Susurrante,Szeptający,Fısıldayan,Sussurrante,속삭이는,ささやく,低语的
+poq.weapon.prefix.3.knife.tooltip,Enchanted,Зачарованный,Verzaubert,Enchanté,Encantado,Oczarowany,Büyülenmiş,Encantado,매혹된,魅惑された,被施魔法的
+poq.weapon.prefix.4.knife.tooltip,Shattering,Разрушающий,Zerschmetternd,Brisé,Quiebre,Zniszczenie,Parçalayan,Quebrador,산산조각내는,砕く,瓦解的
+poq.weapon.prefix.5.knife.tooltip,Infused Knife of Azriel,Инфицированный нож Азриэля,Durchtränkter Azriel-Messer,Couteau imprégné d'Azriel,Cuchillo infundido de Azriel,Nóż infuzowany Azrielem,Azriel'in Enjekte Edilmiş Bıçağı,Faca Infundida de Azriel,아즈리엘의 주입된 칼,アズリエルの注入されたナイフ,阿兹里尔的注入刀
+poq.weapon.prefix.1.blade.tooltip,Rusty,Ржавый,Rostig,Rouillé,Oxidado,Zardzewiały,Paslı,Enferrujado,녹슨,錆びた,松锈的
+poq.weapon.prefix.2.blade.tooltip,Jagged,Зазубренный,Gezackt,Dentelé,Serrajado,Ząbkowany,Dişli,Serrilhado,톱니 모양의,ギザギザの,锯齿状的
+poq.weapon.prefix.3.blade.tooltip,Cursed,Проклятый,Verflucht,Maudit,Maldito,Przeklęty,Lanetli,Maldito,저주받은,呪われた,被诅咒的
+poq.weapon.prefix.4.blade.tooltip,Singing,Поющий,Singend,Chantant,Cantante,Śpiewający,Şarkı Söyleyen,Cantante,노래하는,歌う,唱歌的
+poq.weapon.prefix.5.blade.tooltip,Fallen Queen's Razor,Лезвие павшей королевы,Rasiermesser der gefallenen Königin,Rasoir de la reine déchue,Aguijón de la reina caída,Żyletka Upadłej Królowej,Düşmüş Kraliçe’nin Jileti,Lâmina da Rainha Caída,떨어진 여왕의 면도기,崩れた女王の剃刀,堕落女王的剃刀
+poq.weapon.prefix.1.fist.tooltip,Worn,Изношенный,Abgetragen,Usé,Usado,Noszony,Yıpranmış,Usado,닳은,使い古しの,磨损的
+poq.weapon.prefix.2.fist.tooltip,Hollow,Полый,Höhlend,Creux,Hueco,Pusty,Boş,Oco,빈,中が空っぽの,空心的
+poq.weapon.prefix.3.fist.tooltip,Tempered,Закаленный,Temperiert,Trempé,Temperado,Utwardzany,Temperlenmiş,Temperado,강화된,硬化された,回火的
+poq.weapon.prefix.4.fist.tooltip,Thunderclap Gauntlet,Кулак грозы,Donnerschlag-Handschuh,Gantelet du tonnerre,Guantelete de trueno,Rękawica grzmotu,Gök Gürültüsü Eldiveni,Luva de Estrondo,천둥가락지,雷鳴の手袋,雷霆拳套
+poq.weapon.prefix.5.fist.tooltip,Blessed by the Storm,Благословлённый бурей,Vom Sturm gesegnet,Béni par la tempête,Bendecido por la tormenta,Błogosławiony przez burzę,Fırtına tarafından Kutsanmış,Abençoado pela Tempestade,폭풍에 의해 축복받은,嵐に祝福された,被风暴祝福
+poq.weapon.prefix.1.club.tooltip,Cracked,Трещина,Rissig,Fissuré,Agrietado,Pęknięty,Çatlamış,Rachado,금이 간,ひび割れた,裂开的
+poq.weapon.prefix.2.club.tooltip,Weathered,Изношенный,Verwittert,Érodé,Envejecido,Zniszczony,Hava Koşullarına Dayanıklı,Envelhecido,보풀이 일어난,年月を経た,经风化的
+poq.weapon.prefix.3.club.tooltip,Polished,Отполированный,Poliert,Poli,Pulido,Polerowany,Parlatılmış,Polido,다듬어진,磨かれた,抛光的
+poq.weapon.prefix.4.club.tooltip,Starlit Flail,Удар звёзд,Sternenlicht-Flegel,Fléau étoilé,Flail iluminado por las estrellas,Flail oświetlony gwiazdami,Yıldız Işığında Zincir Kuluçkası,Flail Iluminado por Estrelas,별빛 금속 줄기,星明りのフレイル,星光钉耙
+poq.weapon.prefix.5.club.tooltip,The Abyssal King,Царство бездны,Der abgründige König,Le roi abyssal,El Rey Abisal,Król otchłani,Uçurum Kralı,O Rei Abissal,심연의 왕,深淵の王,深渊之王
+poq.weapon.prefix.1.axe.tooltip,Broken,Сломанный,Gebrochen,Cassé,Roto,Złamany,Kırık,Quebrado,부서진,壊れた,破损的
+poq.weapon.prefix.2.axe.tooltip,Split,Разделённый,Geteilt,Fendu,Partido,Rozdzielony,Bölünmüş,Dividido,나뉜,分裂した,分裂的
+poq.weapon.prefix.3.axe.tooltip,Well Balanced,Хорошо сбалансированный,Gut ausbalanciert,Bien équilibré,Bien equilibrado,Dobrze wyważony,İyi Denge,Bem Equilibrado,잘 균형 잡힌,よくバランスが取れた,平衡良好的
+poq.weapon.prefix.4.axe.tooltip,Fireforged,Кузнечно-огненный,Feuergeformt,Forgé par le feu,Forjado por el fuego,Vytwarzany w ogniu,Ateşle Dövme,Forjado pelo Fogo,불로 단련된,火で鍛えられた,火锻造的
+poq.weapon.prefix.5.axe.tooltip,Starborn by the Ember,"Звёздный, рожденный Эмбером",Sternengeboren durch die Glut,Né des étoiles par la braise,Nacido entre las estrellas por la brasa,Narodzony ze gwiazd przez żar,Kül ile Yıldız Doğan,Nascido das Centelhas,불꽃에서 태어난 별,炎から生まれた星,由余烬所生的星辰
 poq.modconfig.label.enable.tooltip,Enable \ Disable mod. This stops item generation but keep existing items.,"Включить/Отключить мод. Это останавливает генерацию предметов, но сохраняет существующие.","Mod aktivieren/deaktivieren. Dies stoppt die Gegenstandserzeugung, behält aber bestehende Gegenstände bei.",Activer/Désactiver le mod. Cela arrête la génération d'objets mais conserve les objets existants.,Habilitar/Deshabilitar mod. Esto detiene la generación de objetos pero mantiene los objetos existentes.,"Włącz/Wyłącz mod. Zatrzymuje to generowanie przedmiotów, ale zachowuje istniejące.","Modu Etkinleştir/Devre Dışı Bırak. Bu, eşya üretimini durdurur ancak mevcut eşyaları korur.","Ativar/Desativar mod. Isso interrompe a geração de itens, mas mantém os itens existentes.",모드 활성화/비활성화. 아이템 생성을 중지하지만 기존 아이템은 유지합니다.,Modを有効/無効にします。これによりアイテムの生成は停止しますが、既存のアイテムは保持されます。,启用/禁用模组。这将停止物品生成但保留现有物品。
 poq.modconfig.label.enable.name,Enable,Включить,Aktivieren,Activer,Habilitar,Włącz,Etkinleştir,Ativar,활성화,有効,启用
 poq.modconfig.label.cleanupmode.tooltip,"Cleanup mode. Load game, move all items made by mod to SHIP STORAGE. Save game, enable cleanup, load game, done!","Режим очистки. Загрузите игру, переместите все предметы, созданные модом, в ХРАНИЛИЩЕ КОРАБЛЯ. Сохраните игру, включите очистку, загрузите игру, готово!","Bereinigungsmodus. Spiel laden, alle vom Mod erstellten Gegenstände in den SCHIFFSLAGER bewegen. Spiel speichern, Bereinigung aktivieren, Spiel laden, fertig!","Mode de nettoyage. Chargez la partie, déplacez tous les objets créés par le mod vers le STOCKAGE DU VAISSEAU. Sauvegardez la partie, activez le nettoyage, chargez la partie, terminé !","Modo de limpieza. Carga la partida, mueve todos los objetos creados por el mod al ALMACÉN DE LA NAVE. Guarda la partida, activa la limpieza, carga la partida, ¡listo!","Tryb czyszczenia. Wczytaj grę, przenieś wszystkie przedmioty stworzone przez mod do MAGAZYNU STATKU. Zapisz grę, włącz tryb czyszczenia, wczytaj grę, gotowe!","Temizleme modu. Oyunu yükleyin, mod tarafından oluşturulan tüm öğeleri GEMİ DEPOSU'na taşıyın. Oyunu kaydedin, temizlemeyi etkinleştirin, oyunu yükleyin, bitti!","Modo de limpeza. Carregue o jogo, mova todos os itens feitos pelo mod para o ARMAZENAMENTO DA NAVE. Salve o jogo, ative a limpeza, carregue o jogo, pronto!","정리 모드. 게임을 로드하고, 모드로 생성된 모든 아이템을 함선 보관함으로 옮깁니다. 게임 저장, 정리 활성화, 게임 로드, 완료!",クリーンアップモード。ゲームをロードし、Modによって作成されたすべてのアイテムを船のストレージに移動します。ゲームを保存し、クリーンアップを有効にし、ゲームをロードすれば完了です！,清理模式。加载游戏，将模组生成的所有物品移动到飞船货舱。保存游戏，启用清理模式，加载游戏，完成！
