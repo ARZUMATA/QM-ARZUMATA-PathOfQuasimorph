@@ -301,8 +301,23 @@ namespace QM_PathOfQuasimorph.Core
             "none"
         };
 
-        // Define multipliers for each Rarity class
 
+        private List<string> rangedTraitsBlacklist = new List<string> {
+            "perfect_throw",
+            "piercing_throw",
+            "cleave",
+            "unthrowable",
+            "critical_throw",
+
+        };
+        private List<string> meleeTraitsBlacklist = new List<string>(){
+            "suppressor",
+            "ramp_up",
+            "bipod",
+            "optic_sight",
+        };
+
+        // Define multipliers for each Rarity class
         private Dictionary<ItemRarity, (float Min, float Max)> _rarityModifiers = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,   ( 1.0f,   1.0f  ) },  // Standard = Common // No change for Standard 
@@ -839,6 +854,44 @@ namespace QM_PathOfQuasimorph.Core
         {
             var traitsForItemType = GetAddeableTraits(itemTraitType);
             var traitsForItemTypeShuffled = ShuffleDictionary(traitsForItemType);
+
+            // Determine if the item is a melee weapon
+            bool isMelee = false;
+
+            var record = item.Record<WeaponRecord>();
+            Plugin.Logger.Log($"\t\t  WeaponRecord Exist: {record != null}");
+
+            if (record != null)
+            {
+                isMelee = record.IsMelee;
+            }
+            Plugin.Logger.Log($"\t\t  isMelee: {isMelee}");
+
+            // Apply traits blacklist
+            if (isMelee)
+            {
+                for (int i = traitsForItemTypeShuffled.Count - 1; i >= 0; i--)
+                {
+                    var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
+                    if (meleeTraitsBlacklist.Contains(key))
+                    {
+                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
+                        traitsForItemTypeShuffled.Remove(key);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = traitsForItemTypeShuffled.Count - 1; i >= 0; i--)
+                {
+                    var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
+                    if (rangedTraitsBlacklist.Contains(key))
+                    {
+                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
+                        traitsForItemTypeShuffled.Remove(key);
+                    }
+                }
+            }
 
             var traitCount = GetTraitCountByRarity(itemRarity, traitsForItemType.Count);
 
