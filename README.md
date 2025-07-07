@@ -167,3 +167,11 @@ Thanks to NBK_RedSpy, Crynano and all the people who make their code open source
  - Fixed one issue where some items were not processed and were reset to vanilla ones. Loooking into it anyway.
  - Rarity csv file is now available for editing and overrides internal data. See mod config to enable it.
  - Tooltips for weapons to compare PoQ one with vanilla. Hotkey 'left shift'.
+
+## 1.4 (aef44c6)
+- Internal rnd calculations are corrected.
+- Traits for ranged weapons and melee now have blacklists to remove absurd traits.
+- Tooltips for armor resists.
+- Average resist if applied is not that strong.
+- Fixed error, making armor getting huge weight.
+
