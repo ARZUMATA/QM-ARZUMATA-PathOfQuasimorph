@@ -733,7 +733,7 @@ namespace QM_PathOfQuasimorph.Core
                 result = (defaultValue / modifier) / boostAmount;
             }
 
-            Plugin.Logger.Log($"\t\t\t Result: {result}");
+            //Plugin.Logger.Log($"\t\t\t Result: {result}");
 
             return result;
         }
@@ -784,11 +784,13 @@ namespace QM_PathOfQuasimorph.Core
                         if (_defaultValue != null)
                         {
                             float value = Convert.ToSingle(_defaultValue);
-                            if (value > 0)
-                            {
+                            
+                            // If there is only one resist, it leads to imbalance as it can get applied to others.
+                            //if (value > 0)
+                            //{
                                 averageResist += value;
                                 resistCount++;
-                            }
+                            //}
                         }
                     }
                 }
