@@ -1,4 +1,4 @@
-[RU version](CSV_RU.md)
+[EN version](Rarities_CSV_EN.md)
 
 # Документация по параметрам CSV (Русский)
 
