@@ -358,11 +358,11 @@ namespace QM_PathOfQuasimorph.Core
         private Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,  (0f    , 0f   ) },          // 0% of editableParams
-            { ItemRarity.Enhanced,  (0.25f , 0.25f) },       // 25%
-            { ItemRarity.Advanced,  (0.40f , 0.40f) },       // 40%
-            { ItemRarity.Premium,   (0.55f , 0.55f) },       // 55%
-            { ItemRarity.Prototype, (0.85f , 0.85f) },       // 85%
-            { ItemRarity.Quantum,   (1.00f , 1.00f) }        // 100%
+            { ItemRarity.Enhanced,  (0.125f , 0.25f) },       // 25%
+            { ItemRarity.Advanced,  (0.20f , 0.40f) },       // 40%
+            { ItemRarity.Premium,   (0.275f , 0.55f) },       // 55%
+            { ItemRarity.Prototype, (0.425f , 0.85f) },       // 85%
+            { ItemRarity.Quantum,   (0.5f , 1.00f) }        // 100%
         };
 
         // Define the percentage of traits to modify per Rarity
