@@ -396,7 +396,7 @@ namespace QM_PathOfQuasimorph.Core
 
             if (durabilityDifference != 0)
             {
-                var value = $"{recordPoq.MaxDurability.ToString()} ({FormatDifference(durabilityDifference.ToString(), durabilityDifference)})".WrapInColor(Colors.Green);
+                var value = $"{recordPoq.MaxDurability.ToString()} ({FormatDifference(Math.Abs(durabilityDifference).ToString(), durabilityDifference)})".WrapInColor(Colors.Green);
 
                 _factory.AddPanelToTooltip().SetIcon("common_condition").LocalizeName("tooltip.Condition")
                 .SetValue(recordPoq.Unbreakable == true ? "∞" : value, true)
