@@ -94,6 +94,7 @@ namespace QM_PathOfQuasimorph.Core
             //rarityRoll = RarityRolls.WeightedRollsD20Selector;
             //SimulateDrops();
 
+            //SimulateHinder();
             /*
                 StandardRandom:
                     Simulated 10000 item drops:
@@ -151,6 +152,41 @@ namespace QM_PathOfQuasimorph.Core
             */
 
             LoadCustomWeights();
+        }
+
+        private void SimulateHinder()
+        {
+            int totalHindered = 0;
+            int totalImproved = 0;
+            int numParamsToAdjust = 8;
+            int numParamsToHinder = (int)Math.Floor(numParamsToAdjust * PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
+            int numParamsToImprove = numParamsToAdjust - numParamsToHinder;
+
+            for (int i = 0; i < 100; i++)
+            {
+                int hinderedCount = 0;
+                int improvedCount = 0;
+
+                for (int j = 0; j < numParamsToAdjust; j++)
+                {
+                    bool hinder = ShouldHinderParameter(
+                        ref hinderedCount, ref improvedCount,
+                        numParamsToHinder, numParamsToImprove);
+
+                    if (hinder)
+                    {
+                        totalHindered++;
+                    }
+                    else
+                    {
+                        totalImproved++;
+                    }
+                }
+            }
+
+            Console.WriteLine($"Total Hindered (out of 800): {totalHindered}");
+            Console.WriteLine($"Total Improved (out of 800): {totalImproved}");
+
         }
 
         private void LoadCustomWeights()
@@ -221,7 +257,7 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         string[] parts = line.Split(',');
                         string key = parts[0].Trim();
-                         float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
+                        float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
                         Plugin.Logger.Log($"Writing arbitrary data {key} {value}");
 
                         arbitraryValues[key] = value;
@@ -233,7 +269,7 @@ namespace QM_PathOfQuasimorph.Core
 
                         if (Enum.TryParse(rarityName, out ItemRarity rarity))
                         {
-                           // Assign values to dictionaries.
+                            // Assign values to dictionaries.
                             _rarityModifiers[rarity] = (float.Parse(parts[1], CultureInfo.InvariantCulture),
                                                        float.Parse(parts[2], CultureInfo.InvariantCulture));
                             _rarityWeightsForWeighted[rarity] = int.Parse(parts[3], CultureInfo.InvariantCulture);
@@ -810,6 +846,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
                 averageResist = (float)Math.Round(averageResist / resistCount, 2);
+                averageResist = Math.Max(averageResist, 1.0f); // Ensure average resist is at least 1.0
                 Plugin.Logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
             }
 
@@ -845,33 +882,7 @@ namespace QM_PathOfQuasimorph.Core
                 // _special_ability
 
                 // Determine if we should hinder this parameter
-                if (_random.Next(0, 100 + 1) < 20) // 20% chance to hinder first
-                {
-                    // Allow hindering first with 20% probability
-                    if (hinderedCount < numParamsToHinder)
-                    {
-                        hinder = true;
-                        hinderedCount++;
-                    }
-                    else
-                    {
-                        // Can't hinder anymore, so improve
-                        hinder = false;
-                        improvedCount++;
-                    }
-                }
-                else if (hinderedCount < numParamsToHinder && improvedCount >= numParamsToImprove)
-                {
-                    // 50/50 chance to hinder a parameter (after improvement threshold is met)
-                    hinder = _random.Next(0, 100 + 1) < PARAMETER_HINDER_CHANCE;
-                    hinderedCount += hinder ? 1 : 0;
-                    improvedCount += hinder ? 0 : 1;
-                }
-                else if (improvedCount < numParamsToImprove)
-                {
-                    // Otherwise improve as usual
-                    improvedCount++;
-                }
+                hinder = ShouldHinderParameter(ref hinderedCount, ref improvedCount, numParamsToHinder, numParamsToImprove);
 
                 if (new[] { "_weight", "_reload_duration", "_scatter_angle" }.Any(defaultParamValue.Id.Contains))
                 {
@@ -889,6 +900,49 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return boostedParamIndex;
+        }
+
+        public bool ShouldHinderParameter(ref int hinderedCount, ref int improvedCount, int numParamsToHinder, int numParamsToImprove)
+        {
+            // 20% chance to hinder first, regardless of improvement status
+            if (_random.Next(0, 100 + 1) < 20)
+            {
+                if (hinderedCount < numParamsToHinder)
+                {
+                    hinderedCount++;
+                    return true;
+                }
+                else
+                {
+                    // Can't hinder anymore, so improve
+                    improvedCount++;
+                    return false;
+                }
+            }
+
+            // After 20% chance, follow the original logic
+            if (hinderedCount < numParamsToHinder && improvedCount >= numParamsToImprove)
+            {
+                // 50/50 chance to hinder a parameter (after improvement threshold is met)
+                if (_random.Next(0, 100 + 1) < PARAMETER_HINDER_CHANCE)
+                {
+                    hinderedCount++;
+                    return true;
+                }
+                else
+                {
+                    improvedCount++;
+                    return false;
+                }
+            }
+            else if (improvedCount < numParamsToImprove)
+            {
+                // Otherwise improve as usual
+                improvedCount++;
+                return false;
+            }
+
+            return false;
         }
 
         public int GetTraitCountByRarity(ItemRarity rarity, int maxTraits)
@@ -1224,5 +1278,8 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
         }
+
+
+
     }
 }
