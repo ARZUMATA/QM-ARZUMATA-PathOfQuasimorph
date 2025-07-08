@@ -5,21 +5,21 @@
   <a href="readme_ru.md">Русский</a>
 </p>
 
-Ever wondered why your items so bad?
+Задумался, почему твои предметы так плохи?
 
-Do you break down more gear than you use?
+Разбираешь больше снаряжения, чем используешь?
 
-Is every loot drop a disappointment?
+Каждый дроп — это разочарование как наша жизнь?
 
-Do you yearn for the thrill of the perfect find, the rush of discovering a truly legendary weapon?
+А может жаждешь острых ощущений, идеальную шмотку, кайфа от дропа реально легендарного оружия?
 
-Or maybe yoe you an ARPG gamer who miss vibe for magic and rare items?
+Или ты игрок в ARPG, которому не хватает атмосферы магических и редких предметов?
 
-Well this is the mod for you!
+Что ж, это мод для тебя мой дорогой друг!
 
-**Then descend into the Path of Quasimorph, where every item holds the potential for greatness!**
+**Вступи на путь квазиморфа, где каждый предмет таит в себе потенциал поистине настоящего величия!**
 
-### **Forge Your Legend with Path of Quasimorph!**
+### **Сделай из своего Перси, настоящкю легенду с Path of Quasimorph!**
 
 ## Path of Quasimorph
 
@@ -96,55 +96,62 @@ Well this is the mod for you!
 
 ## Features
 
-* A New Loot Paradigm: Say goodbye to mundane loot! Path of Quasimorph introduces a dynamic rarity system, categorizing items into distinct tiers, each brimming with potential and its own amount of boosted properties and extra traits:
+* Новая парадигма лута: Скажи пока скудному луту! Мод водит динамическую систему редкости, распределяя предметы по различным уровням, каждый из которых полон потенциала и обладает своим количеством усиленных свойств и дополнительных черт:
 
-       - Standard: The baseline, nothing can surprise you.
-       - Enhanced: A noticeable step up, with improved stats.
-       - Advanced: Starting to show real power, with enhanced attributes.
-       - Premium: Coveted finds, boasting significant stat boosts and the potential for more extra traits.
-       - Prototype: Rare and powerful, these represent cutting-edge technology and devastating potential.
-       - Quantum: The pinnacle of rarity! Discovering a Quantum item is a cause for celebration.
-         Imbued - with incredible stats, unique traits, and even the possibility of unbreakable durability!
+      - Стандартный: Базовый уровень, ничто не сможет тебя удивить.
+      - Улучшенный: Заметный шаг вперед, с улучшенными характеристиками.
+      - Продвинутый: Начинает проявлять настоящую мощь, с улучшенными атрибутами.
+      - Премиум: Желанная вещь, обладающая значительным усилением характеристик и потенциалом для дополнительных.
+      - Прототип: Редкая и мощная,  представляет собой передовые технологии, которым "аналоговнет" и разрушительный потенциал.
+      - Квантовый: Вершина редкости! Обнаружение квантового предмета — повод для празднования. Наделён - невероятными характеристиками, уникальными чертами и даже возможностью неразрушимой прочности!
 
-* Weighted Drops, Epic Finds: Just like the best ARPGs, rarity matters! Quantum items are incredibly rare, making each find a truly momentous occasion. You are lucky for sure!
+* Взвешенный дроп, эпические находки: как и в лучших ARPG, редкость имеет значение! Квантовые предметы невероятно редки, что делает каждую находку поистине знаменательным событием. Тебе точно повезло!
 
-* Visually Distinct Gear: Instantly identify your new possessions! Each rarity tier is distinguished by a unique background color, allowing you to quickly assess the value of every drop.
+* Визуально отличимое снаряжение: Каждый уровень редкости отличается уникальным цветом фона, что позволяет быстро оценить ценность каждогой вещи.
 
-* Prefixes and Affixes: Each item comes with with custom prefixes and affixes, adding flavor to your most treasured gear and game. 
+* Префиксы и аффиксы: Каждый предмет поставляется с настраиваемыми префиксами и аффиксами, добавляя уникальности вашему самому ценному снаряжению и игре.
 
-(This will be update with more prefixes based on boosted stats)
+- **Настраиваемая конфигурация**: Позволяет пользователям изменять настройки через [Mod Configuration Menu (MCM).](https://steamcommunity.com/sharedfiles/filedetails/?id=3469678797)
 
-- **Customizable Configuration**: Allows users to adjust settings through a [Mod Configuration Menu (MCM).](https://steamcommunity.com/sharedfiles/filedetails/?id=3469678797)
+## Требования
 
-## Requirements (Optional)
+- **MCM (Mod Configuration Menu)**: Фреймворк меню конфигурации для управления настройками через внутриигровой интерфейс.
 
-- **MCM (Mod Configuration Menu)**: A configuration menu framework to manage settings via an in-game interface.
-
-As alternative you can find config files in:
+В качестве альтернативы вы можете найти файлы конфигурации по адресу:
 - `%AppData%\..\LocalLow\Magnum Scriptum Ltd\Quasimorph_ModConfigs\QM_PathOfQuasimorph\config_mcm.ini`
 
 # Configuration
-| Name                  | Default | Description                                                                 |
+| Название                  | По умолчанию | Описание                                                                 |
 |-----------------------|---------|-----------------------------------------------------------------------------|
-| Enable                |true     | Enable or disable  mod. Stops generation new items. Keeping existing ones.  |
-| CleanupMode           |false    | It will try to cleanup your save game in case you decide to unsubscribe.    |
+| Включить                |true     | Включает или отключает мод. Останавливает генерацию новых предметов. Существующие остаются.  |
+| Режим очистки           |false    | Попытается очистить вашу сохраненную игру, если вы решите отписаться.    |
 
-CleanupMode works this way:
-Once enabled, load game, be in "space" mode, it will try to cleanup all items made by mod making them "standard", save the game. Then you can keep playing without mod enabled and clean item pool.
-(This will be improved)
+Режим очистки работает так:
+После включения загрузите игру, перейдите в режим "космоса", мод попытается очистить все предметы, созданные им, сделав их "стандартными", затем сохраните игру. После этого вы сможете продолжить играть без включенного мода и с очищенным набором предметов.
+(Будет улучшено)
 
-# External files
+# Внешние файлы
 
 | File             | Description                                 | Documentation |
 |------------------|---------------------------------------------|---------------|
-| Rarities.csv     | Contains rarity-related parameters for items. | [EN version](docs/Rarities_CSV_EN.md) / [RU version](docs/Rarities_CSV_RU.md) |
+| Rarities.csv     | Содержит все параметры для генерации предметов. | [EN version](docs/Rarities_CSV_EN.md) / [RU version](docs/Rarities_CSV_RU.md) |
 
-# Source Code
-Source code is available on [GitHub](https://github.com/ARZUMATA/QM-ARZUMATA-PathOfQuasimorph)
+# Исходный код
+Исходный код доступен на [GitHub](https://github.com/ARZUMATA/QM-ARZUMATA-PathOfQuasimorph)
 
-Thanks to NBK_RedSpy, Crynano and all the people who make their code open source.
+Спасибо NBK_RedSpy, Crynano и всем, кто делает свой код открытым.
 
-# Change Log
+# Исходный код
+
+Ну я упоролась тестировать это все, но если что, сообщайте.
+Пока цель не ломать сейв.
+В любом случае, сделать копию сейва, определенно не помешает.
+
+# Планы
+
+Я хотела бы квартиру купить...
+
+# Журнал изменений
 ## 1.0 (be3c4c6)
 - Первый выпуск
 
