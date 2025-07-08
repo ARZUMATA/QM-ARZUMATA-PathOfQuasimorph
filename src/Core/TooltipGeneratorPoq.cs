@@ -132,7 +132,7 @@ namespace QM_PathOfQuasimorph.Core
                 if (resistDifference != 0)
                 {
                     //var value = $"{FormatHelper.To100Percent(resistPoq.resistPercent, false).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(FormatHelper.To100Percent(resistDifference, false).ToString(CultureInfo.InvariantCulture), resistDifference)})".WrapInColor(Colors.Green);
-                    var value = $"{resistPoq.resistPercent.ToString(CultureInfo.InvariantCulture)} ({FormatDifference(resistDifference.ToString(CultureInfo.InvariantCulture), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{Math.Round(resistPoq.resistPercent,2).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(resistDifference.ToString(CultureInfo.InvariantCulture), resistDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
@@ -266,11 +266,11 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (scatterAngleDifference != 0)
                     {
-                        value = $"{string.Format("{0:0.0}°", scatterAngle).ToString(CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(string.Format("{0:0.0}°", Math.Abs(scatterAngleDifference)).ToString(CultureInfo.InvariantCulture), scatterAngleDifference, true)})".WrapInColor(Colors.Green);
+                        value = $"{string.Format("{0:0.0;0.0}°", scatterAngle).ToString(CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(string.Format("{0:0.0;0.0}°", Math.Abs(scatterAngleDifference)).ToString(CultureInfo.InvariantCulture), scatterAngleDifference, true)})".WrapInColor(Colors.Green);
 
                         _factory.AddPanelToTooltip().SetIcon("common_scatterangle").LocalizeName("tooltip.ScatterAngle")
                         .SetValue(value, true)
-                        .SetComparsionValue(string.Format("{0:0.0}°", eqScatterAngle));
+                        .SetComparsionValue(string.Format("{0:0.0;0.0}°", eqScatterAngle));
                     }
                 }
 
