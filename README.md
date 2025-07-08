@@ -182,3 +182,8 @@ Thanks to NBK_RedSpy, Crynano and all the people who make their code open source
 Like "Overcharged" for shock damage weapon, "Cryo" for cold, Toxic for poison based as well as and "Sturdy" for armor. Etc.
 Thanks community for feedback.
 
+## 1.42 (1d5fcea)
+- Fix: Some items were becoming generic. Yes, there were a bit more.
+- Fix: In some cases, items were appearing in projects list like as they were unlocked.
+- Add: Parameter hindering, now there is a chance that parameter will be lowered, instead of being increased as usual.
+- Fix: Minor tooltip formatting isues.
