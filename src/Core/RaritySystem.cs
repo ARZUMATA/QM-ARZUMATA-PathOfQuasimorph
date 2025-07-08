@@ -70,6 +70,8 @@ namespace QM_PathOfQuasimorph.Core
         private float PARAMETER_BOOST_MIN = 1.2f;
         private float PARAMETER_BOOST_MAX = 1.8f;
         private float AVERAGE_RESIST_APPLY_CHANCE = 50;
+        private float PARAMETER_HINDER_CHANCE = 50;
+        private float PARAMETER_HINDER_PERCENT = 20;
         private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
@@ -231,7 +233,7 @@ namespace QM_PathOfQuasimorph.Core
 
                         if (Enum.TryParse(rarityName, out ItemRarity rarity))
                         {
-                            // Assign values to dictionaries.
+                           // Assign values to dictionaries.
                             _rarityModifiers[rarity] = (float.Parse(parts[1], CultureInfo.InvariantCulture),
                                                        float.Parse(parts[2], CultureInfo.InvariantCulture));
                             _rarityWeightsForWeighted[rarity] = int.Parse(parts[3], CultureInfo.InvariantCulture);
@@ -581,7 +583,7 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Used part of code from  MagnumProjectNumericParameterPanel.Initialize
-        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam, float averageResist = 0)
+        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam, float averageResist, bool hinder)
         {
             float _defaultValue = 0f;
             bool isResist = false;
@@ -593,6 +595,8 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"\t\t Bosting {boostedParam.Id}");
                 boost = true;
             }
+
+            Plugin.Logger.Log($"\t\t Hinder {hinder}");
 
             switch (_projectParameter.ParameterType)
             {
@@ -638,7 +642,7 @@ namespace QM_PathOfQuasimorph.Core
             // Case where we have zero resist, let boost it a bit.
 
             project.AppliedModifications.Remove(_projectParameter.Id);
-            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied);
+            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied, hinder);
             var clampedValue = Mathf.Clamp(
                     calculatedValue,
                     _projectParameter.MinValue,
@@ -682,7 +686,8 @@ namespace QM_PathOfQuasimorph.Core
         private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
             float averageResist,
             bool averageResistApplied,
-            out bool averageResistAppliedResult
+            out bool averageResistAppliedResult,
+            bool hinder
             )
         {
             //float[] rarityModifiers = _rarityModifiers[rarity];
@@ -723,7 +728,12 @@ namespace QM_PathOfQuasimorph.Core
             // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
             float boostAmount = boost == true ? (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
 
-            Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}");
+            Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
+
+            if (hinder)
+            {
+                increase = !increase;
+            }
 
             if (increase)
             {
@@ -749,6 +759,9 @@ namespace QM_PathOfQuasimorph.Core
 
             // Calculate the number of parameters to adjust based on the percentage
             int numParamsToAdjust = _random.Next(minParams, maxParams + 1);
+
+            int numParamsToHinder = (int)Math.Floor(numParamsToAdjust * PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
+            int numParamsToImprove = numParamsToAdjust - numParamsToHinder;
 
             //// Get _defaultValue for randomized Prefix
             //var randomPrefix = _random.Next(0, AMOUNT_PREFIXES);
@@ -810,6 +823,12 @@ namespace QM_PathOfQuasimorph.Core
             // We return index of parameter that was boosted for UID
             int boostedParamIndex = Math.Min(ParamIdentifiers.IndexOf(boostedParamResult), 99); // Just so 99 means not found.
 
+            bool hinder = false;
+
+            // Counters to track how many parameters we've improved or hindered
+            int improvedCount = 0;
+            int hinderedCount = 0;
+
             for (int i = 0; i < numParamsToAdjust; i++)
             {
                 MagnumProjectParameter defaultParamValue = editableParamsShuffled.Values.ToArray()[i];
@@ -825,14 +844,43 @@ namespace QM_PathOfQuasimorph.Core
                 // Special case
                 // _special_ability
 
+                // Determine if we should hinder this parameter
+                if (_random.Next(0, 100 + 1) < 20) // 20% chance to hinder first
+                {
+                    // Allow hindering first with 20% probability
+                    if (hinderedCount < numParamsToHinder)
+                    {
+                        hinder = true;
+                        hinderedCount++;
+                    }
+                    else
+                    {
+                        // Can't hinder anymore, so improve
+                        hinder = false;
+                        improvedCount++;
+                    }
+                }
+                else if (hinderedCount < numParamsToHinder && improvedCount >= numParamsToImprove)
+                {
+                    // 50/50 chance to hinder a parameter (after improvement threshold is met)
+                    hinder = _random.Next(0, 100 + 1) < PARAMETER_HINDER_CHANCE;
+                    hinderedCount += hinder ? 1 : 0;
+                    improvedCount += hinder ? 0 : 1;
+                }
+                else if (improvedCount < numParamsToImprove)
+                {
+                    // Otherwise improve as usual
+                    improvedCount++;
+                }
+
                 if (new[] { "_weight", "_reload_duration", "_scatter_angle" }.Any(defaultParamValue.Id.Contains))
                 {
-                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam);
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam, 0, hinder);
                 }
                 else if (new[] { "_resist", "_damage", "_crit_damage", "_max_durability", "_accuracy", "_magazine_capacity" }
                          .Any(defaultParamValue.Id.Contains))
                 {
-                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist);
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist, hinder);
                 }
                 else if (defaultParamValue.Id.Contains("_special_ability"))
                 {
