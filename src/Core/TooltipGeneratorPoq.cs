@@ -15,7 +15,8 @@ namespace QM_PathOfQuasimorph.Core
         static TooltipFactory _factory;
         static PropertiesTooltip _tooltip;
         static ItemTooltipBuilder _tooltipBuilder;
-
+        private static Logger _logger = new Logger(null, typeof(TooltipGeneratorPoq));
+ 
         public static void HandlePoqTooltip()
         {
             InputController instance = SingletonMonoBehaviour<InputController>.Instance;
@@ -32,7 +33,7 @@ namespace QM_PathOfQuasimorph.Core
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
                     var wrappedItem = MagnumProjectWrapper.SplitItemUid(_factory._lastShowedItem.Id);
-                    Plugin.Logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
+                    _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
 
                     if (wrappedItem.PoqItem)
                     {
@@ -119,7 +120,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(genericId, true);
 
-            Plugin.Logger.Log($"genericRecord ResistRecord is {genericRecord == null}");
+            _logger.Log($"genericRecord ResistRecord is {genericRecord == null}");
 
             // blunt 5 pierce 0 lacer 0 fire 0 cold 5 poison 0 shock 0 beam 0
             for (int i = 0; i < genericRecord.ResistSheet.Count; i++)
@@ -181,8 +182,8 @@ namespace QM_PathOfQuasimorph.Core
         {
             var component = item.Comp<WeaponComponent>();
 
-            Plugin.Logger.Log($"component {component == null}");
-            Plugin.Logger.Log($"genericId {genericId}");
+            _logger.Log($"component {component == null}");
+            _logger.Log($"genericId {genericId}");
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
             bool grenadeLauncher = recordPoq.WeaponClass == WeaponClass.GrenadeLauncher;
             string value;
@@ -391,8 +392,8 @@ namespace QM_PathOfQuasimorph.Core
             // Max durability
             var durabilityDifference = recordPoq.MaxDurability - genericRecord.MaxDurability;
 
-            Plugin.Logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
-            Plugin.Logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
+            _logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
+            _logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
 
             if (durabilityDifference != 0)
             {

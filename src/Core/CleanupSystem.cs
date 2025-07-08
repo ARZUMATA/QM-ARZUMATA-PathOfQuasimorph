@@ -12,12 +12,13 @@ namespace QM_PathOfQuasimorph.Core
         // Static variable to track elapsed time
         private static float lastIntervalCheckTime = 0f;
         private static readonly float interval = 60f; // e.g., every 5 seconds
+        private static Logger _logger = new Logger(null, typeof(CleanupSystem));
 
         internal static List<string> CleanItemsInAutonomousCapsuleDepartment(AutonomousCapsuleDepartment department)
         {
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanItemsInAutonomousCapsuleDepartment");
+            _logger.Log("CleanItemsInAutonomousCapsuleDepartment");
 
             if (department.CapsuleStorage != null && department.CapsuleStorage.Items != null)
             {
@@ -31,7 +32,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanItemsInShuttleCargoDepartment");
+            _logger.Log("CleanItemsInShuttleCargoDepartment");
 
             if (department.ShuttleCargo != null && department.ShuttleCargo.Items != null)
             {
@@ -45,7 +46,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanItemsInTradeShuttleDepartment");
+            _logger.Log("CleanItemsInTradeShuttleDepartment");
 
             if (department.ResultStorage != null && department.ResultStorage.Items != null)
             {
@@ -91,11 +92,11 @@ namespace QM_PathOfQuasimorph.Core
             Creatures creatures = context.State.Get<Creatures>();
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanupCreatureData");
+            _logger.Log("CleanupCreatureData");
 
             if (creatures != null)
             {
-                Plugin.Logger.Log($"player creature {creatures.Player.CreatureData.UniqueId}");
+                _logger.Log($"player creature {creatures.Player.CreatureData.UniqueId}");
 
                 // Cleanup player data in raid
                 foreach (ItemStorage storage in creatures.Player.CreatureData.Inventory.AllContainers)
@@ -117,7 +118,7 @@ namespace QM_PathOfQuasimorph.Core
                         continue;
                     }
 
-                    Plugin.Logger.Log($"monster creature {creatureData.UniqueId}");
+                    _logger.Log($"monster creature {creatureData.UniqueId}");
 
                     foreach (ItemStorage storage in creatureData.Inventory.AllContainers)
                     {
@@ -177,7 +178,7 @@ namespace QM_PathOfQuasimorph.Core
 
             MagnumProgression magnumSpaceship = context.State.Get<MagnumProgression>();
 
-            Plugin.Logger.Log("CleanupItemsMagnumDepartments");
+            _logger.Log("CleanupItemsMagnumDepartments");
 
             foreach (var department in magnumSpaceship.Departments)
             {
@@ -242,7 +243,7 @@ namespace QM_PathOfQuasimorph.Core
             MagnumCargo magnumCargo = context.State.Get<MagnumCargo>();
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanupMercenariesCargo");
+            _logger.Log("CleanupMercenariesCargo");
 
             if (magnumCargo != null)
             {
@@ -268,19 +269,19 @@ namespace QM_PathOfQuasimorph.Core
                 // LINQ maybe?
 
                 MagnumProjects magnumProjects = context.State.Get<MagnumProjects>();
-                Plugin.Logger.Log("CleanupMagnumProjects");
+                _logger.Log("CleanupMagnumProjects");
 
                 if (magnumProjects != null)
                 {
-                    Plugin.Logger.Log($"magnumProjects != null");
+                    _logger.Log($"magnumProjects != null");
                     foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
                     {
                         var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
-                        Plugin.Logger.Log($"magnumProjects != null");
+                        _logger.Log($"magnumProjects != null");
 
                         if (projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
                         {
-                            Plugin.Logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
+                            _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
 
                             magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
                         }
@@ -288,7 +289,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
                 // Perform your time-based action here
-                Plugin.Logger.Log("Time interval reached, doing something... CleanObsoleteProjects");
+                _logger.Log("Time interval reached, doing something... CleanObsoleteProjects");
 
                 // Reset the timer
                 lastIntervalCheckTime = currentTime;
@@ -300,19 +301,19 @@ namespace QM_PathOfQuasimorph.Core
             Mercenaries mercenaries = context.State.Get<Mercenaries>();
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanupMercenariesCargo");
+            _logger.Log("CleanupMercenariesCargo");
 
             if (mercenaries != null)
             {
-                Plugin.Logger.Log("mercenaries != null");
+                _logger.Log("mercenaries != null");
 
                 foreach (var merc in mercenaries.Values)
                 {
-                    Plugin.Logger.Log($"merc {merc.ProfileId}");
+                    _logger.Log($"merc {merc.ProfileId}");
 
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.AllContainers)
                     {
-                        //Plugin.Logger.Log($"storage {storage}");
+                        //_logger.Log($"storage {storage}");
 
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
@@ -343,7 +344,7 @@ namespace QM_PathOfQuasimorph.Core
             Missions missions = context.State.Get<Missions>();
             List<string> items = new List<string>();
 
-            Plugin.Logger.Log("CleanupMissionRewards");
+            _logger.Log("CleanupMissionRewards");
 
             if (missions != null)
             {
@@ -365,7 +366,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static List<string> CleanupPickupItem(List<BasePickupItem> basePickupItemsList)
         {
-            //Plugin.Logger.Log($"CleanupPickupItem");
+            //_logger.Log($"CleanupPickupItem");
 
             List<string> itemsToReturn = new List<string>();
 
@@ -374,11 +375,11 @@ namespace QM_PathOfQuasimorph.Core
                 if (item.Id.Contains("_poq"))
                 {
                     itemsToReturn.Add(item.Id);
-                    Plugin.Logger.Log($"CleanupPickupItem: item.Id {item.Id}");
+                    _logger.Log($"CleanupPickupItem: item.Id {item.Id}");
 
                     if (Plugin.Config.CleanupMode)
                     {
-                        Plugin.Logger.Log($"\t\t Skipped");
+                        _logger.Log($"\t\t Skipped");
 
                         CleanupItem(item);
                     }

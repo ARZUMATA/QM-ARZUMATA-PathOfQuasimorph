@@ -187,3 +187,6 @@ Thanks community for feedback.
 - Fix: In some cases, items were appearing in projects list like as they were unlocked.
 - Add: Parameter hindering, now there is a chance that parameter will be lowered, instead of being increased as usual.
 - Fix: Minor tooltip formatting isues.
+
+## 1.43 (80a01dc)
+- Fixed: Balance question. Conveyor crafted items that a project ones (yellow M), will no longer receive rarity.

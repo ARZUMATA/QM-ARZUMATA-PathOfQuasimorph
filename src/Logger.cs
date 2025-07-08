@@ -27,7 +27,13 @@ namespace QM_PathOfQuasimorph
         /// </summary>
         public string LogPrefix { get; set; }
 
-        public Logger(string logPrefix = "")
+        // List of types to exclude from logging
+        public static HashSet<Type> _excludedTypes = new HashSet<Type>();
+
+        // Cached calling type
+        private readonly Type _callerType;
+
+        public Logger(string logPrefix = "", Type callerType = null)
         {
             if (string.IsNullOrEmpty(logPrefix))
             {
@@ -35,11 +41,17 @@ namespace QM_PathOfQuasimorph
             }
 
             LogPrefix = logPrefix;
+            _callerType = callerType;
+        }
+
+        public void ExcludeType<T>()
+        {
+            _excludedTypes.Add(typeof(T));
         }
 
         public void Log(string message)
         {
-            if (IsEnabled)
+            if (IsEnabled && _callerType != null && !_excludedTypes.Contains(_callerType))
             {
                 Debug.Log($"[{LogPrefix}] {message}");
             }
@@ -47,7 +59,7 @@ namespace QM_PathOfQuasimorph
 
         public void LogWarning(string message)
         {
-            if (IsEnabled)
+            if (IsEnabled && _callerType != null && !_excludedTypes.Contains(_callerType))
             {
                 Debug.LogWarning($"[{LogPrefix}] {message}");
             }
@@ -55,7 +67,7 @@ namespace QM_PathOfQuasimorph
 
         public void LogError(string message)
         {
-            if (IsEnabled)
+            if (IsEnabled && _callerType != null && !_excludedTypes.Contains(_callerType))
             {
                 Debug.LogError($"[{LogPrefix}] {message}");
             }
@@ -63,7 +75,7 @@ namespace QM_PathOfQuasimorph
 
         public void LogException(Exception ex)
         {
-            if (IsEnabled)
+            if (IsEnabled && _callerType != null && !_excludedTypes.Contains(_callerType))
             {
                 Debug.LogError($"[{LogPrefix}] Exception Logged:");
                 Debug.LogException(ex);
