@@ -2,6 +2,7 @@
 using MGSC;
 using System;
 using UnityEngine;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace QM_PathOfQuasimorph.Core
@@ -24,8 +25,21 @@ namespace QM_PathOfQuasimorph.Core
                 //Plugin.Logger.Log("ItemFactory_CreateForInventory_Patch :: Prefix :: Start");
                 //Plugin.Logger.Log($"\t CreateForInventory: {itemId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
 
-                // Id here is always non-mod as game is not aware of it. So we do our magic.
-                // Also we don't need to know existing project as we always create new items here.
+                // Id here is either:
+                // 1) Non mod item. i.e. pmc_shotgun_1
+                // 2) Id with custom or pmc_shotgun_1_custom
+
+                // We don't need to know existing project as we always create new items here.
+                // ItemProductionSystem calls this method with _custom prefix.
+
+                // Check if itemId is from ItemProductionSystem system.
+                // Vanilla project i.e. just _custom
+                if (itemId.EndsWith("_custom"))
+                {
+                    // It's item from production system. We don't apply rarity on crafted items.
+                    return true;
+                }
+
                 MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 if (project == null)
