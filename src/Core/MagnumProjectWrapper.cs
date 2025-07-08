@@ -75,9 +75,6 @@ namespace QM_PathOfQuasimorph.Core
                 this.StartTime = startTime;
                 this.FinishTime = finishTime;
                 this.PoqItem = poqItem;
-
-                // Excessive logging
-                //Plugin.Logger.Log($"Created MagnumProjectWrapper with id: {this.Id}, CustomId: {this.CustomId}, Rarity: {this.Rarity}, RarityClass: {this.RarityClass}, StartTime: {this.StartTime.Ticks}, FinishTime: {this.FinishTime.Ticks}, PoqItem: {this.PoqItem}");
             }
 
             public string ReturnItemUid(bool originalId = false)

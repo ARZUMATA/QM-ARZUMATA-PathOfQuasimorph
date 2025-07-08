@@ -37,6 +37,7 @@ namespace QM_PathOfQuasimorph.Core
     internal class AffixManager
     {
         public static Affix[] affixes;
+        private static Logger _logger = new Logger(null, typeof(AffixManager));
 
         public AffixManager()
         {
@@ -97,7 +98,7 @@ namespace QM_PathOfQuasimorph.Core
 
             string itemClass = string.Empty;
 
-            Plugin.Logger.Log($"ProjectType: {magnumProject.ProjectType}, RarityClass: {rarityClass}");
+            _logger.Log($"ProjectType: {magnumProject.ProjectType}, RarityClass: {rarityClass}");
 
             try
             {
@@ -128,24 +129,24 @@ namespace QM_PathOfQuasimorph.Core
                         itemClass = Data.Items.GetSimpleRecord<LeggingsRecord>(magnumProject.DevelopId, true).ArmorClass.ToString();
                         break;
                     default:
-                        Plugin.Logger.Log($"Unknown ProjectType: {magnumProject.ProjectType}, returning null.");
+                        _logger.Log($"Unknown ProjectType: {magnumProject.ProjectType}, returning null.");
                         return null;
                 }
             }
             catch
             {
-                Plugin.Logger.Log($"Unknown null record, returning null.");
+                _logger.Log($"Unknown null record, returning null.");
                 return null;
             }
 
             if (affixCategoryLookFor == AffixCategory.None)
             {
-                Plugin.Logger.Log("AffixCategory is None, returning null.");
+                _logger.Log("AffixCategory is None, returning null.");
                 return null;
             }
 
-            Plugin.Logger.Log($"Selected AffixCategory: {affixCategoryLookFor}, AffixRarity: {affixRarityTypeToLookFor}, Class: {itemClass}");
-            Plugin.Logger.Log($"affixes.Length {affixes.Length}");
+            _logger.Log($"Selected AffixCategory: {affixCategoryLookFor}, AffixRarity: {affixRarityTypeToLookFor}, Class: {itemClass}");
+            _logger.Log($"affixes.Length {affixes.Length}");
 
             if (affixes.Length > 0)
             {
@@ -165,19 +166,19 @@ namespace QM_PathOfQuasimorph.Core
                                     )
                     .ToList();
 
-                Plugin.Logger.Log($"MatchingPrefixes count: {matchingPrefixes.Count}, MatchingSuffixes count: {matchingSuffixes.Count}");
+                _logger.Log($"MatchingPrefixes count: {matchingPrefixes.Count}, MatchingSuffixes count: {matchingSuffixes.Count}");
 
                 if (matchingPrefixes.Count >= 1 && matchingSuffixes.Count >= 1)
                 {
                     affixesList.Add(matchingPrefixes[0]);
-                    Plugin.Logger.Log($"Added Prefix: {matchingPrefixes[0]}");
+                    _logger.Log($"Added Prefix: {matchingPrefixes[0]}");
                     affixesList.Add(matchingSuffixes[0]); // There will be only one suffix anyway.
-                    Plugin.Logger.Log($"Added Suffix: {matchingSuffixes[0]}");
+                    _logger.Log($"Added Suffix: {matchingSuffixes[0]}");
 
                     return affixesList;
                 }
 
-                Plugin.Logger.Log("No matching affixes found.");
+                _logger.Log("No matching affixes found.");
             }
 
             return null; // Return null if no matching affix is found

@@ -36,6 +36,17 @@ namespace QM_PathOfQuasimorph.Core
         * This is where we intercept that logic and create our items.
         */
 
+        // Logging exclusions
+        static PathOfQuasimorph()
+        {
+            // Predefined types to exclude
+            Logger._excludedTypes.Add(typeof(CleanupSystem));
+            Logger._excludedTypes.Add(typeof(TooltipGeneratorPoq));
+            Logger._excludedTypes.Add(typeof(MagnumPoQProjectsController));
+            Logger._excludedTypes.Add(typeof(AffixManager));
+            Logger._excludedTypes.Add(typeof(RaritySystem));
+        }
+
         [Hook(ModHookType.AfterSpaceLoaded)]
         public static void CleanupModeAfterSpaceLoaded(IModContext context)
         {

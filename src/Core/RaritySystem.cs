@@ -63,6 +63,7 @@ namespace QM_PathOfQuasimorph.Core
         private MagnumPoQProjectsController magnumPoQProjectsController;
         public const int AMOUNT_PREFIXES = 10; // csv has 10 prefixes per rarity
         public const int AMOUNT_SUFFIXES = 5; // CSV has 5 suffies per rarity param
+        private static Logger _logger = new Logger(null, typeof(RaritySystem));
 
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
@@ -222,7 +223,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private void LoadRaritiesFromCSV(string filePath)
         {
-            Plugin.Logger.Log($"Loading rarity data from CSV {filePath}");
+            _logger.Log($"Loading rarity data from CSV {filePath}");
 
             string line;
             bool inArbitrarySection = false;
@@ -258,7 +259,7 @@ namespace QM_PathOfQuasimorph.Core
                         string[] parts = line.Split(',');
                         string key = parts[0].Trim();
                         float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
-                        Plugin.Logger.Log($"Writing arbitrary data {key} {value}");
+                        _logger.Log($"Writing arbitrary data {key} {value}");
 
                         arbitraryValues[key] = value;
                     }
@@ -628,11 +629,11 @@ namespace QM_PathOfQuasimorph.Core
 
             if (boostedParam.Id == _projectParameter.Id)
             {
-                Plugin.Logger.Log($"\t\t Bosting {boostedParam.Id}");
+                _logger.Log($"\t\t Bosting {boostedParam.Id}");
                 boost = true;
             }
 
-            Plugin.Logger.Log($"\t\t Hinder {hinder}");
+            _logger.Log($"\t\t Hinder {hinder}");
 
             switch (_projectParameter.ParameterType)
             {
@@ -685,10 +686,10 @@ namespace QM_PathOfQuasimorph.Core
                     _projectParameter.MaxValue
                     );
 
-            Plugin.Logger.Log($"\t\t AppliedModifications");
-            Plugin.Logger.Log($"\t\t\t {_projectParameter.Id}");
-            Plugin.Logger.Log($"\t\t\t\t Default: {_defaultValue}");
-            Plugin.Logger.Log($"\t\t\t\t ClampedValue: {clampedValue}\n");
+            _logger.Log($"\t\t AppliedModifications");
+            _logger.Log($"\t\t\t {_projectParameter.Id}");
+            _logger.Log($"\t\t\t\t Default: {_defaultValue}");
+            _logger.Log($"\t\t\t\t ClampedValue: {clampedValue}\n");
 
             // Apply back
             switch (_projectParameter.ParameterType)
@@ -714,7 +715,7 @@ namespace QM_PathOfQuasimorph.Core
                     project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString(CultureInfo.InvariantCulture));
                     break;
                 default:
-                    Plugin.Logger.Log($"unknown parameter type {_projectParameter.ParameterType}");
+                    _logger.Log($"unknown parameter type {_projectParameter.ParameterType}");
                     return;
             }
         }
@@ -744,27 +745,27 @@ namespace QM_PathOfQuasimorph.Core
                     if (canApply)
                     {
                         averageResistAppliedResult = true;
-                        Plugin.Logger.Log($"---");
-                        Plugin.Logger.Log($"\t\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
+                        _logger.Log($"---");
+                        _logger.Log($"\t\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
                         defaultValue = averageResist;
                     }
                 }
                 else
                 {
-                    Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist) already applied. SKIPPING.");
+                    _logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist) already applied. SKIPPING.");
                 }
 
             }
             else if (isResist && defaultValue != 0)
             {
-                Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, SKIPPING AND NOT setting to {averageResist}");
+                _logger.Log($"\t\t Resist with defaultValue {defaultValue}, SKIPPING AND NOT setting to {averageResist}");
             }
 
             float result = 0;
             // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
             float boostAmount = boost == true ? (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
 
-            Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
+            _logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
 
             if (hinder)
             {
@@ -780,7 +781,7 @@ namespace QM_PathOfQuasimorph.Core
                 result = (defaultValue / modifier) / boostAmount;
             }
 
-            //Plugin.Logger.Log($"\t\t\t Result: {result}");
+            //_logger.Log($"\t\t\t Result: {result}");
 
             return result;
         }
@@ -809,10 +810,10 @@ namespace QM_PathOfQuasimorph.Core
             float averageResist = 0;
             int resistCount = 0;
 
-            Plugin.Logger.Log($"\n\n#FF0000 ApplyProjectParameters");
-            Plugin.Logger.Log($" {magnumProject.ProjectType}");
-            Plugin.Logger.Log($"\t {magnumProject.DevelopId}");
-            Plugin.Logger.Log($"\t\t Rarity: {itemRarity}");
+            _logger.Log($"\n\n#FF0000 ApplyProjectParameters");
+            _logger.Log($" {magnumProject.ProjectType}");
+            _logger.Log($"\t {magnumProject.DevelopId}");
+            _logger.Log($"\t\t Rarity: {itemRarity}");
 
             if (
                 magnumProject.ProjectType == MagnumProjectType.Armor ||
@@ -821,13 +822,13 @@ namespace QM_PathOfQuasimorph.Core
                 magnumProject.ProjectType == MagnumProjectType.Leggings
               )
             {
-                Plugin.Logger.Log($"\t\t\t Getting average resistances:");
+                _logger.Log($"\t\t\t Getting average resistances:");
 
                 foreach (var param in editableParameters.Values)
                 {
                     if (param.Id.Contains("_resist"))
                     {
-                        //Plugin.Logger.Log($"\t\t Resist: {param.Id}");
+                        //_logger.Log($"\t\t Resist: {param.Id}");
 
                         var _defaultValue = magnumProject.GetParameterDefaultValue(param);
 
@@ -847,7 +848,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 averageResist = (float)Math.Round(averageResist / resistCount, 2);
                 averageResist = Math.Max(averageResist, 1.0f); // Ensure average resist is at least 1.0
-                Plugin.Logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
+                _logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
             }
 
             // Select one parameter to boost more.
@@ -965,13 +966,13 @@ namespace QM_PathOfQuasimorph.Core
             bool isMelee = false;
 
             var record = item.Record<WeaponRecord>();
-            Plugin.Logger.Log($"\t\t  WeaponRecord Exist: {record != null}");
+            _logger.Log($"\t\t  WeaponRecord Exist: {record != null}");
 
             if (record != null)
             {
                 isMelee = record.IsMelee;
             }
-            Plugin.Logger.Log($"\t\t  isMelee: {isMelee}");
+            _logger.Log($"\t\t  isMelee: {isMelee}");
 
             // Apply traits blacklist
             if (isMelee)
@@ -981,7 +982,7 @@ namespace QM_PathOfQuasimorph.Core
                     var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
                     if (meleeTraitsBlacklist.Contains(key))
                     {
-                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
+                        _logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
                         traitsForItemTypeShuffled.Remove(key);
                     }
                 }
@@ -993,7 +994,7 @@ namespace QM_PathOfQuasimorph.Core
                     var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
                     if (rangedTraitsBlacklist.Contains(key))
                     {
-                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
+                        _logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
                         traitsForItemTypeShuffled.Remove(key);
                     }
                 }
@@ -1026,7 +1027,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            Plugin.Logger.Log($"\t\t  Unbreakable: {canAddUnbreakableTrait}");
+            _logger.Log($"\t\t  Unbreakable: {canAddUnbreakableTrait}");
 
             if (itemTraitType == ItemTraitType.ArmorTrait)
             {
@@ -1155,7 +1156,7 @@ namespace QM_PathOfQuasimorph.Core
             // Iterate whole list of record to get what we need.
             foreach (var param in Data.MagnumProjectParameters._records)
             {
-                // Plugin.Logger.Log($"\t\t record: {param.Key}"); // record: rangeweapon_damage
+                // _logger.Log($"\t\t record: {param.Key}"); // record: rangeweapon_damage
                 if (param.Value.ProjectType == projectType)
                 {
                     editable_magnum_projects_params.Add(param.Value.Id, param.Value);
@@ -1209,7 +1210,7 @@ namespace QM_PathOfQuasimorph.Core
             // English as of time being.
 
             var magnumProjectWrapper = new MagnumProjectWrapper(magnumProject);
-            Plugin.Logger.LogWarning($"AddAffixes for {magnumProjectWrapper.ReturnItemUid()}.");
+            _logger.LogWarning($"AddAffixes for {magnumProjectWrapper.ReturnItemUid()}.");
 
             if (magnumProjectWrapper.PoqItem)
             {
@@ -1219,9 +1220,9 @@ namespace QM_PathOfQuasimorph.Core
                 // We got id.name now.
                 if (affix == null || affix.Count != 2)
                 {
-                    Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
-                    Plugin.Logger.LogWarning($"\t\t affix == null {affix == null}");
-                    Plugin.Logger.LogWarning($"\t\t affix.Count {affix?.Count}");
+                    _logger.LogWarning($"AddAffixes failed. Nothing was found.");
+                    _logger.LogWarning($"\t\t affix == null {affix == null}");
+                    _logger.LogWarning($"\t\t affix.Count {affix?.Count}");
 
                     return;
                 }
@@ -1233,7 +1234,7 @@ namespace QM_PathOfQuasimorph.Core
                 //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
                 //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
 
-                //Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
+                //_logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
 
                 // Problem, on game load it doesn't have effect.
                 UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name",
@@ -1274,7 +1275,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
                 else
                 {
-                    Plugin.Logger.LogWarning($"UpdateKey issue. No key {lookupItemId}");
+                    _logger.LogWarning($"UpdateKey issue. No key {lookupItemId}");
                 }
             }
         }

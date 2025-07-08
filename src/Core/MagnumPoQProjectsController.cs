@@ -20,6 +20,7 @@ namespace QM_PathOfQuasimorph.Core
         public static RaritySystem raritySystem = new RaritySystem();
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
         public List<string> traitsTracker = new List<string>();
+        private Logger _logger = new Logger(null, typeof(MagnumPoQProjectsController));
 
         public MagnumPoQProjectsController(MagnumProjects _magnumProjects)
         {
@@ -83,7 +84,7 @@ namespace QM_PathOfQuasimorph.Core
                     var weaponRecord = rec as WeaponRecord;
                     if (weaponRecord != null)
                     {
-                        //Plugin.Logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
+                        //_logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
                         if (weaponRecord.IsImplicit)
                         {
                             canProcess = false;
@@ -98,11 +99,11 @@ namespace QM_PathOfQuasimorph.Core
                                 break;
                             }
 
-                            //Plugin.Logger.Log($"\t\t\t Category  {mod}");
+                            //_logger.Log($"\t\t\t Category  {mod}");
                         }
 
-                        //Plugin.Logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
-                        //Plugin.Logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
+                        //_logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
+                        //_logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
                     }
                 }
             }
@@ -120,8 +121,8 @@ namespace QM_PathOfQuasimorph.Core
                 return projectId;
             }
 
-            Plugin.Logger.Log($"\t No project found with DevelopId: {projectId}");
-            Plugin.Logger.Log($"Creating a new project with mods for {projectId} - {projectType}");
+            _logger.Log($"\t No project found with DevelopId: {projectId}");
+            _logger.Log($"Creating a new project with mods for {projectId} - {projectType}");
 
             // Determine if we ever need to create a new project
             var itemRarity = raritySystem.SelectRarity();
@@ -168,7 +169,7 @@ namespace QM_PathOfQuasimorph.Core
             magnumProjects.Values.Add(newProject);
             RaritySystem.AddAffixes(newProject);
 
-            Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId} with itemId: {newId}");
+            _logger.Log($"\t\t Created new project for {newProject.DevelopId} with itemId: {newId}");
             return newId;
         }
 
