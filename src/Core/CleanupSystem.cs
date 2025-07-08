@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngineInternal;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
@@ -65,6 +66,7 @@ namespace QM_PathOfQuasimorph.Core
 
             var listMagnumCargo = CleanupMagnumCargo(context);
             var listMissionRewards = CleanupMissionRewards(context);
+            var listStationItems = CleanStationInternalStorage(context);
             var listMercenariesCargo = CleanupMercenariesCargo(context);
             var listCreatureData = CleanupCreatureData(context);
             var listMagnumDepartmentsData = CleanupItemsMagnumDepartments(context);
@@ -75,6 +77,7 @@ namespace QM_PathOfQuasimorph.Core
             idsToKeep.AddRange(listMercenariesCargo);
             idsToKeep.AddRange(listCreatureData);
             idsToKeep.AddRange(listMagnumDepartmentsData);
+            idsToKeep.AddRange(listStationItems);
 
             // Cleanup magnum projects.
             if (cleanProjects)
@@ -120,7 +123,7 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
-                   
+
                     // Part of all containers
                     //foreach (ItemStorage storage in creatureData.Inventory.Storages)
                     //{
@@ -189,6 +192,26 @@ namespace QM_PathOfQuasimorph.Core
                     case "tradeshuttle_department":
                         items.AddRange(CleanItemsInTradeShuttleDepartment(department as TradeShuttleDepartment));
                         break;
+                }
+            }
+
+            return items;
+        }
+
+        internal static List<string> CleanStationInternalStorage(IModContext context)
+        {
+            Stations stations = context.State.Get<Stations>();
+            List<string> items = new List<string>();
+
+            if (stations != null)
+            {
+                foreach (var station in stations.Values)
+                {
+                    if (station.InternalStorage != null)
+                    {
+                        items.AddRange(CleanupPickupItem(station.InternalStorage.Items));
+                    }
+
                 }
             }
 
@@ -327,6 +350,13 @@ namespace QM_PathOfQuasimorph.Core
                 foreach (var misson in missions.Values)
                 {
                     items.AddRange(CleanupPickupItem(misson.RewardItems));
+                    items.AddRange(CleanupPickupItem(misson.RewardItemsExample));
+                }
+
+                foreach (var misson in missions.Reversed)
+                {
+                    items.AddRange(CleanupPickupItem(misson.RewardItems));
+                    items.AddRange(CleanupPickupItem(misson.RewardItemsExample));
                 }
             }
 
