@@ -130,7 +130,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (resistDifference != 0)
                 {
-                    var value = $"{Math.Round(resistPoq.resistPercent,2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
@@ -401,6 +401,42 @@ namespace QM_PathOfQuasimorph.Core
                 _factory.AddPanelToTooltip().SetIcon("common_condition").LocalizeName("tooltip.Condition")
                 .SetValue(recordPoq.Unbreakable == true ? "∞" : value, true)
                 .SetComparsionValue(genericRecord.MaxDurability.ToString());
+            }
+        }
+
+        internal static void HandlePoqTooltipMonsterRemove()
+        {
+            //SingletonMonoBehaviour<TooltipFactory>.Instance.RestoreItemTooltip();
+            //SingletonMonoBehaviour<TooltipFactory>.Instance.ReturnAllToPools();
+        }
+
+        internal static void HandlePoqTooltipMonster(CellPosition mapCell, ObjHighlightController instance)
+        {
+            Monster monster = instance._creatures.GetMonster(mapCell.X, mapCell.Y);
+
+            // We need to check only for tooltips with extra text.
+
+            if (monster != null && SingletonMonoBehaviour<TooltipFactory>.Instance.IsTooltipWithAdditHintActive)
+            {
+                _factory = SingletonMonoBehaviour<TooltipFactory>.Instance;
+                _factory._state.Resolve(_factory._itemTooltipBuilder);
+
+                _tooltip = _factory.BuildEmptyTooltip(true, true);
+                _tooltip.SetCaption1(Localization.Get("monster." + monster.CreatureData.LocalizationId + ".name"), _factory.FirstLetterColor);
+                _tooltip.SetCaption2(Localization.Get(""));
+                //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                //_tooltip.AddContent
+                _factory.AddPanelToTooltip().SetValue("Reflects physical damage");
+                _factory.AddPanelToTooltip().SetValue("Teleports to you on hit");
+                _factory._lastItemMousePos = Input.mousePosition;
+                //_tooltip.ShowAdditionalBlock();
+                _factory.ShowSimpleTextTooltip("123");
+
+                //_factory._simpleTextTooltip.po
+                //    ().
+                //    .SetValue(value, true)
+                //    .SetComparsionValue(resistGeneric.resistPercent.ToString());
+                //_factory._tooltip.IsAdditionalTooltip = true;
             }
         }
     }
