@@ -11,13 +11,16 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ref ComponentsLayout __instance)
             {
+                MagnumProjects magnumProjects = __instance._state.Get<MagnumProjects>(); // Assuming _state stores it
+
                 if (magnumProjectsController == null)
                 {
                     Plugin.Logger.LogWarning("MagnumPoQProjectsController missing. Creating one.");
-                    MagnumProjects magnumProjects = __instance._state.Get<MagnumProjects>(); // Assuming _state stores it
                     magnumProjectsController = new MagnumPoQProjectsController(magnumProjects);
                     Plugin.Logger.Log($"\t\t magnumProjects Count: {MagnumPoQProjectsController.magnumProjects.Values.Count}"); // What projects we made in-game.
                 }
+
+                MagnumPoQProjectsController.magnumProjects = magnumProjects;
             }
         }
     }

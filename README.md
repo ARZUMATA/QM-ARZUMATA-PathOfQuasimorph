@@ -175,3 +175,15 @@ Thanks to NBK_RedSpy, Crynano and all the people who make their code open source
 - Average resist if applied is not that strong.
 - Fixed error, making armor getting huge weight.
 
+## 1.41 (d7997d6)
+- Fix: For some users the modded item stats were too extreme due to regional settings and were applied wrong leading not only to visual bug but breaking item stats.
+- Fix: Some items were becoming generic.
+- Item prefixes were updated, so now armor/wepon prefix can determine it's type. 
+Like "Overcharged" for shock damage weapon, "Cryo" for cold, Toxic for poison based as well as and "Sturdy" for armor. Etc.
+Thanks community for feedback.
+
+## 1.42 (1d5fcea)
+- Fix: Some items were becoming generic. Yes, there were a bit more.
+- Fix: In some cases, items were appearing in projects list like as they were unlocked.
+- Add: Parameter hindering, now there is a chance that parameter will be lowered, instead of being increased as usual.
+- Fix: Minor tooltip formatting isues.

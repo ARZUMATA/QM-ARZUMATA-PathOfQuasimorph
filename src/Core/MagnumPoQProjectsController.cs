@@ -145,8 +145,7 @@ namespace QM_PathOfQuasimorph.Core
             digits.FillZeroes();
             digits.Rarity = (int)itemRarity;
             // boostedParamIndex, randomPrefix
-            digits.BoostedParam = boostedParamIndex[0];
-            digits.RandomizedPrefix = boostedParamIndex[1];
+            digits.BoostedParam = boostedParamIndex;
             var randomUidInjected = digits.ReturnUID();
 
             // New finish project time

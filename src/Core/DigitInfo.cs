@@ -9,16 +9,16 @@ namespace QM_PathOfQuasimorph.Core
             // I don't like how this works. Byte array seems much better. But it works so.
             public string LeftPart { get; set; }
             public int UnusedData { get; set; } // X
-            public int RandomizedPrefix { get; set; } // XX
+            public int UnusedData2 { get; set; } // XX
             public int BoostedParam { get; set; } // XX
             public int Rarity { get; set; } // X
 
-            public DigitInfo(string leftPart, int unusedData, int boostedParam, int randomizedPrefix, int rarity)
+            public DigitInfo(string leftPart, int unusedData, int boostedParam, int unusedData2, int rarity)
             {
                 // Use last 6 digits of as identifier
                 LeftPart = leftPart;
                 UnusedData = unusedData;
-                RandomizedPrefix = randomizedPrefix;
+                UnusedData2 = unusedData2;
                 BoostedParam = boostedParam;
                 Rarity = rarity; // ItemRarity
             }
@@ -27,13 +27,13 @@ namespace QM_PathOfQuasimorph.Core
             {
                 UnusedData = 0;
                 BoostedParam = 0;
-                RandomizedPrefix = 0;
+                UnusedData2 = 0;
                 Rarity = 0;
             }
 
             public string ReturnUID()
             {
-                return $"{LeftPart}{UnusedData:D1}{BoostedParam:D2}{RandomizedPrefix:D2}{Rarity:D1}";
+                return $"{LeftPart}{UnusedData:D1}{BoostedParam:D2}{UnusedData2:D2}{Rarity:D1}";
             }
 
             public static DigitInfo GetDigits(long uid)
