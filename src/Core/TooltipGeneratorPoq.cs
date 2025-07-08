@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
-using System.Globalization;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -40,7 +39,7 @@ namespace QM_PathOfQuasimorph.Core
                         _tooltip = _factory.BuildEmptyTooltip();
                         _tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
                         _tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
-                        _tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString(CultureInfo.InvariantCulture).WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                        _tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
                         //_factory.AddPanelToTooltip().SetValue("Difference");
 
                         //_factory._tooltip.MakeRed();
@@ -131,13 +130,12 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (resistDifference != 0)
                 {
-                    //var value = $"{FormatHelper.To100Percent(resistPoq.resistPercent, false).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(FormatHelper.To100Percent(resistDifference, false).ToString(CultureInfo.InvariantCulture), resistDifference)})".WrapInColor(Colors.Green);
-                    var value = $"{Math.Round(resistPoq.resistPercent,2).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(resistDifference.ToString(CultureInfo.InvariantCulture), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{Math.Round(resistPoq.resistPercent,2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
                      .SetValue(value, true)
-                     .SetComparsionValue(resistGeneric.resistPercent.ToString(CultureInfo.InvariantCulture));
+                     .SetComparsionValue(resistGeneric.resistPercent.ToString());
                 }
             }
         }
@@ -170,7 +168,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (weightDifference != 0)
                 {
-                    var value = $"{FormatHelper.ToWeight(singleWeightPoq)} ({FormatDifference(Math.Abs(Math.Round(weightDifference, 2)).ToString(CultureInfo.InvariantCulture), weightDifference, true)})  ".WrapInColor(Colors.Green);
+                    var value = $"{FormatHelper.ToWeight(singleWeightPoq)} ({FormatDifference(Math.Abs(Math.Round(weightDifference, 2)).ToString(), weightDifference, true)})  ".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon("common_weight").LocalizeName("tooltip.ItemWeight")
                         .SetValue(value, true)
@@ -209,7 +207,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (dmgDifferenceMin != 0 || dmgDifferenceMax != 0)
                 {
-                    value = $"{string.Format("{0}-{1}", damagePoq.Item1, damagePoq.Item2).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(string.Format("{0}-{1}", dmgDifferenceMin, dmgDifferenceMax).ToString(CultureInfo.InvariantCulture), dmgDifferenceMax)})".WrapInColor(Colors.Green);
+                    value = $"{string.Format("{0}-{1}", damagePoq.Item1, damagePoq.Item2).ToString()} ({FormatDifference(string.Format("{0}-{1}", dmgDifferenceMin, dmgDifferenceMax).ToString(), dmgDifferenceMax)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon(icon).LocalizeName(tag)
                     .SetValue(value, true)
@@ -221,7 +219,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (critDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(damagePoq.Item3, false).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(FormatHelper.To100Percent(critDifference, false).ToString(CultureInfo.InvariantCulture), critDifference)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(damagePoq.Item3, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(critDifference, false).ToString(), critDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon("common_critdamage").LocalizeName("tooltip.CritDamage")
                     .SetValue(value, true)
@@ -235,7 +233,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (accuracyDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(accuracy, false).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(FormatHelper.To100Percent(accuracyDifference, false).ToString(CultureInfo.InvariantCulture), accuracyDifference)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(accuracy, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(accuracyDifference, false).ToString(), accuracyDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon(recordPoq.IsMelee ? "common_accuracy_melee" : "common_accuracy").
                     LocalizeName(recordPoq.IsMelee ? "tooltip.MeleeAccuracy" : "tooltip.RangeAccuracy")
@@ -250,7 +248,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (critChanceDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(critChance, false).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(FormatHelper.To100Percent(critChanceDifference).ToString(CultureInfo.InvariantCulture), critChanceDifference, true)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(critChance, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(critChanceDifference).ToString(), critChanceDifference, true)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon("common_critchance").LocalizeName("tooltip.CritChance")
                     .SetValue(value, true)
@@ -266,7 +264,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (scatterAngleDifference != 0)
                     {
-                        value = $"{string.Format("{0:0.0;0.0}°", scatterAngle).ToString(CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture)} ({FormatDifference(string.Format("{0:0.0;0.0}°", Math.Abs(scatterAngleDifference)).ToString(CultureInfo.InvariantCulture), scatterAngleDifference, true)})".WrapInColor(Colors.Green);
+                        value = $"{string.Format("{0:0.0;0.0}°", scatterAngle).ToString().ToString()} ({FormatDifference(string.Format("{0:0.0;0.0}°", Math.Abs(scatterAngleDifference)).ToString(), scatterAngleDifference, true)})".WrapInColor(Colors.Green);
 
                         _factory.AddPanelToTooltip().SetIcon("common_scatterangle").LocalizeName("tooltip.ScatterAngle")
                         .SetValue(value, true)
@@ -291,7 +289,7 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     val = string.Format("{0}", weaponRange.y);
-                    value = $"{val.ToString(CultureInfo.InvariantCulture)} ({FormatDifference(val.ToString(CultureInfo.InvariantCulture), rangeDiff.y)})".WrapInColor(Colors.Green);
+                    value = $"{val.ToString()} ({FormatDifference(val.ToString(), rangeDiff.y)})".WrapInColor(Colors.Green);
                 }
                 else
                 {
@@ -301,7 +299,7 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     val = string.Format("{0}-{1}", weaponRange.x, weaponRange.y);
-                    value = $"{val.ToString(CultureInfo.InvariantCulture)} ({FormatDifference(val.ToString(CultureInfo.InvariantCulture), rangeDiff.y)})".WrapInColor(Colors.Green);
+                    value = $"{val.ToString()} ({FormatDifference(val.ToString(), rangeDiff.y)})".WrapInColor(Colors.Green);
                 }
 
                 if (eqWeaponRange.x == 0)
@@ -324,12 +322,12 @@ namespace QM_PathOfQuasimorph.Core
                 if (recordPoq.IsMelee && recordPoq.ThrowRange > 0)
                 {
                     var throwDifference = recordPoq.ThrowRange - genericRecord.ThrowRange;
-                    value = $"{recordPoq.ThrowRange.ToString(CultureInfo.InvariantCulture)} ({FormatDifference(throwDifference.ToString(CultureInfo.InvariantCulture), throwDifference)})".WrapInColor(Colors.Green);
+                    value = $"{recordPoq.ThrowRange.ToString()} ({FormatDifference(throwDifference.ToString(), throwDifference)})".WrapInColor(Colors.Green);
                     if (throwDifference != 0)
                     {
                         _factory.AddPanelToTooltip().SetIcon("common_throwrange").LocalizeName("tooltip.ThrowRange")
                             .SetValue(value, true)
-                            .SetComparsionValue(genericRecord.ThrowRange.ToString(CultureInfo.InvariantCulture));
+                            .SetComparsionValue(genericRecord.ThrowRange.ToString());
                     }
 
                 }
@@ -341,12 +339,12 @@ namespace QM_PathOfQuasimorph.Core
                     int reloadDurationGeneric = Mathf.Max(genericRecord.ReloadDuration, 1);
                     var reloadDifference = reloadDurationPoq - reloadDurationGeneric;
 
-                    value = $"{string.Format("{0} {1}", reloadDurationPoq, Localization.Get("ui.label.actionpoints_short"))}({FormatDifference(Math.Abs(reloadDifference).ToString(CultureInfo.InvariantCulture), reloadDifference, true)})".WrapInColor(Colors.Green);
+                    value = $"{string.Format("{0} {1}", reloadDurationPoq, Localization.Get("ui.label.actionpoints_short"))}({FormatDifference(Math.Abs(reloadDifference).ToString(), reloadDifference, true)})".WrapInColor(Colors.Green);
                     if (reloadDifference != 0)
                     {
                         _factory.AddPanelToTooltip().SetIcon("common_time").LocalizeName("tooltip.ReloadDuration")
                             .SetValue(value, true)
-                            .SetComparsionValue(reloadDurationGeneric.ToString(CultureInfo.InvariantCulture));
+                            .SetComparsionValue(reloadDurationGeneric.ToString());
                     }
 
                 }
@@ -372,11 +370,11 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (magCapacityDifference != 0)
                     {
-                        value = $"{magCapacityPoq} ({FormatDifference(magCapacityDifference.ToString(CultureInfo.InvariantCulture), magCapacityDifference)})".WrapInColor(Colors.Green);
+                        value = $"{magCapacityPoq} ({FormatDifference(magCapacityDifference.ToString(), magCapacityDifference)})".WrapInColor(Colors.Green);
 
                         _factory.AddPanelToTooltip().SetIcon(iconMagCapacity).LocalizeName("item." + str + ".name")
                             .SetValue(value, true)
-                            .SetComparsionValue(magCapacityGeneric.ToString(CultureInfo.InvariantCulture));
+                            .SetComparsionValue(magCapacityGeneric.ToString());
                     }
 
                     // Firerate
@@ -398,11 +396,11 @@ namespace QM_PathOfQuasimorph.Core
 
             if (durabilityDifference != 0)
             {
-                var value = $"{recordPoq.MaxDurability.ToString(CultureInfo.InvariantCulture)} ({FormatDifference(durabilityDifference.ToString(CultureInfo.InvariantCulture), durabilityDifference)})".WrapInColor(Colors.Green);
+                var value = $"{recordPoq.MaxDurability.ToString()} ({FormatDifference(durabilityDifference.ToString(), durabilityDifference)})".WrapInColor(Colors.Green);
 
                 _factory.AddPanelToTooltip().SetIcon("common_condition").LocalizeName("tooltip.Condition")
                 .SetValue(recordPoq.Unbreakable == true ? "∞" : value, true)
-                .SetComparsionValue(genericRecord.MaxDurability.ToString(CultureInfo.InvariantCulture));
+                .SetComparsionValue(genericRecord.MaxDurability.ToString());
             }
         }
     }
