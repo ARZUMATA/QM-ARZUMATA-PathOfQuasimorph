@@ -231,7 +231,8 @@ namespace QM_PathOfQuasimorph.Core
 
             Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
 
-            using (StreamReader reader = new StreamReader(filePath))
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fileStream))
             {
                 while ((line = reader.ReadLine()) != null)
                 {
