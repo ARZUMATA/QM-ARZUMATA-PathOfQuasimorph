@@ -103,8 +103,6 @@ namespace QM_PathOfQuasimorph.Core
 
         public static void HighlightMobsPoq(CellPosition mapCell, ObjHighlightController objHighlightController)
         {
-            PathOfQuasimorph.Initialize();
-
             foreach (Creature creature in objHighlightController._creatures.Monsters)
             {
                 if (!initColors && PathOfQuasimorph.pixelizatorCameraAttachment != null)
