@@ -68,11 +68,11 @@ namespace QM_PathOfQuasimorph.Core
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private float PARAMETER_BOOST_MIN = 1.2f;
-        private float PARAMETER_BOOST_MAX = 1.8f;
+        public static float PARAMETER_BOOST_MIN = 1.2f;
+        public static float PARAMETER_BOOST_MAX = 1.8f;
         private float AVERAGE_RESIST_APPLY_CHANCE = 50;
         private float PARAMETER_HINDER_CHANCE = 50;
-        private float PARAMETER_HINDER_PERCENT = 20;
+        public float PARAMETER_HINDER_PERCENT = 20;
         private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
@@ -721,7 +721,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
+        public float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
             float averageResist,
             bool averageResistApplied,
             out bool averageResistAppliedResult,

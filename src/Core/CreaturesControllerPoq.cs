@@ -4,6 +4,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Xml.Linq;
 using UnityEngine;
@@ -32,7 +35,34 @@ namespace QM_PathOfQuasimorph.Core
          */
         internal Dictionary<int, CreatureDataPoq> creatureDataPoq = new Dictionary<int, CreatureDataPoq>();
 
-        internal List<string> perksList = new List<string> {
+        private Dictionary<string, bool> propertiesToModifyPositive = new Dictionary<string, bool>
+        {
+            //{ "BaseHealth",    true },
+            { "Health.MaxValue",    true },
+            { "Health.Value",   true },
+            { "BaseDodge",  true },
+            { "BaseActionPoints",   true },
+            { "BaseMeleeAccuracy",  true },
+            { "BaseRangeAccuracy",  true },
+            { "BaseLosLevel",   true },
+            { "MeleeDamage.minDmg", true },
+            { "MeleeDamage.maxDmg", true },
+            { "MeleeDamage.critChance", true },
+            { "MeleeDamage.critDmg",    true },
+            { "MeleeThrowbackChance",   true },
+            // { "PainThresholdLimit",   true },
+            // { "PainThresholdRegen",   true },
+            { "QuazimorphosisReward",   true },
+            // { "ReceiveAmputationChance",  true },
+            // { "ReceiveWoundChanceMult",   true },
+            // { "AttackWoundChanceMult",    true },
+        };
+
+
+        private List<string> resistsToModify = new List<string> { "blunt", "pierce", "lacer", "fire", "cold", "poison", "shock", "beam" };
+
+        private List<string> perksList = new List<string>
+        {
             "military_training",
             "cqc_specialist",
             "bodybuilding",
@@ -178,68 +208,338 @@ namespace QM_PathOfQuasimorph.Core
 
         public static void Postfix(CellPosition cellUnderCursor, ObjHighlightController __instance)
         {
-            //Console.WriteLine("Postfix Patch_ObjHighlightController_Process");
-
         }
 
         internal void ApplyStatsFromRarity(ref Monster result, ItemRarity rarity)
         {
-            // Get modifier that will be used to boost or hinder stats
-            float modifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity);
+            // Apply the base baseModifier to all properties in the list
+            float baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity);
+            float finalModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity);
 
+            // List of resist types to modify
 
+            // result.CreatureData.Health.MaxValue = (int)Math.Round(baseModifier * result.CreatureData.Health.MaxValue, 0);
+            // result.CreatureData.Health.Value = (int)Math.Round(baseModifier * result.CreatureData.Health.MaxValue, 0);
+            // result.CreatureData.BaseDodge = baseModifier * result.CreatureData.BaseDodge;
+            // result.CreatureData.BaseActionPoints = (int)Math.Round(baseModifier * result.CreatureData.BaseActionPoints, 0);
+            // result.CreatureData.BaseMeleeAccuracy = baseModifier * result.CreatureData.BaseMeleeAccuracy;
+            // result.CreatureData.BaseRangeAccuracy = baseModifier * result.CreatureData.BaseRangeAccuracy;
+            // result.CreatureData.BaseLosLevel = (int)Math.Round(baseModifier * result.CreatureData.BaseLosLevel, 0);
+            // result.CreatureData.ResistSheet._currentResist["blunt"] = baseModifier * result.CreatureData.ResistSheet._currentResist["blunt"];
+            // result.CreatureData.ResistSheet._currentResist["pierce"] = baseModifier * result.CreatureData.ResistSheet._currentResist["pierce"];
+            // result.CreatureData.ResistSheet._currentResist["lacer"] = baseModifier * result.CreatureData.ResistSheet._currentResist["lacer"];
+            // result.CreatureData.ResistSheet._currentResist["fire"] = baseModifier * result.CreatureData.ResistSheet._currentResist["fire"];
+            // result.CreatureData.ResistSheet._currentResist["cold"] = baseModifier * result.CreatureData.ResistSheet._currentResist["cold"];
+            // result.CreatureData.ResistSheet._currentResist["poison"] = baseModifier * result.CreatureData.ResistSheet._currentResist["poison"];
+            // result.CreatureData.ResistSheet._currentResist["shock"] = baseModifier * result.CreatureData.ResistSheet._currentResist["shock"];
+            // result.CreatureData.ResistSheet._currentResist["beam"] = baseModifier * result.CreatureData.ResistSheet._currentResist["beam"];
+            // //creatureData.Perks FILL PERKS
 
-            result.CreatureData.Health.MaxValue = (int)Math.Round(modifier * result.CreatureData.Health.MaxValue, 0);
-            result.CreatureData.Health.Value = (int)Math.Round(modifier * result.CreatureData.Health.MaxValue, 0);
-            result.CreatureData.BaseDodge = modifier * result.CreatureData.BaseDodge;
-            result.CreatureData.BaseActionPoints = (int)Math.Round(modifier * result.CreatureData.BaseActionPoints, 0);
-            result.CreatureData.BaseMeleeAccuracy = modifier * result.CreatureData.BaseMeleeAccuracy;
-            result.CreatureData.BaseRangeAccuracy = modifier * result.CreatureData.BaseRangeAccuracy;
-            result.CreatureData.BaseLosLevel = (int)Math.Round(modifier * result.CreatureData.BaseLosLevel, 0);
-            result.CreatureData.ResistSheet._currentResist["blunt"] = modifier * result.CreatureData.ResistSheet._currentResist["blunt"];
-            result.CreatureData.ResistSheet._currentResist["pierce"] = modifier * result.CreatureData.ResistSheet._currentResist["pierce"];
-            result.CreatureData.ResistSheet._currentResist["lacer"] = modifier * result.CreatureData.ResistSheet._currentResist["lacer"];
-            result.CreatureData.ResistSheet._currentResist["fire"] = modifier * result.CreatureData.ResistSheet._currentResist["fire"];
-            result.CreatureData.ResistSheet._currentResist["cold"] = modifier * result.CreatureData.ResistSheet._currentResist["cold"];
-            result.CreatureData.ResistSheet._currentResist["poison"] = modifier * result.CreatureData.ResistSheet._currentResist["poison"];
-            result.CreatureData.ResistSheet._currentResist["shock"] = modifier * result.CreatureData.ResistSheet._currentResist["shock"];
-            result.CreatureData.ResistSheet._currentResist["beam"] = modifier * result.CreatureData.ResistSheet._currentResist["beam"];
-            //creatureData.Perks FILL PERKS
+            // // DmgInfo
+            // result.CreatureData.MeleeDamage.minDmg = (int)Math.Round(baseModifier * result.CreatureData.MeleeDamage.minDmg, 0);
+            // result.CreatureData.MeleeDamage.maxDmg = (int)Math.Round(baseModifier * result.CreatureData.MeleeDamage.maxDmg, 0);
+            // result.CreatureData.MeleeDamage.critChance = baseModifier * result.CreatureData.MeleeDamage.critChance;
+            // result.CreatureData.MeleeDamage.critDmg = baseModifier * result.CreatureData.MeleeDamage.critDmg;
 
-            // DmgInfo
-            result.CreatureData.MeleeDamage.minDmg = (int)Math.Round(modifier * result.CreatureData.MeleeDamage.minDmg, 0);
-            result.CreatureData.MeleeDamage.maxDmg = (int)Math.Round(modifier * result.CreatureData.MeleeDamage.maxDmg, 0);
-            result.CreatureData.MeleeDamage.critChance = modifier * result.CreatureData.MeleeDamage.critChance;
-            result.CreatureData.MeleeDamage.critDmg = modifier * result.CreatureData.MeleeDamage.critDmg;
+            // result.CreatureData.MeleeThrowbackChance = baseModifier * result.CreatureData.MeleeThrowbackChance;
+            // result.CreatureData.PainThresholdLimit = (int)Math.Round(baseModifier * result.CreatureData.PainThresholdLimit, 0);
+            // result.CreatureData.PainThresholdRegen = (int)Math.Round(baseModifier * result.CreatureData.PainThresholdRegen, 0);
+            // result.CreatureData.ReceiveAmputationChance = baseModifier * result.CreatureData.ReceiveAmputationChance;
+            // result.CreatureData.QuazimorphosisReward = (int)Math.Round(baseModifier * result.CreatureData.QuazimorphosisReward, 0);
 
-            result.CreatureData.MeleeThrowbackChance = modifier * result.CreatureData.MeleeThrowbackChance;
-            result.CreatureData.PainThresholdLimit = (int)Math.Round(modifier * result.CreatureData.PainThresholdLimit, 0);
-            result.CreatureData.PainThresholdRegen = (int)Math.Round(modifier * result.CreatureData.PainThresholdRegen, 0);
-            result.CreatureData.ReceiveAmputationChance = modifier * result.CreatureData.ReceiveAmputationChance;
-            result.CreatureData.QuazimorphosisReward = (int)Math.Round(modifier * result.CreatureData.QuazimorphosisReward, 0);
+            // Basic vars
+            // Mob properties
+            bool hinder = false;
+            int improvedCount = 0;
+            int hinderedCount = 0;
+
+            int numParamsToAdjust = propertiesToModifyPositive.Count;
+            int numParamsToHinder = (int)Math.Floor(numParamsToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
+            int numParamsToImprove = numParamsToAdjust - numParamsToHinder;
+            PathOfQuasimorph.raritySystem.ShuffleDictionary(propertiesToModifyPositive);
+            var boostedParam = _random.Next(propertiesToModifyPositive.Count);
+
+            var creatureDataType = result.CreatureData.GetType();
+            foreach (var propPath in propertiesToModifyPositive)
+            {
+                Plugin.Logger.Log($"Processing property path: {propPath.Key}");
+
+                var props = propPath.Key.Split('.');
+
+                Plugin.Logger.Log($"\t props: {props.Length}");
+
+                object current = result.CreatureData;
+                object finalTarget = null;
+                string finalPropOrFieldName = props.Last();
+
+                Plugin.Logger.Log($"\t finalPropOrFieldName: {finalPropOrFieldName}");
+
+                // Traverse the nested objects
+                for (int i = 0; i < props.Length; i++)
+                {
+                    string propertyName = props[i];
+
+                    Plugin.Logger.Log($"\t\t propertyName: {propertyName}");
+
+                    // Try to get either a property or a field
+                    PropertyInfo propInfo = current.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+                    FieldInfo fieldInfo = current.GetType().GetField(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    if (propInfo != null)
+                    {
+                        Plugin.Logger.Log($"\t\t\t propInfo: {propInfo}, {propInfo.Name}");
+                        // Our last prop
+                        if (propInfo.Name == finalPropOrFieldName)
+                        {
+                            finalTarget = current;
+                            break;
+                        }
+                        else
+                        {
+                            current = propInfo.GetValue(current);
+                        }
+                    }
+                    else if (fieldInfo != null)
+                    {
+                        Plugin.Logger.Log($"\t\t\t fieldInfo: {fieldInfo}, {fieldInfo.Name}");
+
+                        // Our last field
+                        // Our last prop
+                        if (fieldInfo.Name == finalPropOrFieldName)
+                        {
+                            finalTarget = current;
+                            break;
+                        }
+                        else
+                        {
+                            current = fieldInfo.GetValue(current);
+                        }
+                    }
+                    else
+                    {
+                        Plugin.Logger.Log($"Property/Field '{propertyName}' not found on type: {current.GetType()}");
+                        break;
+                    }
+
+                    if (current == null)
+                    {
+                        Plugin.Logger.Log($"Value of {propertyName} is null.");
+                        break;
+                    }
+
+                    Plugin.Logger.Log($"\t\t\t\t current: {propertyName}");
+                }
+
+                if (finalTarget == null)
+                {
+                    Plugin.Logger.Log($"No access to the final target of path: {propPath.Key}");
+                    continue;
+                }
+
+                // Try to get the final property or field
+                PropertyInfo finalProp = finalTarget.GetType().GetProperty(finalPropOrFieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+                FieldInfo finalField = finalTarget.GetType().GetField(finalPropOrFieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+                Plugin.Logger.Log($"\t\t propInfo: {finalProp}");
+                Plugin.Logger.Log($"\t\t fieldInfo: {finalField}");
+                object finalValue = null;
+
+                if (finalProp != null)
+                {
+                    finalValue = finalProp.GetValue(finalTarget);
+                }
+                else if (finalField != null)
+                {
+                    finalValue = finalField.GetValue(finalTarget);
+                }
+                else
+                {
+                    Plugin.Logger.Log($"Final property or field '{finalPropOrFieldName}' not found in the object of type: {finalTarget.GetType()}");
+                    continue;
+                }
+
+                // Apply boost
+                if (propPath.Key == propertiesToModifyPositive.ElementAt(boostedParam).Key)
+                {
+                    finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                    Plugin.Logger.Log($"\t\t boosting final modifier: TRUE");
+
+                }
+                else
+                {
+                    finalModifier = baseModifier;
+                    Plugin.Logger.Log($"\t\t boosting final modifier: FALSE");
+
+                }
+
+                Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}");
+
+                // Hinder or not
+                hinder = PathOfQuasimorph.raritySystem.ShouldHinderParameter(ref hinderedCount, ref improvedCount, numParamsToHinder, numParamsToImprove);
+
+                // Apply baseModifier
+                if (finalValue is int intValue)
+                {
+                    if (finalProp != null)
+                    {
+                        Plugin.Logger.Log($"Updating {propPath.Key} with {intValue} and finalModifier {finalModifier}, hinder: {hinder}");
+
+                        if (hinder)
+                        {
+                            finalProp.SetValue(finalTarget, (int)Math.Ceiling(intValue / finalModifier));
+                        }
+                        else
+                        {
+                            finalProp.SetValue(finalTarget, (int)Math.Ceiling(intValue * finalModifier));
+                        }
+
+                        Plugin.Logger.Log($"Updated {propPath.Key} to {(int)finalProp.GetValue(finalTarget)}");
+                    }
+                    else if (finalField != null)
+                    {
+                        Plugin.Logger.Log($"Updating {propPath.Key} with {intValue} and finalModifier {finalModifier}, hinder: {hinder}");
+
+                        if (hinder)
+                        {
+                            finalField.SetValue(finalTarget, (int)Math.Ceiling(intValue / finalModifier));
+                        }
+                        else
+                        {
+                            finalField.SetValue(finalTarget, (int)Math.Ceiling(intValue * finalModifier));
+                        }
+
+                        Plugin.Logger.Log($"Updated {propPath.Key} to {(int)finalField.GetValue(finalTarget)}");
+                    }
+
+                }
+                else if (finalValue is float floatValue)
+                {
+                    if (finalProp != null)
+                    {
+                        if (hinder)
+                        {
+                            finalProp.SetValue(finalTarget, floatValue / finalModifier);
+                        }
+                        else
+                        {
+                            finalProp.SetValue(finalTarget, floatValue * finalModifier);
+                        }
+
+                        Plugin.Logger.Log($"Updated {propPath.Key} to {(float)finalProp.GetValue(finalTarget)}");
+                    }
+                    else if (finalField != null)
+                    {
+                        if (hinder)
+                        {
+                            finalField.SetValue(finalTarget, floatValue / finalModifier);
+                        }
+                        else
+                        {
+                            finalField.SetValue(finalTarget, floatValue * finalModifier);
+                        }
+                        Plugin.Logger.Log($"Updated {propPath.Key} to {(float)finalField.GetValue(finalTarget)}");
+                    }
+                }
+                else
+                {
+                    Plugin.Logger.Log($"Unsupported type for property '{propPath.Key}': {finalValue?.GetType()}");
+                }
+            }
+
+            // Resists
+
+            improvedCount = 0;
+            hinderedCount = 0;
+            numParamsToAdjust = resistsToModify.Count;
+            numParamsToHinder = (int)Math.Floor(numParamsToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
+            numParamsToImprove = numParamsToAdjust - numParamsToHinder;
+            PathOfQuasimorph.raritySystem.ShuffleList(resistsToModify);
+            boostedParam = _random.Next(resistsToModify.Count);
+
+            var resistSheet = result.CreatureData.ResistSheet._currentResist;
+            float averageResist = 0;
+            int resistCount = 0;
+            bool averageResistApplied = false;
+
+            Plugin.Logger.Log($"Getting average resist");
+
+            foreach (var resistType in resistsToModify)
+            {
+                averageResist += resistSheet[resistType];
+                resistCount++;
+            }
+
+            averageResist = (float)Math.Round(averageResist / resistCount, 2);
+            averageResist = Math.Max(averageResist, 1.0f); // Ensure average resist is at least 1.0
+
+            // Apply the base baseModifier to all resists in the list
+            foreach (var resistType in resistsToModify)
+            {
+                Plugin.Logger.Log($"Processing resistType: {resistType}");
+
+                if (resistSheet.TryGetValue(resistType, out float value))
+                {
+                    // Apply boost
+                    if (resistType == resistsToModify.ElementAt(boostedParam))
+                    {
+                        finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                        Plugin.Logger.Log($"\t\t boosting final modifier: TRUE");
+                    }
+                    else
+                    {
+                        finalModifier = baseModifier;
+                        Plugin.Logger.Log($"\t\t boosting final modifier: FALSE");
+                    }
+
+                    Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}");
+
+                    // Hinder or not
+                    hinder = PathOfQuasimorph.raritySystem.ShouldHinderParameter(ref hinderedCount, ref improvedCount, numParamsToHinder, numParamsToImprove);
+
+                    Plugin.Logger.Log($"Updating {resistType} with {value} and finalModifier {finalModifier}, hinder: {hinder}");
+
+                    // If resist zero
+                    if (!averageResistApplied)
+                    {
+                        Plugin.Logger.Log($"Applying average resist {resistType} with {averageResist}, ONCE");
+
+                        resistSheet[resistType] = averageResist;
+                    }
+
+                    // Apply
+                    if (hinder)
+                    {
+                        resistSheet[resistType] = value / finalModifier;
+                    }
+                    else
+                    {
+                        resistSheet[resistType] = value * finalModifier;
+                    }
+
+                    Plugin.Logger.Log($"Updated {resistType} to {resistSheet[resistType]}");
+                }
+            }
 
             // Perks
             result.CreatureData.Perks = new List<Perk>();
             var (Min, Max) = RaritySystem.rarityParamPercentages[rarity];
             int minParams = Math.Max(0, (int)Math.Floor(Min * perksList.Count));
             int maxParams = (int)Math.Ceiling(Max * perksList.Count);
-            int numParamsToAdjust = _random.Next(minParams, maxParams + 1);
+            numParamsToAdjust = _random.Next(minParams, maxParams + 1);
 
             // Always shuffle list for better randomness
             PathOfQuasimorph.raritySystem.ShuffleList(perksList);
 
             Dictionary<string, Perk> editable_perks = new Dictionary<string, Perk>();
 
-
             for (int i = 0; i < numParamsToAdjust; i++)
             {
                 var perkSuffix = _random.Next(0, perksMasteries.Count);
                 var perkRecord = Data.Perks.GetRecord($"{perksList[i]}{perksMasteries[perkSuffix]}");
-                
+
                 if (perkRecord != null)
                 {
                     result.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(perkRecord));
-
+                    Plugin.Logger.Log($"Added perk {perksList[i]}{perksMasteries[perkSuffix]}");
                 }
                 else
                 {
