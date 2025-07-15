@@ -6,8 +6,6 @@ using System.Security.Cryptography;
 using MGSC;
 using QM_PathOfQuasimorph.Core;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using System.Security.Policy;
 
 namespace QM_PathOfQuasimorph.Core
@@ -17,7 +15,6 @@ namespace QM_PathOfQuasimorph.Core
         public const long MAGNUM_PROJECT_START_TIME = 1337L;
 
         public static MagnumProjects magnumProjects;
-        public static RaritySystem raritySystem = new RaritySystem();
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
         public List<string> traitsTracker = new List<string>();
         private Logger _logger = new Logger(null, typeof(MagnumPoQProjectsController));
@@ -125,7 +122,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"Creating a new project with mods for {projectId} - {projectType}");
 
             // Determine if we ever need to create a new project
-            var itemRarity = raritySystem.SelectRarity();
+            var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
 
             // We don't need to do anything.
             // That way we just return the project ID and it goes as defined by game design.
@@ -138,7 +135,7 @@ namespace QM_PathOfQuasimorph.Core
             MagnumProject newProject = new MagnumProject(projectType, projectId);
 
             // Apply various project related parameters
-            var boostedParamIndex = raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
+            var boostedParamIndex = PathOfQuasimorph.raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
 
             // Generate a new UID
             var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();

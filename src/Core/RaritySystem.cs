@@ -68,11 +68,11 @@ namespace QM_PathOfQuasimorph.Core
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private float PARAMETER_BOOST_MIN = 1.2f;
-        private float PARAMETER_BOOST_MAX = 1.8f;
+        public static float PARAMETER_BOOST_MIN = 1.2f;
+        public static float PARAMETER_BOOST_MAX = 1.8f;
         private float AVERAGE_RESIST_APPLY_CHANCE = 50;
         private float PARAMETER_HINDER_CHANCE = 50;
-        private float PARAMETER_HINDER_PERCENT = 20;
+        public float PARAMETER_HINDER_PERCENT = 20;
         private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
@@ -231,7 +231,8 @@ namespace QM_PathOfQuasimorph.Core
 
             Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
 
-            using (StreamReader reader = new StreamReader(filePath))
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fileStream))
             {
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -395,7 +396,7 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define the percentage of parameters to modify per Rarity
-        private Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
+        public static Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,  (0f    , 0f   ) },          // 0% of editableParams
             { ItemRarity.Enhanced,  (0.125f , 0.25f) },       // 25%
@@ -720,18 +721,14 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
+        public float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
             float averageResist,
             bool averageResistApplied,
             out bool averageResistAppliedResult,
             bool hinder
             )
         {
-            //float[] rarityModifiers = _rarityModifiers[rarity];
-            //float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
-            var (Min, Max) = _rarityModifiers[rarity];
-            // float modifier = (float)Math.Round(_random.Next((int)(Min * 100), (int)(Max * 100) + 1) / 100f, 2);
-            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
+            float modifier = GetRarityModifier(rarity);
 
             averageResistAppliedResult = false;
 
@@ -784,6 +781,13 @@ namespace QM_PathOfQuasimorph.Core
             //_logger.Log($"\t\t\t Result: {result}");
 
             return result;
+        }
+
+        internal float GetRarityModifier(ItemRarity rarity)
+        {
+            var (Min, Max) = _rarityModifiers[rarity];
+            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
+            return modifier;
         }
 
         internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
@@ -1177,7 +1181,7 @@ namespace QM_PathOfQuasimorph.Core
             return editable_magnum_projects_params;
         }
 
-        private void ShuffleList<T>(IList<T> list)
+        public void ShuffleList<T>(IList<T> list)
         {
             // Fisher-Yates shuffle
             for (int i = list.Count - 1; i > 0; i--)
@@ -1189,7 +1193,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private Dictionary<TKey, TValue> ShuffleDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+        public Dictionary<TKey, TValue> ShuffleDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
         {
             List<TKey> keys = dictionary.Keys.ToList();
             ShuffleList(keys);  // Use the generic shuffle method for the list of keys

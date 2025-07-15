@@ -104,7 +104,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (__result != null)
                     {
-                        MagnumPoQProjectsController.raritySystem.ApplyTraits(ref __result);
+                        PathOfQuasimorph.raritySystem.ApplyTraits(ref __result);
                     }
                 }
             }

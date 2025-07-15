@@ -16,7 +16,7 @@ namespace QM_PathOfQuasimorph.Core
         static PropertiesTooltip _tooltip;
         static ItemTooltipBuilder _tooltipBuilder;
         private static Logger _logger = new Logger(null, typeof(TooltipGeneratorPoq));
- 
+
         public static void HandlePoqTooltip()
         {
             InputController instance = SingletonMonoBehaviour<InputController>.Instance;
@@ -131,7 +131,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (resistDifference != 0)
                 {
-                    var value = $"{Math.Round(resistPoq.resistPercent,2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
@@ -404,5 +404,54 @@ namespace QM_PathOfQuasimorph.Core
                 .SetComparsionValue(genericRecord.MaxDurability.ToString());
             }
         }
+
+        internal static void HandlePoqTooltipMonsterRemove()
+        {
+            SingletonMonoBehaviour<TooltipFactory>.Instance.HideTooltip();
+        }
+
+        internal static void HandlePoqTooltipMonster(ObjHighlightController instance, CellPosition cellUnderCursor)
+        {
+            MapCell cell = instance._mapGrid.GetCell(cellUnderCursor, true);
+            if (cell != null)
+            {
+                Monster monster = instance._creatures.GetMonster(cellUnderCursor.X, cellUnderCursor.Y);
+                if (monster != null)
+                {
+                    HandlePoqTooltipMonster(monster);
+                }
+            }
+        }
+
+        internal static void HandlePoqTooltipMonster(Creature monster)
+        {
+            InputController inputController = SingletonMonoBehaviour<InputController>.Instance;
+            var IsKeyDown = inputController.IsKeyDown("HighlightAllItems", null, false);
+            var IsKeyUp = inputController.IsKeyUp("HighlightAllItems", null, false);
+
+            // We got entry that we can show
+            if (IsKeyDown && PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
+            {
+                //if (monster != null)// && SingletonMonoBehaviour<TooltipFactory>.Instance.IsTooltipWithAdditHintActive)
+                _factory = SingletonMonoBehaviour<TooltipFactory>.Instance;
+                _factory._state.Resolve(_factory._itemTooltipBuilder);
+
+                _tooltip = _factory.BuildEmptyTooltip(true, true);
+                _tooltip.MakeRed();
+                _tooltip.SetCaption1(Localization.Get("monster." + monster.CreatureData.LocalizationId + ".name"), _factory.FirstLetterColor);
+                _tooltip.SetCaption1Right($"{PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(RaritySystem.Colors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty))}");
+
+                //_tooltip.SetCaption2("");
+                //_factory.AddPanelToTooltip().SetValue("");
+                //_factory.AddPanelToTooltip().SetValue("");
+                _factory._lastItemMousePos = Input.mousePosition;
+            }
+
+            if (IsKeyUp)
+            {
+                HandlePoqTooltipMonsterRemove();
+            }
+        }
+
     }
 }
