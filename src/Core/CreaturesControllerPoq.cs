@@ -158,6 +158,12 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.TryGetValue(creature.CreatureData.UniqueId, out CreatureDataPoq creatureDataPoq))
                 {
+                    // No highlight on common folk
+                    if (creatureDataPoq.rarity == ItemRarity.Standard)
+                    {
+                        continue;
+                    }
+
                     var color = Helpers.HexStringToUnityColor(RaritySystem.Colors[creatureDataPoq.rarity]);
 
                     if (increaseAlphaColor)

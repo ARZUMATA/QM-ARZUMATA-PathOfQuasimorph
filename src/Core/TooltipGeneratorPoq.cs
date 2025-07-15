@@ -16,7 +16,7 @@ namespace QM_PathOfQuasimorph.Core
         static PropertiesTooltip _tooltip;
         static ItemTooltipBuilder _tooltipBuilder;
         private static Logger _logger = new Logger(null, typeof(TooltipGeneratorPoq));
- 
+
         public static void HandlePoqTooltip()
         {
             InputController instance = SingletonMonoBehaviour<InputController>.Instance;
@@ -407,38 +407,51 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void HandlePoqTooltipMonsterRemove()
         {
-            //SingletonMonoBehaviour<TooltipFactory>.Instance.RestoreItemTooltip();
-            //SingletonMonoBehaviour<TooltipFactory>.Instance.ReturnAllToPools();
+            SingletonMonoBehaviour<TooltipFactory>.Instance.HideTooltip();
         }
 
-        internal static void HandlePoqTooltipMonster(CellPosition mapCell, ObjHighlightController instance)
+        internal static void HandlePoqTooltipMonster(ObjHighlightController instance, CellPosition cellUnderCursor)
         {
-            Monster monster = instance._creatures.GetMonster(mapCell.X, mapCell.Y);
-
-            // We need to check only for tooltips with extra text.
-
-            if (monster != null && SingletonMonoBehaviour<TooltipFactory>.Instance.IsTooltipWithAdditHintActive)
+            MapCell cell = instance._mapGrid.GetCell(cellUnderCursor, true);
+            if (cell != null)
             {
+                Monster monster = instance._creatures.GetMonster(cellUnderCursor.X, cellUnderCursor.Y);
+                if (monster != null)
+                {
+                    HandlePoqTooltipMonster(monster);
+                }
+            }
+        }
+
+        internal static void HandlePoqTooltipMonster(Creature monster)
+        {
+            InputController inputController = SingletonMonoBehaviour<InputController>.Instance;
+            var IsKeyDown = inputController.IsKeyDown("HighlightAllItems", null, false);
+            var IsKeyUp = inputController.IsKeyUp("HighlightAllItems", null, false);
+
+            // We got entry that we can show
+            if (IsKeyDown && PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
+            {
+                //if (monster != null)// && SingletonMonoBehaviour<TooltipFactory>.Instance.IsTooltipWithAdditHintActive)
                 _factory = SingletonMonoBehaviour<TooltipFactory>.Instance;
                 _factory._state.Resolve(_factory._itemTooltipBuilder);
 
                 _tooltip = _factory.BuildEmptyTooltip(true, true);
+                _tooltip.MakeRed();
                 _tooltip.SetCaption1(Localization.Get("monster." + monster.CreatureData.LocalizationId + ".name"), _factory.FirstLetterColor);
-                _tooltip.SetCaption2(Localization.Get(""));
-                //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
-                //_tooltip.AddContent
-                _factory.AddPanelToTooltip().SetValue("Reflects physical damage");
-                _factory.AddPanelToTooltip().SetValue("Teleports to you on hit");
-                _factory._lastItemMousePos = Input.mousePosition;
-                //_tooltip.ShowAdditionalBlock();
-                _factory.ShowSimpleTextTooltip("123");
+                _tooltip.SetCaption1Right($"{PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(RaritySystem.Colors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty))}");
 
-                //_factory._simpleTextTooltip.po
-                //    ().
-                //    .SetValue(value, true)
-                //    .SetComparsionValue(resistGeneric.resistPercent.ToString());
-                //_factory._tooltip.IsAdditionalTooltip = true;
+                //_tooltip.SetCaption2("");
+                //_factory.AddPanelToTooltip().SetValue("");
+                //_factory.AddPanelToTooltip().SetValue("");
+                _factory._lastItemMousePos = Input.mousePosition;
+            }
+
+            if (IsKeyUp)
+            {
+                HandlePoqTooltipMonsterRemove();
             }
         }
+
     }
 }
