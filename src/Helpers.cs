@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using Unity.Profiling;
 using UnityEngine;
 using Random = System.Random;
 
@@ -11,7 +12,7 @@ internal static class Helpers
     public static string AlphaAwareColorToHex(Color color) =>
         $"#{(int)(color.r * 255):X2}{(int)(color.g * 255):X2}{(int)(color.b * 255):X2}{(int)(color.a * 255):X2}";
 
-    public static Color HexStringToUnityColor(string hex)
+    public static Color HexStringToUnityColor(string hex, int alpha = 255)
     {
         if (string.IsNullOrEmpty(hex) || !hex.StartsWith("#"))
         {
@@ -21,7 +22,7 @@ internal static class Helpers
         // Check the length of the input string to determine if it has an alpha channel
         if (hex.Length == 7)  // No alpha channel provided, assume full opacity
         {
-            hex = "#" + hex.Substring(1) + "FF";
+            hex = "#" + hex.Substring(1) + alpha.ToString("X2");
         }
         else if (hex.Length != 9)
         {
