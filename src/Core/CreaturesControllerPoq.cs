@@ -367,14 +367,13 @@ namespace QM_PathOfQuasimorph.Core
                 if (propPath.Key == propertiesToModifyPositive.ElementAt(boostedParam).Key)
                 {
                     finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
-                    Plugin.Logger.Log($"\t\t boosting final modifier: TRUE");
+                    Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : TRUE");
 
                 }
                 else
                 {
                     finalModifier = baseModifier;
-                    Plugin.Logger.Log($"\t\t boosting final modifier: FALSE");
-
+                    Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : FALSE");
                 }
 
                 Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}");
@@ -488,12 +487,12 @@ namespace QM_PathOfQuasimorph.Core
                     if (resistType == resistsToModify.ElementAt(boostedParam))
                     {
                         finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
-                        Plugin.Logger.Log($"\t\t boosting final modifier: TRUE");
+                        Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : TRUE");
                     }
                     else
                     {
                         finalModifier = baseModifier;
-                        Plugin.Logger.Log($"\t\t boosting final modifier: FALSE");
+                        Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : FALSE");
                     }
 
                     Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}");
@@ -552,6 +551,11 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.Log($"{perksList[i]}{perksMasteries[perkSuffix]} null");
                 }
             }
+        }
+
+        internal void CleanCreatureDataPoq()
+        {
+            creatureDataPoq.Clear();
         }
     }
 }

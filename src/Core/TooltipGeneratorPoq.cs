@@ -441,6 +441,14 @@ namespace QM_PathOfQuasimorph.Core
                 _tooltip.SetCaption1(Localization.Get("monster." + monster.CreatureData.LocalizationId + ".name"), _factory.FirstLetterColor);
                 _tooltip.SetCaption1Right($"{PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(RaritySystem.Colors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty))}");
 
+                foreach (var perk in monster.CreatureData.Perks)
+                {
+                    ParseHelper.GetGradeByPerkId(perk.PerkId, out int level, out string perkTag, out string grade);
+
+                    _factory.AddPanelToTooltip().LocalizeName($"perk.{perkTag}.name").SetValue(level);
+
+                }
+
                 //_tooltip.SetCaption2("");
                 //_factory.AddPanelToTooltip().SetValue("");
                 //_factory.AddPanelToTooltip().SetValue("");

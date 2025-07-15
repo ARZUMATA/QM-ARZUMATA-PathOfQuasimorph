@@ -89,9 +89,14 @@ namespace QM_PathOfQuasimorph.Core
         {
             Initialize();
         }
+        [Hook(ModHookType.SpaceStarted)]
+        public static void SpaceStarted(IModContext context)
+        {
+            creaturesControllerPoq.CleanCreatureDataPoq();
+        }
 
         [Hook(ModHookType.DungeonFinished)]
-        public static void CleanupModeDungeonFinished(IModContext context)
+        public static void DungeonFinished(IModContext context)
         {
             CleanupSystem.CleanObsoleteProjects(context, true);
             isInitialized = false;

@@ -11,6 +11,12 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
+        public static class MobContext
+        {
+            [ThreadStatic]
+            public static int CurrentMobId = -1;
+        }
+
         //This generates creature data without uniqueId
         [HarmonyPatch(typeof(CreatureSystem), "GenerateMonster")]
          public static class CreatureSystem_GenerateMonster_Patch
@@ -39,6 +45,7 @@ namespace QM_PathOfQuasimorph.Core
                     //{
                     //    creatureDataPoq.rarity = ItemRarity.Quantum;
                     //}
+                    MobContext.CurrentMobId = __result.CreatureData.UniqueId;
 
                     PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Add(__result.CreatureData.UniqueId, creatureDataPoq);
                     __result.CreatureData.UltimateSkullItemId = creatureDataPoq.SerializeData();

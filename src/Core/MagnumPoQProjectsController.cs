@@ -108,7 +108,7 @@ namespace QM_PathOfQuasimorph.Core
             return canProcess;
         }
 
-        public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId)
+        public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId, bool rarityExtraBoost)
         {
             // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
             // NotImplementedException: Failed create project possesed_centaur_hand. No clone method for additional records: MGSC.AugmentationRecord.
@@ -135,7 +135,7 @@ namespace QM_PathOfQuasimorph.Core
             MagnumProject newProject = new MagnumProject(projectType, projectId);
 
             // Apply various project related parameters
-            var boostedParamIndex = PathOfQuasimorph.raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
+            var boostedParamIndex = PathOfQuasimorph.raritySystem.ApplyProjectParameters(ref newProject, itemRarity, rarityExtraBoost);
 
             // Generate a new UID
             var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();

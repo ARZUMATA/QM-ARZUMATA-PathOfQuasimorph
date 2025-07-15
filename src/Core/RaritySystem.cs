@@ -621,7 +621,15 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Used part of code from  MagnumProjectNumericParameterPanel.Initialize
-        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam, float averageResist, bool hinder)
+        private void AddIncreasedOrDecreased(
+            MagnumProjectParameter _projectParameter,
+            ref MagnumProject project,
+            ItemRarity itemRarity,
+            bool increase,
+            MagnumProjectParameter boostedParam,
+            float averageResist,
+            bool hinder,
+            bool rarityExtraBoost)
         {
             float _defaultValue = 0f;
             bool isResist = false;
@@ -680,7 +688,7 @@ namespace QM_PathOfQuasimorph.Core
             // Case where we have zero resist, let boost it a bit.
 
             project.AppliedModifications.Remove(_projectParameter.Id);
-            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied, hinder);
+            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied, hinder, rarityExtraBoost);
             var clampedValue = Mathf.Clamp(
                     calculatedValue,
                     _projectParameter.MinValue,
@@ -725,10 +733,16 @@ namespace QM_PathOfQuasimorph.Core
             float averageResist,
             bool averageResistApplied,
             out bool averageResistAppliedResult,
-            bool hinder
+            bool hinder,
+            bool rarityExtraBoost
             )
         {
             float modifier = GetRarityModifier(rarity);
+            float modifierExtraBoost = GetRarityModifier(rarity);
+            if (!rarityExtraBoost)
+            {
+                modifierExtraBoost = 1f;
+            }
 
             averageResistAppliedResult = false;
 
@@ -762,7 +776,7 @@ namespace QM_PathOfQuasimorph.Core
             // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
             float boostAmount = boost == true ? (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
 
-            _logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
+            _logger.Log($"\t\t Modifier: {modifier}, modifierExtraBoost: {modifierExtraBoost}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
 
             if (hinder)
             {
@@ -771,11 +785,11 @@ namespace QM_PathOfQuasimorph.Core
 
             if (increase)
             {
-                result = (defaultValue * modifier) * boostAmount;
+                result = (defaultValue * modifier) * boostAmount * modifierExtraBoost;
             }
             else
             {
-                result = (defaultValue / modifier) / boostAmount;
+                result = (defaultValue / modifier) / boostAmount / modifierExtraBoost;
             }
 
             //_logger.Log($"\t\t\t Result: {result}");
@@ -790,7 +804,7 @@ namespace QM_PathOfQuasimorph.Core
             return modifier;
         }
 
-        internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
+        internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity, bool rarityExtraBoost)
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
@@ -891,12 +905,12 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (new[] { "_weight", "_reload_duration", "_scatter_angle" }.Any(defaultParamValue.Id.Contains))
                 {
-                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam, 0, hinder);
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam, 0, hinder, rarityExtraBoost);
                 }
                 else if (new[] { "_resist", "_damage", "_crit_damage", "_max_durability", "_accuracy", "_magazine_capacity" }
                          .Any(defaultParamValue.Id.Contains))
                 {
-                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist, hinder);
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist, hinder, rarityExtraBoost);
                 }
                 else if (defaultParamValue.Id.Contains("_special_ability"))
                 {

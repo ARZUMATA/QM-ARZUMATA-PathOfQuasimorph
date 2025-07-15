@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
 using System;
+using System.Security.Cryptography;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
@@ -9,6 +10,8 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
+
+
         // We can hook it and intercept item creation.
         // That way we can create our own "projects" on the fly when needed. For example making one of the item custom and different rarity.
         [HarmonyPatch(typeof(ItemFactory), nameof(ItemFactory.CreateForInventory))]
@@ -21,6 +24,9 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     return true;
                 }
+
+
+
 
                 //Plugin.Logger.Log("ItemFactory_CreateForInventory_Patch :: Prefix :: Start");
                 //Plugin.Logger.Log($"\t CreateForInventory: {itemId}"); // pmc_shotgun_1_custom or pmc_shotgun_1_custom_poq_epic_1234567890
@@ -60,8 +66,21 @@ namespace QM_PathOfQuasimorph.Core
                         itemProjectType == MagnumProjectType.Leggings
                         )
                     {
+                        var rarityExtraBoost = false;
+
                         // Item is OK
-                        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId);
+                        if (MobContext.CurrentMobId != -1)
+                        {
+                            Plugin.Logger.Log($"ItemFactory_CreateForInventory called for Mob ID: {MobContext.CurrentMobId}");
+                            MobContext.CurrentMobId = -1;
+                            rarityExtraBoost = true;
+                        }
+                        else
+                        {
+                            rarityExtraBoost = false;
+                        }
+
+                        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId, rarityExtraBoost);
                     }
                     //else if (itemProjectType == MagnumProjectType.None ||
                     //         itemProjectType == MagnumProjectType.Mercenary ||
