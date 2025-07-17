@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using UnityEngine;
+using UnityEngine.UI;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using static UnityEngine.Rendering.DebugUI;
 
 namespace QM_PathOfQuasimorph.Core
@@ -16,6 +19,17 @@ namespace QM_PathOfQuasimorph.Core
         static PropertiesTooltip _tooltip;
         static ItemTooltipBuilder _tooltipBuilder;
         private static Logger _logger = new Logger(null, typeof(TooltipGeneratorPoq));
+
+        private static readonly Dictionary<string, string> DifferenceColorMap = new Dictionary<string, string>
+        {
+            // #2196F3  // Material Design blue
+            // #F44336  // Material Design red
+            // #444444  // Gray
+
+            { "positive", "2196F3" },   // Positive or inverted positive
+            { "negative", "F44336" },    // Negative or inverted negative
+            { "equal", "444444" }
+        };
 
         public static void HandlePoqTooltip()
         {
@@ -69,25 +83,35 @@ namespace QM_PathOfQuasimorph.Core
 
         static string GetDifferenceColor(float difference, bool invert = false)
         {
-            // #2196F3  // Material Design blue
-            // #F44336  // Material Design red
-
+            if (difference == 0)
+            {
+                return DifferenceColorMap["equal"];
+            }
+            
             bool isPositive = difference >= 0;
+
             if (invert)
             {
                 isPositive = !isPositive;
             }
 
-            return isPositive ? "2196F3" : "F44336";
+            string result = isPositive ? "positive" : "negative";
+            return DifferenceColorMap[result];
         }
 
         static string GetDifferenceSign(float difference, bool invert = false)
         {
+            if (difference == 0)
+            {
+                return "=";
+            }
+
             bool isPositive = difference >= 0;
             if (invert)
             {
                 isPositive = !isPositive;
             }
+
 
             return isPositive ? "+" : "-";
         }
@@ -96,8 +120,16 @@ namespace QM_PathOfQuasimorph.Core
         {
             string sign = GetDifferenceSign(difference, invertSign);
             string color = GetDifferenceColor(difference, invertColor);
+            if (sign == "=")
+            {
+                return $"<color=#{color}>{label}</color>";
 
-            return $"<color=#{color}>{sign}{label}</color>";
+
+            }
+            else
+            {
+                return $"<color=#{color}>{sign}{label}</color>";
+            }
         }
 
         private static void InitItemComparsionWeapon(PickupItem item, string genericId)
@@ -439,19 +471,89 @@ namespace QM_PathOfQuasimorph.Core
                 _tooltip = _factory.BuildEmptyTooltip(true, true);
                 _tooltip.MakeRed();
                 _tooltip.SetCaption1(Localization.Get("monster." + monster.CreatureData.LocalizationId + ".name"), _factory.FirstLetterColor);
-                _tooltip.SetCaption1Right($"{PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(RaritySystem.Colors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty))}");
+                //_tooltip.SetCaption1Right($"{monster.CreatureData.UniqueId} :: {PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(CreaturesControllerPoq.MonsterMasteryColors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty))}");
+                _tooltip.SetCaption1Right($"{monster.CreatureData.UniqueId}");
+                //_factory.AddCompareBlock(new PickupItem());
+                //_tooltip.SetCaption2(Localization.Get("item.ledgerBook.shortdesc"));
+                _tooltip.SetCaption2($"{PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(CreaturesControllerPoq.MonsterMasteryColors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty)).ToUpper()}");
+                _tooltip.SetWidth(160);
+                _tooltip._equippedIcon.sprite = Helpers.FindSpriteByName("difficulty_skull");
+                _tooltip._equippedIcon.color = new Color(0f, 0f, 0f, 0f);
+                _tooltip._equippedIcon.type = Image.Type.Simple;
+                _tooltip._equippedIcon.preserveAspect = true;
+                _tooltip._compareBlock.SetActive(value: true);
+                CreatureDataPoq creatureData = null;
 
-                foreach (var perk in monster.CreatureData.Perks)
+                if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
                 {
-                    ParseHelper.GetGradeByPerkId(perk.PerkId, out int level, out string perkTag, out string grade);
-
-                    _factory.AddPanelToTooltip().LocalizeName($"perk.{perkTag}.name").SetValue(level);
-
+                    creatureData = PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId];
                 }
 
-                //_tooltip.SetCaption2("");
-                //_factory.AddPanelToTooltip().SetValue("");
-                //_factory.AddPanelToTooltip().SetValue("");
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").WrapInColor(DifferenceColorMap["positive"]));
+
+                // _basicRangeAccuracy
+                var value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_basicRangeAccuracy"]), false), creatureData.statsPanelDiff["_basicRangeAccuracy"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_accuracy").LocalizeName($"ui.mercclass.basicaccuracy")
+                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_basicRangeAccuracy"], false)} {value}")
+                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_basicRangeAccuracy"], false).ToString());
+
+                // _visionDistance
+                value = $"({FormatDifference(Math.Abs(creatureData.statsPanelDiff["_visionDistance"]).ToString(), creatureData.statsPanelDiff["_visionDistance"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_vision").LocalizeName($"ui.mercclass.visiondistance")
+                    .SetValue($"{creatureData.statsPanelNew["_visionDistance"].ToString()} {value}")
+                    .SetComparsionValue(creatureData.statsPanelOriginal["_visionDistance"].ToString());
+
+                // _weaponsDamage
+                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_weaponsDamage"]), false), creatureData.statsPanelDiff["_weaponsDamage"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_damage").LocalizeName($"ui.mercclass.weaponsdamage")
+                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_weaponsDamage"], false)} {value}")
+                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_weaponsDamage"], false).ToString());
+
+
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").WrapInColor(DifferenceColorMap["positive"]));
+
+                // _hitChance
+                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_hitChance"]), false), creatureData.statsPanelDiff["_hitChance"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_accuracy").LocalizeName($"ui.mercclass.hitchance")
+                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_hitChance"], false)} {value}")
+                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_hitChance"], false).ToString());
+
+                // _handsDamageMin Max
+                value = $"({FormatDifference(string.Format("{0}-{1}", creatureData.statsPanelDiff["_handsDamageMin"], creatureData.statsPanelDiff["_handsDamageMax"]).ToString(), creatureData.statsPanelDiff["_handsDamageMax"])})";
+
+                //value = $"({FormatDifference(creatureData.statsPanelDiff["_handsDamageMax"].ToString(), creatureData.statsPanelDiff["_handsDamageMax"])}";
+
+                _factory.AddPanelToTooltip().SetIcon("common_damage_melee").LocalizeName($"ui.mercclass.handsdamage")
+                    .SetValue($"{creatureData.statsPanelNew["_handsDamageMin"]} - {creatureData.statsPanelNew["_handsDamageMax"]} {value}")
+                    .SetComparsionValue($"{creatureData.statsPanelOriginal["_handsDamageMin"]} - {creatureData.statsPanelOriginal["_handsDamageMax"]}");
+
+                // _meleeBoost
+                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_meleeBoost"]), false), creatureData.statsPanelDiff["_meleeBoost"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_damage").LocalizeName($"ui.mercclass.meleeboost")
+                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_meleeBoost"], false)} {value}")
+                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_meleeBoost"], false).ToString());
+
+                // _meleeCritChance
+                value = $"({FormatDifference(FormatHelper.To100Percent(creatureData.statsPanelDiff["_meleeCritChance"], false), creatureData.statsPanelDiff["_meleeCritChance"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_critchance").LocalizeName($"ui.mercclass.meleecritchance")
+                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_meleeCritChance"], false)} {value}")
+                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_meleeCritChance"], false).ToString());
+
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").WrapInColor(DifferenceColorMap["positive"]));
+
+                // _dodgeChance
+                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_dodgeChance"]), false), creatureData.statsPanelDiff["_dodgeChance"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_dodge").LocalizeName($"ui.mercclass.dodgechance")
+                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_dodgeChance"], false)} {value}")
+                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_dodgeChance"], false).ToString());
+
                 _factory._lastItemMousePos = Input.mousePosition;
             }
 

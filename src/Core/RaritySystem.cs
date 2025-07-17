@@ -478,7 +478,7 @@ namespace QM_PathOfQuasimorph.Core
             return ItemRarity.Standard;
         }
 
-        public ItemRarity SelectRarityWeighted(Dictionary<ItemRarity, int> weights)
+        public T SelectRarityWeighted<T>(Dictionary<T, int> weights) where T : Enum
         {
             // Calculate the total weight
             int totalWeight = weights.Values.Sum();
@@ -498,8 +498,8 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            // Fallback
-            return ItemRarity.Standard;
+            // Fallback (e.g., default enum value or first key)
+            return weights.Keys.First();
         }
 
         // Performs N weighted rarity rolls and selects the worst
@@ -737,8 +737,8 @@ namespace QM_PathOfQuasimorph.Core
             bool rarityExtraBoost
             )
         {
-            float modifier = GetRarityModifier(rarity);
-            float modifierExtraBoost = GetRarityModifier(rarity);
+            float modifier = GetRarityModifier(rarity, _rarityModifiers);
+            float modifierExtraBoost = GetRarityModifier(rarity, _rarityModifiers);
             if (!rarityExtraBoost)
             {
                 modifierExtraBoost = 1f;
@@ -797,9 +797,9 @@ namespace QM_PathOfQuasimorph.Core
             return result;
         }
 
-        internal float GetRarityModifier(ItemRarity rarity)
+        internal float GetRarityModifier<T>(T rarity, Dictionary<T, (float, float)> modifiers) where T : Enum
         {
-            var (Min, Max) = _rarityModifiers[rarity];
+            var (Min, Max) = modifiers[rarity];
             float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
             return modifier;
         }

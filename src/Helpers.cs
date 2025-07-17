@@ -1,5 +1,8 @@
-﻿using System;
+﻿using QM_PathOfQuasimorph;
+using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using Unity.Profiling;
 using UnityEngine;
@@ -96,7 +99,7 @@ internal static class Helpers
             long randomID = GenerateRandomID();
             string randomIDStr = randomID.ToString();
 
-            if (randomIDStr.Length < 16)    
+            if (randomIDStr.Length < 16)
             {
                 randomIDStr = randomIDStr.PadLeft(16, '1');
                 randomID = long.Parse(randomIDStr);
@@ -117,7 +120,7 @@ internal static class Helpers
             while (true)
             {
                 result = 0;
-                
+
                 // Use StandardRandom.Next() twice to get a 63-bit number (safe for 64-bit long)
                 for (int i = 0; i < 2; i++)
                 {
@@ -131,5 +134,39 @@ internal static class Helpers
                 }
             }
         }
+    }
+
+    public static Sprite LoadSpriteFromEmbeddedBundle(string bundleResourceName, string assetName)
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        using (Stream stream = assembly.GetManifestResourceStream(bundleResourceName))
+        {
+            if (stream == null)
+            {
+                Plugin.Logger.LogError($"Embedded AssetBundle resource '{bundleResourceName}' not found.");
+                return null;
+            }
+
+            byte[] bundleData = new byte[stream.Length];
+            stream.Read(bundleData, 0, bundleData.Length);
+
+            AssetBundle bundle = AssetBundle.LoadFromMemory(bundleData);
+            if (bundle == null)
+            {
+                Plugin.Logger.LogError($"Failed to load AssetBundle from memory for resource '{bundleResourceName}'.");
+                return null;
+            }
+
+            Sprite mySprite = bundle.LoadAsset<Sprite>(assetName);
+            bundle.Unload(false); // Unload to prevent memory leaks
+
+            return mySprite;
+        }
+    }
+
+    public static Sprite FindSpriteByName(string spriteName)
+    {
+        return Resources.FindObjectsOfTypeAll<Sprite>()
+            .FirstOrDefault(s => s.name == spriteName);
     }
 }

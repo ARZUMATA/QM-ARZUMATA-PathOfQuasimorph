@@ -38,13 +38,14 @@ namespace QM_PathOfQuasimorph.Core
                 if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__result.CreatureData.UniqueId) == false)
                 {
                     var creatureDataPoq = new CreatureDataPoq();
-                    creatureDataPoq.rarity = PathOfQuasimorph.raritySystem.SelectRarity();
+                    creatureDataPoq.rarity = PathOfQuasimorph.creaturesControllerPoq.SelectRarity();
 
                     // For debug purposes
                     //if (creatureDataPoq.rarity == ItemRarity.Standard || creatureDataPoq.rarity == ItemRarity.Enhanced)
                     //{
                     //    creatureDataPoq.rarity = ItemRarity.Quantum;
                     //}
+                    
                     MobContext.CurrentMobId = __result.CreatureData.UniqueId;
 
                     PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Add(__result.CreatureData.UniqueId, creatureDataPoq);

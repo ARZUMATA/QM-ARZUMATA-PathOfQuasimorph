@@ -8,8 +8,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
 using UnityEngine;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Core
@@ -35,6 +37,24 @@ namespace QM_PathOfQuasimorph.Core
          */
         internal Dictionary<int, CreatureDataPoq> creatureDataPoq = new Dictionary<int, CreatureDataPoq>();
 
+        public enum MonsterMasteryTier
+        {
+            None,
+            Novice,
+            Skilled,
+            Expert,
+            Grandmaster
+        }
+
+        public static readonly Dictionary<MonsterMasteryTier, string> MonsterMasteryColors = new Dictionary<MonsterMasteryTier, string>()
+        {
+            { MonsterMasteryTier.None,    "#FFFFFF" },     // Blue - Basic / Easier monsters
+            { MonsterMasteryTier.Novice,    "#8888FF" },     // Blue - Basic / Easier monsters
+            { MonsterMasteryTier.Skilled,   "#FFFF77" },     // Gold - More complex monsters
+            { MonsterMasteryTier.Expert,    "#800080" },     // Purple - High threat / mastery challenge
+            { MonsterMasteryTier.Grandmaster, "#FF0000" },   // Red - Elite / Legendary monsters
+        };
+
         private Dictionary<string, bool> propertiesToModifyPositive = new Dictionary<string, bool>
         {
             //{ "BaseHealth",    true },
@@ -58,6 +78,23 @@ namespace QM_PathOfQuasimorph.Core
             // { "AttackWoundChanceMult",    true },
         };
 
+        private Dictionary<MonsterMasteryTier, int> _masteryTierWeights = new Dictionary<MonsterMasteryTier, int>
+        {
+            { MonsterMasteryTier.None,    1000 },     // Common folk
+            { MonsterMasteryTier.Novice,    500 },     // Easier, common monsters
+            { MonsterMasteryTier.Skilled,   200 },      // Moderately challenging
+            { MonsterMasteryTier.Expert,    50 },      // High threat, requires skill
+            { MonsterMasteryTier.Grandmaster, 5 }      // Very rare and difficult
+        };
+
+        private Dictionary<MonsterMasteryTier, (float Min, float Max)> _masteryModifiers = new Dictionary<MonsterMasteryTier, (float Min, float Max)>
+        {
+            { MonsterMasteryTier.None,     ( 1.0f,   1.0f  ) },  // No change for None
+            { MonsterMasteryTier.Novice,   ( 1.15f,  1.25f ) },  // Novice = Basic / Easy to handle
+            { MonsterMasteryTier.Skilled,  ( 1.3f,   1.4f ) },  // Skilled = Advanced / Slightly more complex
+            { MonsterMasteryTier.Expert,   ( 1.5f,   1.6f ) },  // Expert = Master / High threat and skill required
+            { MonsterMasteryTier.Grandmaster, ( 2.0f,   2.5f ) },  // Grandmaster = Legendary
+        };
 
         private List<string> resistsToModify = new List<string> { "blunt", "pierce", "lacer", "fire", "cold", "poison", "shock", "beam" };
 
@@ -97,7 +134,11 @@ namespace QM_PathOfQuasimorph.Core
         public class CreatureDataPoq
         {
             public int id;
-            public ItemRarity rarity;
+            public MonsterMasteryTier rarity;
+            public Dictionary<string, float> statsPanelOriginal = new Dictionary<string, float>();
+            public Dictionary<string, float> statsPanelDiff = new Dictionary<string, float>();
+            public Dictionary<string, float> statsPanelNew = new Dictionary<string, float>();
+
             // public Color color;
             private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings();
 
@@ -159,12 +200,12 @@ namespace QM_PathOfQuasimorph.Core
                 if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.TryGetValue(creature.CreatureData.UniqueId, out CreatureDataPoq creatureDataPoq))
                 {
                     // No highlight on common folk
-                    if (creatureDataPoq.rarity == ItemRarity.Standard)
+                    if (creatureDataPoq.rarity == MonsterMasteryTier.None)
                     {
                         continue;
                     }
 
-                    var color = Helpers.HexStringToUnityColor(RaritySystem.Colors[creatureDataPoq.rarity]);
+                    var color = Helpers.HexStringToUnityColor(MonsterMasteryColors[creatureDataPoq.rarity]);
 
                     if (increaseAlphaColor)
                     {
@@ -216,42 +257,79 @@ namespace QM_PathOfQuasimorph.Core
         {
         }
 
-        internal void ApplyStatsFromRarity(ref Monster result, ItemRarity rarity)
+        internal void ApplyStatsFromRarity(ref Monster monster, MonsterMasteryTier rarity)
         {
+            // Skip for common folk
+            if (rarity == MonsterMasteryTier.None)
+            {
+                return;
+            }
+
             // Apply the base baseModifier to all properties in the list
-            float baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity);
-            float finalModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity);
+            float baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity, _masteryModifiers);
+            float finalModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity, _masteryModifiers);
 
             // List of resist types to modify
 
-            // result.CreatureData.Health.MaxValue = (int)Math.Round(baseModifier * result.CreatureData.Health.MaxValue, 0);
-            // result.CreatureData.Health.Value = (int)Math.Round(baseModifier * result.CreatureData.Health.MaxValue, 0);
-            // result.CreatureData.BaseDodge = baseModifier * result.CreatureData.BaseDodge;
-            // result.CreatureData.BaseActionPoints = (int)Math.Round(baseModifier * result.CreatureData.BaseActionPoints, 0);
-            // result.CreatureData.BaseMeleeAccuracy = baseModifier * result.CreatureData.BaseMeleeAccuracy;
-            // result.CreatureData.BaseRangeAccuracy = baseModifier * result.CreatureData.BaseRangeAccuracy;
-            // result.CreatureData.BaseLosLevel = (int)Math.Round(baseModifier * result.CreatureData.BaseLosLevel, 0);
-            // result.CreatureData.ResistSheet._currentResist["blunt"] = baseModifier * result.CreatureData.ResistSheet._currentResist["blunt"];
-            // result.CreatureData.ResistSheet._currentResist["pierce"] = baseModifier * result.CreatureData.ResistSheet._currentResist["pierce"];
-            // result.CreatureData.ResistSheet._currentResist["lacer"] = baseModifier * result.CreatureData.ResistSheet._currentResist["lacer"];
-            // result.CreatureData.ResistSheet._currentResist["fire"] = baseModifier * result.CreatureData.ResistSheet._currentResist["fire"];
-            // result.CreatureData.ResistSheet._currentResist["cold"] = baseModifier * result.CreatureData.ResistSheet._currentResist["cold"];
-            // result.CreatureData.ResistSheet._currentResist["poison"] = baseModifier * result.CreatureData.ResistSheet._currentResist["poison"];
-            // result.CreatureData.ResistSheet._currentResist["shock"] = baseModifier * result.CreatureData.ResistSheet._currentResist["shock"];
-            // result.CreatureData.ResistSheet._currentResist["beam"] = baseModifier * result.CreatureData.ResistSheet._currentResist["beam"];
+            // monster.CreatureData.Health.MaxValue = (int)Math.Round(baseModifier * monster.CreatureData.Health.MaxValue, 0);
+            // monster.CreatureData.Health.Value = (int)Math.Round(baseModifier * monster.CreatureData.Health.MaxValue, 0);
+            // monster.CreatureData.BaseDodge = baseModifier * monster.CreatureData.BaseDodge;
+            // monster.CreatureData.BaseActionPoints = (int)Math.Round(baseModifier * monster.CreatureData.BaseActionPoints, 0);
+            // monster.CreatureData.BaseMeleeAccuracy = baseModifier * monster.CreatureData.BaseMeleeAccuracy;
+            // monster.CreatureData.BaseRangeAccuracy = baseModifier * monster.CreatureData.BaseRangeAccuracy;
+            // monster.CreatureData.BaseLosLevel = (int)Math.Round(baseModifier * monster.CreatureData.BaseLosLevel, 0);
+            // monster.CreatureData.ResistSheet._currentResist["blunt"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["blunt"];
+            // monster.CreatureData.ResistSheet._currentResist["pierce"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["pierce"];
+            // monster.CreatureData.ResistSheet._currentResist["lacer"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["lacer"];
+            // monster.CreatureData.ResistSheet._currentResist["fire"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["fire"];
+            // monster.CreatureData.ResistSheet._currentResist["cold"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["cold"];
+            // monster.CreatureData.ResistSheet._currentResist["poison"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["poison"];
+            // monster.CreatureData.ResistSheet._currentResist["shock"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["shock"];
+            // monster.CreatureData.ResistSheet._currentResist["beam"] = baseModifier * monster.CreatureData.ResistSheet._currentResist["beam"];
             // //creatureData.Perks FILL PERKS
 
             // // DmgInfo
-            // result.CreatureData.MeleeDamage.minDmg = (int)Math.Round(baseModifier * result.CreatureData.MeleeDamage.minDmg, 0);
-            // result.CreatureData.MeleeDamage.maxDmg = (int)Math.Round(baseModifier * result.CreatureData.MeleeDamage.maxDmg, 0);
-            // result.CreatureData.MeleeDamage.critChance = baseModifier * result.CreatureData.MeleeDamage.critChance;
-            // result.CreatureData.MeleeDamage.critDmg = baseModifier * result.CreatureData.MeleeDamage.critDmg;
+            // monster.CreatureData.MeleeDamage.minDmg = (int)Math.Round(baseModifier * monster.CreatureData.MeleeDamage.minDmg, 0);
+            // monster.CreatureData.MeleeDamage.maxDmg = (int)Math.Round(baseModifier * monster.CreatureData.MeleeDamage.maxDmg, 0);
+            // monster.CreatureData.MeleeDamage.critChance = baseModifier * monster.CreatureData.MeleeDamage.critChance;
+            // monster.CreatureData.MeleeDamage.critDmg = baseModifier * monster.CreatureData.MeleeDamage.critDmg;
 
-            // result.CreatureData.MeleeThrowbackChance = baseModifier * result.CreatureData.MeleeThrowbackChance;
-            // result.CreatureData.PainThresholdLimit = (int)Math.Round(baseModifier * result.CreatureData.PainThresholdLimit, 0);
-            // result.CreatureData.PainThresholdRegen = (int)Math.Round(baseModifier * result.CreatureData.PainThresholdRegen, 0);
-            // result.CreatureData.ReceiveAmputationChance = baseModifier * result.CreatureData.ReceiveAmputationChance;
-            // result.CreatureData.QuazimorphosisReward = (int)Math.Round(baseModifier * result.CreatureData.QuazimorphosisReward, 0);
+            // monster.CreatureData.MeleeThrowbackChance = baseModifier * monster.CreatureData.MeleeThrowbackChance;
+            // monster.CreatureData.PainThresholdLimit = (int)Math.Round(baseModifier * monster.CreatureData.PainThresholdLimit, 0);
+            // monster.CreatureData.PainThresholdRegen = (int)Math.Round(baseModifier * monster.CreatureData.PainThresholdRegen, 0);
+            // monster.CreatureData.ReceiveAmputationChance = baseModifier * monster.CreatureData.ReceiveAmputationChance;
+            // monster.CreatureData.QuazimorphosisReward = (int)Math.Round(baseModifier * monster.CreatureData.QuazimorphosisReward, 0);
+
+            // Store original values
+            CreatureDataPoq creatureData = null;
+
+            if (creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
+            {
+                creatureData = creatureDataPoq[monster.CreatureData.UniqueId];
+            }
+
+            if (creatureData != null)
+            {
+                var _original_basicRangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
+                var _original_visionDistance = monster.CreatureData.GetLosLevel();
+                var _original_weaponsDamage = monster.CreatureData.GetTotalPerkRangeDamageBonus();
+                var _original_hitChance = monster.CreatureData.GetMeleeAccuracyNorm(null, false, false);
+                var _original_handsDamageMin = (float)Math.Round(monster.CreatureData.MeleeDamage.minDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
+                var _original_handsDamageMax = (float)Math.Round(monster.CreatureData.MeleeDamage.maxDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
+                var _original_meleeBoost = monster.CreatureData.GetTotalPerkMeleeDamageBonus();
+                var _original_meleeCritChance = monster.CreatureData.GetFinalMeleeCritChance();
+                var _original_dodgeChance = monster.CreatureData.GetDodge();
+
+                creatureData.statsPanelOriginal.Add("_basicRangeAccuracy", _original_basicRangeAccuracy);
+                creatureData.statsPanelOriginal.Add("_visionDistance", _original_visionDistance);
+                creatureData.statsPanelOriginal.Add("_weaponsDamage", _original_weaponsDamage);
+                creatureData.statsPanelOriginal.Add("_hitChance", _original_hitChance);
+                creatureData.statsPanelOriginal.Add("_handsDamageMin", _original_handsDamageMin);
+                creatureData.statsPanelOriginal.Add("_handsDamageMax", _original_handsDamageMax);
+                creatureData.statsPanelOriginal.Add("_meleeBoost", _original_meleeBoost);
+                creatureData.statsPanelOriginal.Add("_meleeCritChance", _original_meleeCritChance);
+                creatureData.statsPanelOriginal.Add("_dodgeChance", _original_dodgeChance);
+            }
 
             // Basic vars
             // Mob properties
@@ -265,7 +343,7 @@ namespace QM_PathOfQuasimorph.Core
             PathOfQuasimorph.raritySystem.ShuffleDictionary(propertiesToModifyPositive);
             var boostedParam = _random.Next(propertiesToModifyPositive.Count);
 
-            var creatureDataType = result.CreatureData.GetType();
+            var creatureDataType = monster.CreatureData.GetType();
             foreach (var propPath in propertiesToModifyPositive)
             {
                 Plugin.Logger.Log($"Processing property path: {propPath.Key}");
@@ -274,7 +352,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 Plugin.Logger.Log($"\t props: {props.Length}");
 
-                object current = result.CreatureData;
+                object current = monster.CreatureData;
                 object finalTarget = null;
                 string finalPropOrFieldName = props.Last();
 
@@ -460,7 +538,7 @@ namespace QM_PathOfQuasimorph.Core
             PathOfQuasimorph.raritySystem.ShuffleList(resistsToModify);
             boostedParam = _random.Next(resistsToModify.Count);
 
-            var resistSheet = result.CreatureData.ResistSheet._currentResist;
+            var resistSheet = monster.CreatureData.ResistSheet._currentResist;
             float averageResist = 0;
             int resistCount = 0;
             bool averageResistApplied = false;
@@ -525,37 +603,81 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             // Perks
-            result.CreatureData.Perks = new List<Perk>();
-            var (Min, Max) = RaritySystem.rarityParamPercentages[rarity];
-            int minParams = Math.Max(0, (int)Math.Floor(Min * perksList.Count));
-            int maxParams = (int)Math.Ceiling(Max * perksList.Count);
-            numParamsToAdjust = _random.Next(minParams, maxParams + 1);
+            monster.CreatureData.Perks = new List<Perk>();
+            numParamsToAdjust = 6; // Six perks always, we base on their masteries.
 
             // Always shuffle list for better randomness
             PathOfQuasimorph.raritySystem.ShuffleList(perksList);
 
             Dictionary<string, Perk> editable_perks = new Dictionary<string, Perk>();
 
+            // Define mastery
+            var perkSuffix = perksMasteries[(int)rarity - 1];
+
+            // Select random perks
             for (int i = 0; i < numParamsToAdjust; i++)
             {
-                var perkSuffix = _random.Next(0, perksMasteries.Count);
-                var perkRecord = Data.Perks.GetRecord($"{perksList[i]}{perksMasteries[perkSuffix]}");
+                var perkRecord = Data.Perks.GetRecord($"{perksList[i]}{perkSuffix}");
 
                 if (perkRecord != null)
                 {
-                    result.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(perkRecord));
-                    Plugin.Logger.Log($"Added perk {perksList[i]}{perksMasteries[perkSuffix]}");
+                    monster.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(perkRecord));
+                    Plugin.Logger.Log($"Added perk {perksList[i]}{perkSuffix}");
                 }
                 else
                 {
-                    Plugin.Logger.Log($"{perksList[i]}{perksMasteries[perkSuffix]} null");
+                    Plugin.Logger.Log($"{perksList[i]}{perkSuffix} null");
                 }
             }
+
+            // Save new stasts
+
+            if (creatureData != null)
+            {
+                var _newdata_basicRangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
+                var _newdata_visionDistance = monster.CreatureData.GetLosLevel();
+                var _newdata_weaponsDamage = monster.CreatureData.GetTotalPerkRangeDamageBonus();
+                var _newdata_hitChance = monster.CreatureData.GetMeleeAccuracyNorm(null, false, false);
+                var _newdata_handsDamageMin = (float)Math.Round(monster.CreatureData.MeleeDamage.minDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
+                var _newdata_handsDamageMax = (float)Math.Round(monster.CreatureData.MeleeDamage.maxDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
+                var _newdata_meleeBoost = monster.CreatureData.GetTotalPerkMeleeDamageBonus();
+                var _newdata_meleeCritChance = monster.CreatureData.GetFinalMeleeCritChance();
+                var _newdata_dodgeChance = monster.CreatureData.GetDodge();
+
+                creatureData.statsPanelNew.Add("_basicRangeAccuracy", _newdata_basicRangeAccuracy);
+                creatureData.statsPanelNew.Add("_visionDistance", _newdata_visionDistance);
+                creatureData.statsPanelNew.Add("_weaponsDamage", _newdata_weaponsDamage);
+                creatureData.statsPanelNew.Add("_hitChance", _newdata_hitChance);
+                creatureData.statsPanelNew.Add("_handsDamageMin", _newdata_handsDamageMin);
+                creatureData.statsPanelNew.Add("_handsDamageMax", _newdata_handsDamageMax);
+                creatureData.statsPanelNew.Add("_meleeBoost", _newdata_meleeBoost);
+                creatureData.statsPanelNew.Add("_meleeCritChance", _newdata_meleeCritChance);
+                creatureData.statsPanelNew.Add("_dodgeChance", _newdata_dodgeChance);
+
+                // Assign the difference manually
+                creatureData.statsPanelDiff["_basicRangeAccuracy"] = creatureData.statsPanelNew["_basicRangeAccuracy"] - creatureData.statsPanelOriginal["_basicRangeAccuracy"];
+                creatureData.statsPanelDiff["_visionDistance"] = creatureData.statsPanelNew["_visionDistance"] - creatureData.statsPanelOriginal["_visionDistance"];
+                creatureData.statsPanelDiff["_weaponsDamage"] = creatureData.statsPanelNew["_weaponsDamage"] - creatureData.statsPanelOriginal["_weaponsDamage"];
+                creatureData.statsPanelDiff["_hitChance"] = creatureData.statsPanelNew["_hitChance"] - creatureData.statsPanelOriginal["_hitChance"];
+                creatureData.statsPanelDiff["_handsDamageMin"] = creatureData.statsPanelNew["_handsDamageMin"] - creatureData.statsPanelOriginal["_handsDamageMin"];
+                creatureData.statsPanelDiff["_handsDamageMax"] = creatureData.statsPanelNew["_handsDamageMax"] - creatureData.statsPanelOriginal["_handsDamageMax"];
+                creatureData.statsPanelDiff["_meleeBoost"] = creatureData.statsPanelNew["_meleeBoost"] - creatureData.statsPanelOriginal["_meleeBoost"];
+                creatureData.statsPanelDiff["_meleeCritChance"] = creatureData.statsPanelNew["_meleeCritChance"] - creatureData.statsPanelOriginal["_meleeCritChance"];
+                creatureData.statsPanelDiff["_dodgeChance"] = creatureData.statsPanelNew["_dodgeChance"] - creatureData.statsPanelOriginal["_dodgeChance"];
+            }
+
+            // Save new stats to mob
+            monster.CreatureData.UltimateSkullItemId = creatureData.SerializeData();
         }
 
         internal void CleanCreatureDataPoq()
         {
             creatureDataPoq.Clear();
+        }
+
+        internal MonsterMasteryTier SelectRarity()
+        {
+            return PathOfQuasimorph.raritySystem.SelectRarityWeighted(_masteryTierWeights);
         }
     }
 }
