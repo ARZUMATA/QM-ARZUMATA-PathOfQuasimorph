@@ -190,3 +190,19 @@ Thanks community for feedback.
 
 ## 1.43 (80a01dc)
 - Fixed: Balance question. Conveyor crafted items that a project ones (yellow M), will no longer receive rarity.
+
+## 1.5 (f9540b0)
+- Improved logging with better class-specific logs.
+- Enhanced item comparison tooltip with additional information.
+- Creature generation now respects rarity and masteries, including an extra stats boost for items based on mob mastery.
+- Fixed issue where files were being held in use by other applications.
+- Added `MonsterInspectWindow` with perks, tooltips, and monster master tier support.
+- Added new class sprite for the monster inspector window.
+- Fixed deserialization issues and ensured correct monster stats are applied.
+- Fixed incorrect tooltip extra info display for common folk.
+- Fixed ID reuse in mob generation.
+- Added support for monster ranks and talents.
+- Added translation support for new content.
+- Enabled an option to toggle mob generation.
+- Updated helper functions and logger for better performance.
+- Updated Unity assets.
