@@ -87,7 +87,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 return DifferenceColorMap["equal"];
             }
-            
+
             bool isPositive = difference >= 0;
 
             if (invert)
@@ -464,6 +464,18 @@ namespace QM_PathOfQuasimorph.Core
             // We got entry that we can show
             if (IsKeyDown && PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
             {
+                CreatureDataPoq creatureData = null;
+
+                if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
+                {
+                    creatureData = PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId];
+                }
+                else
+                {
+                    return;
+                }
+
+
                 //if (monster != null)// && SingletonMonoBehaviour<TooltipFactory>.Instance.IsTooltipWithAdditHintActive)
                 _factory = SingletonMonoBehaviour<TooltipFactory>.Instance;
                 _factory._state.Resolve(_factory._itemTooltipBuilder);
@@ -472,27 +484,41 @@ namespace QM_PathOfQuasimorph.Core
                 _tooltip.MakeRed();
                 _tooltip.SetCaption1(Localization.Get("monster." + monster.CreatureData.LocalizationId + ".name"), _factory.FirstLetterColor);
                 //_tooltip.SetCaption1Right($"{monster.CreatureData.UniqueId} :: {PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(CreaturesControllerPoq.MonsterMasteryColors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty))}");
-                _tooltip.SetCaption1Right($"{monster.CreatureData.UniqueId}");
+                _tooltip.SetCaption1Right($"ID: {monster.CreatureData.UniqueId}");
                 //_factory.AddCompareBlock(new PickupItem());
                 //_tooltip.SetCaption2(Localization.Get("item.ledgerBook.shortdesc"));
                 _tooltip.SetCaption2($"{PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity.ToString().WrapInColor(CreaturesControllerPoq.MonsterMasteryColors[PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId].rarity].Replace("#", string.Empty)).ToUpper()}");
                 _tooltip.SetWidth(160);
+
+                if (creatureData.rarity == MonsterMasteryTier.None)
+                {
+                    return;
+                }
+
+                // CompareBlock
                 _tooltip._equippedIcon.sprite = Helpers.FindSpriteByName("difficulty_skull");
                 _tooltip._equippedIcon.color = new Color(0f, 0f, 0f, 0f);
                 _tooltip._equippedIcon.type = Image.Type.Simple;
                 _tooltip._equippedIcon.preserveAspect = true;
                 _tooltip._compareBlock.SetActive(value: true);
-                CreatureDataPoq creatureData = null;
+                
+                //foreach(var entry in Data.TooltipIcons.Entries)
+                //{
+                //    Console.WriteLine($"{entry.Tag} -=- {entry.SpriteName}");
+                //}
 
-                if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(monster.CreatureData.UniqueId))
-                {
-                    creatureData = PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq[monster.CreatureData.UniqueId];
-                }
+               
+                //health
+                var value = $"({FormatDifference(Math.Abs(creatureData.statsPanelDiff["_health"]).ToString(), creatureData.statsPanelDiff["_health"])})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_health").LocalizeName($"tooltip.Health")
+                    .SetValue($"{creatureData.statsPanelNew["_health"]} {value}")
+                    .SetComparsionValue(creatureData.statsPanelOriginal["_health"].ToString());
 
                 _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").WrapInColor(DifferenceColorMap["positive"]));
 
                 // _basicRangeAccuracy
-                var value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_basicRangeAccuracy"]), false), creatureData.statsPanelDiff["_basicRangeAccuracy"])})";
+                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_basicRangeAccuracy"]), false), creatureData.statsPanelDiff["_basicRangeAccuracy"])})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_accuracy").LocalizeName($"ui.mercclass.basicaccuracy")
                     .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_basicRangeAccuracy"], false)} {value}")

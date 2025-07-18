@@ -23,6 +23,9 @@ namespace QM_PathOfQuasimorph
         public bool Enable { get; set; } = true;
 
         [JsonIgnore]
+        public bool EnableMobs { get; set; } = true;
+
+        [JsonIgnore]
         public bool CleanupMode { get; set; } = true;
 
         [JsonIgnore]

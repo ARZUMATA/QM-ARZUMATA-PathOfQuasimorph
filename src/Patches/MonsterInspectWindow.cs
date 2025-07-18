@@ -211,8 +211,15 @@ namespace QM_PathOfQuasimorph.Patches
 
                             // Find new sprite
                             var classIconImage_miw = classIcon_miw.GetComponent<UnityEngine.UI.Image>();
-                            classIconImage_miw.color = new Color(1, 0, 0, 0.25f); // Red
-                            var newSprite = Helpers.FindSpriteByName("Pirates_factionIcon_mouseOut");
+                            //classIconImage_miw.color = new Color(1, 0, 0, 0.25f); // Red
+                            //classIconImage_miw.color = Helpers.HexStringToUnityColor("#380714", 64);
+                            //classIconImage_miw.color = Helpers.HexStringToUnityColor("#260B0B", 64);
+                            classIconImage_miw.color = new Color(0.709f, 0.1231f, 0.2831f, 0.151f);
+
+                            //var newSprite = Helpers.FindSpriteByName("Pirates_factionIcon_mouseOut");
+                            //classIconImage_miw.sprite = newSprite;
+
+                            Sprite newSprite = Helpers.LoadSpriteFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph", "classIcon_Predator");
                             classIconImage_miw.sprite = newSprite;
 
                             // Move it behind in hierarchy
@@ -266,21 +273,54 @@ namespace QM_PathOfQuasimorph.Patches
                 // Get all components including disabled objects (true argument)
                 List<PerkSlot> perkSlots = classIcon_miw.GetComponentsInChildren<PerkSlot>(true).ToList();
 
+                if (creature.CreatureData.Perks.Count == 0)
+                {
+                    foreach (var perkSlot in perkSlots)
+                    {
+                        perkSlot.gameObject.SetActive(false);
+                    }
+
+                    return;
+                }
+
                 Plugin.Logger.Log($"creature.CreatureData.Perks.Count: {creature.CreatureData.Perks.Count}");
                 Plugin.Logger.Log($"perkSlots.Count: {perkSlots.Count}");
 
-                if (creature.CreatureData.Perks.Count <= perkSlots.Count)
+                // Init talent perk
+                //perkSlots[0].Initialize(mercenary, creature.CreatureData.Perks[0], Data.Perks.GetRecord(creature.CreatureData.Perks[0].PerkId, true));
+
+                // Add rank perk
+
+                // Add ultimate perk
+                perkSlots[0].Initialize(mercenary, creature.CreatureData.Perks[1], Data.Perks.GetRecord(creature.CreatureData.Perks[1].PerkId, true));
+
+                //if (creature.CreatureData.Perks.Count <= perkSlots.Count)
                 {
-                    int b = 0; // We skip first object, maybe we will need it one day
+                    int b = 2; // We skip first object, as talent and second as rank, third is ultimate but we dont use it
                     for (int i = 0; i < perkSlots.Count; i++)
                     {
                         if (i == 0)
                         {
-                            perkSlots[i].gameObject.SetActive(false);
+                            if (creature.CreatureData.Perks[i].PerkId != "talent_the_man_who_sold_the_world")
+                            {
+                                perkSlots[i].gameObject.SetActive(true);
+
+                            }
+                            else
+                            {
+                                perkSlots[i].gameObject.SetActive(false);
+                            }
+
                             continue;
                         }
 
+                        if (b >= creature.CreatureData.Perks.Count)
+                        {
+                            break; // Safe exit if index is out of range
+                        }
+
                         perkSlots[i].Initialize(mercenary, creature.CreatureData.Perks[b], Data.Perks.GetRecord(creature.CreatureData.Perks[b].PerkId, true));
+                        perkSlots[i].gameObject.SetActive(true);
                         b++;
                     }
                 }

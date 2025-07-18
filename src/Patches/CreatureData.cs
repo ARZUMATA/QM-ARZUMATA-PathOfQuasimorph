@@ -25,14 +25,24 @@ namespace QM_PathOfQuasimorph.Core
             Plugin.Logger.Log($"CreatureData_OnAfterLoad_Patch");
             Plugin.Logger.Log($"\t\t UltimateSkullItemId: {__instance.UltimateSkullItemId}");
 
-            if (__instance.UltimateSkullItemId != null && __instance.UltimateSkullItemId.EndsWith("=="))
+            // We have string entry we use for our embedded data
+            if (__instance.UltimateSkullItemId != null)// && __instance.UltimateSkullItemId.EndsWith("=="))
             {
-                if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__instance.UniqueId) == false)
+                // Try deserialize first
+                var creatureDataPoq = CreatureDataPoq.DeserializeData(__instance.UltimateSkullItemId);
+                if (creatureDataPoq != null)
                 {
-                    var creatureDataPoq = CreatureDataPoq.DeserializeData(__instance.UltimateSkullItemId);
-                    Plugin.Logger.Log($"\t\t creatureDataPoq rarity: {creatureDataPoq.rarity}");
+                    if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__instance.UniqueId) == false)
+                    {
+                        Plugin.Logger.Log($"\t\t creatureDataPoq rarity: {creatureDataPoq.rarity}");
 
-                    PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Add(__instance.UniqueId, creatureDataPoq);
+                        PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Add(__instance.UniqueId, creatureDataPoq);
+                    }
+                }
+                else
+                {
+                    Plugin.Logger.Log($"\t\t Failed decoding.");
+
                 }
             }
         }

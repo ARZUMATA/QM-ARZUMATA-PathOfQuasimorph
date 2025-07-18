@@ -35,6 +35,26 @@ namespace QM_PathOfQuasimorph.Core
             {
                 Plugin.Logger.Log($"SpawnMonsterFromMobClass: creatureUniqueId: {__result.CreatureData.UniqueId}");
 
+                if (!Plugin.Config.EnableMobs)
+                {
+                    return;
+                }
+
+                // Check if mob has UltimateSkullItemId
+                if (__result.CreatureData.UltimateSkullItemId == string.Empty && __result.CreatureData.Perks.Count == 0)
+                {
+                    // All processed mobs have either serialized data here or they contain real ID.
+                    // Also all processed mobs have some perks, so if its zero then it's a new mob
+                    // If it's empty its 'our client', so we can overwrite value
+                    
+                    if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__result.CreatureData.UniqueId) == true)
+                    {
+                        Plugin.Logger.Log($"\t\t removing old creatudetada with {__result.CreatureData.UniqueId}");
+
+                        PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Remove(__result.CreatureData.UniqueId);
+                    }
+                }
+
                 if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__result.CreatureData.UniqueId) == false)
                 {
                     var creatureDataPoq = new CreatureDataPoq();
