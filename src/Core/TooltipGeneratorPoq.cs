@@ -565,7 +565,7 @@ namespace QM_PathOfQuasimorph.Core
                     .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_meleeBoost"], false).ToString());
 
                 // _meleeCritChance
-                value = $"({FormatDifference(FormatHelper.To100Percent(creatureData.statsPanelDiff["_meleeCritChance"], false), creatureData.statsPanelDiff["_meleeCritChance"])})";
+                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_meleeCritChance"]), false), creatureData.statsPanelDiff["_meleeCritChance"])})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_critchance").LocalizeName($"ui.mercclass.meleecritchance")
                     .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_meleeCritChance"], false)} {value}")

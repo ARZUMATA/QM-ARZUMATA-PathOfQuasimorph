@@ -630,8 +630,12 @@ namespace QM_PathOfQuasimorph.Core
 
             float tempValue = outOldValue;
             tempValue = hinder ? tempValue / finalModifier : tempValue * finalModifier;
-            tempValue = (float)Math.Ceiling(tempValue);
-            
+
+            if (typeof(T) == typeof(int))
+            {
+                tempValue = (float)Math.Ceiling(tempValue);
+            }
+
             if (value is int intValue)
             {
                 value = (T)Convert.ChangeType((int)tempValue, typeof(T));
