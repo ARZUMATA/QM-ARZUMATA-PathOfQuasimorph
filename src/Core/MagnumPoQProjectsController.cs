@@ -6,8 +6,6 @@ using System.Security.Cryptography;
 using MGSC;
 using QM_PathOfQuasimorph.Core;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using System.Security.Policy;
 
 namespace QM_PathOfQuasimorph.Core
@@ -17,9 +15,9 @@ namespace QM_PathOfQuasimorph.Core
         public const long MAGNUM_PROJECT_START_TIME = 1337L;
 
         public static MagnumProjects magnumProjects;
-        public static RaritySystem raritySystem = new RaritySystem();
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
         public List<string> traitsTracker = new List<string>();
+        private Logger _logger = new Logger(null, typeof(MagnumPoQProjectsController));
 
         public MagnumPoQProjectsController(MagnumProjects _magnumProjects)
         {
@@ -83,7 +81,7 @@ namespace QM_PathOfQuasimorph.Core
                     var weaponRecord = rec as WeaponRecord;
                     if (weaponRecord != null)
                     {
-                        //Plugin.Logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
+                        //_logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
                         if (weaponRecord.IsImplicit)
                         {
                             canProcess = false;
@@ -98,11 +96,11 @@ namespace QM_PathOfQuasimorph.Core
                                 break;
                             }
 
-                            //Plugin.Logger.Log($"\t\t\t Category  {mod}");
+                            //_logger.Log($"\t\t\t Category  {mod}");
                         }
 
-                        //Plugin.Logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
-                        //Plugin.Logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
+                        //_logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
+                        //_logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
                     }
                 }
             }
@@ -110,7 +108,7 @@ namespace QM_PathOfQuasimorph.Core
             return canProcess;
         }
 
-        public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId)
+        public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId, bool rarityExtraBoost)
         {
             // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
             // NotImplementedException: Failed create project possesed_centaur_hand. No clone method for additional records: MGSC.AugmentationRecord.
@@ -120,11 +118,11 @@ namespace QM_PathOfQuasimorph.Core
                 return projectId;
             }
 
-            Plugin.Logger.Log($"\t No project found with DevelopId: {projectId}");
-            Plugin.Logger.Log($"Creating a new project with mods for {projectId} - {projectType}");
+            _logger.Log($"\t No project found with DevelopId: {projectId}");
+            _logger.Log($"Creating a new project with mods for {projectId} - {projectType}");
 
             // Determine if we ever need to create a new project
-            var itemRarity = raritySystem.SelectRarity();
+            var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
 
             // We don't need to do anything.
             // That way we just return the project ID and it goes as defined by game design.
@@ -137,7 +135,7 @@ namespace QM_PathOfQuasimorph.Core
             MagnumProject newProject = new MagnumProject(projectType, projectId);
 
             // Apply various project related parameters
-            var boostedParamIndex = raritySystem.ApplyProjectParameters(ref newProject, itemRarity);
+            var boostedParamIndex = PathOfQuasimorph.raritySystem.ApplyProjectParameters(ref newProject, itemRarity, rarityExtraBoost);
 
             // Generate a new UID
             var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();
@@ -168,7 +166,7 @@ namespace QM_PathOfQuasimorph.Core
             magnumProjects.Values.Add(newProject);
             RaritySystem.AddAffixes(newProject);
 
-            Plugin.Logger.Log($"\t\t Created new project for {newProject.DevelopId} with itemId: {newId}");
+            _logger.Log($"\t\t Created new project for {newProject.DevelopId} with itemId: {newId}");
             return newId;
         }
 

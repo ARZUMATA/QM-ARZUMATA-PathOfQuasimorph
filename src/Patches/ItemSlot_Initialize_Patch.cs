@@ -56,7 +56,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (rarity != ItemRarity.Standard)
                 {
-                    rarityComponent.SetRarityColor(MagnumPoQProjectsController.raritySystem.RarityToUnityColor(rarity));
+                    rarityComponent.SetRarityColor(PathOfQuasimorph.raritySystem.RarityToUnityColor(rarity));
                     rarityComponent.EnableDisableComponent(true);
                 }
                 else

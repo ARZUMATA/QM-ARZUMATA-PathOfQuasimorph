@@ -63,15 +63,16 @@ namespace QM_PathOfQuasimorph.Core
         private MagnumPoQProjectsController magnumPoQProjectsController;
         public const int AMOUNT_PREFIXES = 10; // csv has 10 prefixes per rarity
         public const int AMOUNT_SUFFIXES = 5; // CSV has 5 suffies per rarity param
+        private static Logger _logger = new Logger(null, typeof(RaritySystem));
 
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
         private const int DICE_SIDES = 20; // Number of sides on the dice
-        private float PARAMETER_BOOST_MIN = 1.2f;
-        private float PARAMETER_BOOST_MAX = 1.8f;
+        public static float PARAMETER_BOOST_MIN = 1.2f;
+        public static float PARAMETER_BOOST_MAX = 1.8f;
         private float AVERAGE_RESIST_APPLY_CHANCE = 50;
         private float PARAMETER_HINDER_CHANCE = 50;
-        private float PARAMETER_HINDER_PERCENT = 20;
+        public float PARAMETER_HINDER_PERCENT = 20;
         private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
@@ -222,7 +223,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private void LoadRaritiesFromCSV(string filePath)
         {
-            Plugin.Logger.Log($"Loading rarity data from CSV {filePath}");
+            _logger.Log($"Loading rarity data from CSV {filePath}");
 
             string line;
             bool inArbitrarySection = false;
@@ -230,7 +231,8 @@ namespace QM_PathOfQuasimorph.Core
 
             Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
 
-            using (StreamReader reader = new StreamReader(filePath))
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fileStream))
             {
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -258,7 +260,7 @@ namespace QM_PathOfQuasimorph.Core
                         string[] parts = line.Split(',');
                         string key = parts[0].Trim();
                         float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
-                        Plugin.Logger.Log($"Writing arbitrary data {key} {value}");
+                        _logger.Log($"Writing arbitrary data {key} {value}");
 
                         arbitraryValues[key] = value;
                     }
@@ -394,7 +396,7 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define the percentage of parameters to modify per Rarity
-        private Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
+        public static Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,  (0f    , 0f   ) },          // 0% of editableParams
             { ItemRarity.Enhanced,  (0.125f , 0.25f) },       // 25%
@@ -476,7 +478,7 @@ namespace QM_PathOfQuasimorph.Core
             return ItemRarity.Standard;
         }
 
-        public ItemRarity SelectRarityWeighted(Dictionary<ItemRarity, int> weights)
+        public T SelectRarityWeighted<T>(Dictionary<T, int> weights) where T : Enum
         {
             // Calculate the total weight
             int totalWeight = weights.Values.Sum();
@@ -496,8 +498,8 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            // Fallback
-            return ItemRarity.Standard;
+            // Fallback (e.g., default enum value or first key)
+            return weights.Keys.First();
         }
 
         // Performs N weighted rarity rolls and selects the worst
@@ -619,7 +621,15 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Used part of code from  MagnumProjectNumericParameterPanel.Initialize
-        private void AddIncreasedOrDecreased(MagnumProjectParameter _projectParameter, ref MagnumProject project, ItemRarity itemRarity, bool increase, MagnumProjectParameter boostedParam, float averageResist, bool hinder)
+        private void AddIncreasedOrDecreased(
+            MagnumProjectParameter _projectParameter,
+            ref MagnumProject project,
+            ItemRarity itemRarity,
+            bool increase,
+            MagnumProjectParameter boostedParam,
+            float averageResist,
+            bool hinder,
+            bool rarityExtraBoost)
         {
             float _defaultValue = 0f;
             bool isResist = false;
@@ -628,11 +638,11 @@ namespace QM_PathOfQuasimorph.Core
 
             if (boostedParam.Id == _projectParameter.Id)
             {
-                Plugin.Logger.Log($"\t\t Bosting {boostedParam.Id}");
+                _logger.Log($"\t\t Bosting {boostedParam.Id}");
                 boost = true;
             }
 
-            Plugin.Logger.Log($"\t\t Hinder {hinder}");
+            _logger.Log($"\t\t Hinder {hinder}");
 
             switch (_projectParameter.ParameterType)
             {
@@ -678,17 +688,17 @@ namespace QM_PathOfQuasimorph.Core
             // Case where we have zero resist, let boost it a bit.
 
             project.AppliedModifications.Remove(_projectParameter.Id);
-            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied, hinder);
+            var calculatedValue = CalculateParamValue(_defaultValue, itemRarity, increase, boost, isResist, averageResist, averageResistApplied, out averageResistApplied, hinder, rarityExtraBoost);
             var clampedValue = Mathf.Clamp(
                     calculatedValue,
                     _projectParameter.MinValue,
                     _projectParameter.MaxValue
                     );
 
-            Plugin.Logger.Log($"\t\t AppliedModifications");
-            Plugin.Logger.Log($"\t\t\t {_projectParameter.Id}");
-            Plugin.Logger.Log($"\t\t\t\t Default: {_defaultValue}");
-            Plugin.Logger.Log($"\t\t\t\t ClampedValue: {clampedValue}\n");
+            _logger.Log($"\t\t AppliedModifications");
+            _logger.Log($"\t\t\t {_projectParameter.Id}");
+            _logger.Log($"\t\t\t\t Default: {_defaultValue}");
+            _logger.Log($"\t\t\t\t ClampedValue: {clampedValue}\n");
 
             // Apply back
             switch (_projectParameter.ParameterType)
@@ -714,23 +724,25 @@ namespace QM_PathOfQuasimorph.Core
                     project.AppliedModifications.Add(_projectParameter.Id, clampedValue.ToString(CultureInfo.InvariantCulture));
                     break;
                 default:
-                    Plugin.Logger.Log($"unknown parameter type {_projectParameter.ParameterType}");
+                    _logger.Log($"unknown parameter type {_projectParameter.ParameterType}");
                     return;
             }
         }
 
-        private float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
+        public float CalculateParamValue(float defaultValue, ItemRarity rarity, bool increase, bool boost, bool isResist,
             float averageResist,
             bool averageResistApplied,
             out bool averageResistAppliedResult,
-            bool hinder
+            bool hinder,
+            bool rarityExtraBoost
             )
         {
-            //float[] rarityModifiers = _rarityModifiers[rarity];
-            //float modifier = rarityModifiers[_random.Next(rarityModifiers.Length)];
-            var (Min, Max) = _rarityModifiers[rarity];
-            // float modifier = (float)Math.Round(_random.Next((int)(Min * 100), (int)(Max * 100) + 1) / 100f, 2);
-            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
+            float modifier = GetRarityModifier(rarity, _rarityModifiers);
+            float modifierExtraBoost = GetRarityModifier(rarity, _rarityModifiers);
+            if (!rarityExtraBoost)
+            {
+                modifierExtraBoost = 1f;
+            }
 
             averageResistAppliedResult = false;
 
@@ -744,27 +756,27 @@ namespace QM_PathOfQuasimorph.Core
                     if (canApply)
                     {
                         averageResistAppliedResult = true;
-                        Plugin.Logger.Log($"---");
-                        Plugin.Logger.Log($"\t\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
+                        _logger.Log($"---");
+                        _logger.Log($"\t\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist)");
                         defaultValue = averageResist;
                     }
                 }
                 else
                 {
-                    Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist) already applied. SKIPPING.");
+                    _logger.Log($"\t\t Resist with defaultValue {defaultValue}, setting to {averageResist} (averageResist) already applied. SKIPPING.");
                 }
 
             }
             else if (isResist && defaultValue != 0)
             {
-                Plugin.Logger.Log($"\t\t Resist with defaultValue {defaultValue}, SKIPPING AND NOT setting to {averageResist}");
+                _logger.Log($"\t\t Resist with defaultValue {defaultValue}, SKIPPING AND NOT setting to {averageResist}");
             }
 
             float result = 0;
             // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
             float boostAmount = boost == true ? (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
 
-            Plugin.Logger.Log($"\t\t Modifier: {modifier}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
+            _logger.Log($"\t\t Modifier: {modifier}, modifierExtraBoost: {modifierExtraBoost}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
 
             if (hinder)
             {
@@ -773,19 +785,26 @@ namespace QM_PathOfQuasimorph.Core
 
             if (increase)
             {
-                result = (defaultValue * modifier) * boostAmount;
+                result = (defaultValue * modifier) * boostAmount * modifierExtraBoost;
             }
             else
             {
-                result = (defaultValue / modifier) / boostAmount;
+                result = (defaultValue / modifier) / boostAmount / modifierExtraBoost;
             }
 
-            //Plugin.Logger.Log($"\t\t\t Result: {result}");
+            //_logger.Log($"\t\t\t Result: {result}");
 
             return result;
         }
 
-        internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity)
+        internal float GetRarityModifier<T>(T rarity, Dictionary<T, (float, float)> modifiers) where T : Enum
+        {
+            var (Min, Max) = modifiers[rarity];
+            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
+            return modifier;
+        }
+
+        internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity, bool rarityExtraBoost)
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
 
@@ -809,10 +828,10 @@ namespace QM_PathOfQuasimorph.Core
             float averageResist = 0;
             int resistCount = 0;
 
-            Plugin.Logger.Log($"\n\n#FF0000 ApplyProjectParameters");
-            Plugin.Logger.Log($" {magnumProject.ProjectType}");
-            Plugin.Logger.Log($"\t {magnumProject.DevelopId}");
-            Plugin.Logger.Log($"\t\t Rarity: {itemRarity}");
+            _logger.Log($"\n\n#FF0000 ApplyProjectParameters");
+            _logger.Log($" {magnumProject.ProjectType}");
+            _logger.Log($"\t {magnumProject.DevelopId}");
+            _logger.Log($"\t\t Rarity: {itemRarity}");
 
             if (
                 magnumProject.ProjectType == MagnumProjectType.Armor ||
@@ -821,13 +840,13 @@ namespace QM_PathOfQuasimorph.Core
                 magnumProject.ProjectType == MagnumProjectType.Leggings
               )
             {
-                Plugin.Logger.Log($"\t\t\t Getting average resistances:");
+                _logger.Log($"\t\t\t Getting average resistances:");
 
                 foreach (var param in editableParameters.Values)
                 {
                     if (param.Id.Contains("_resist"))
                     {
-                        //Plugin.Logger.Log($"\t\t Resist: {param.Id}");
+                        //_logger.Log($"\t\t Resist: {param.Id}");
 
                         var _defaultValue = magnumProject.GetParameterDefaultValue(param);
 
@@ -847,7 +866,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 averageResist = (float)Math.Round(averageResist / resistCount, 2);
                 averageResist = Math.Max(averageResist, 1.0f); // Ensure average resist is at least 1.0
-                Plugin.Logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
+                _logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
             }
 
             // Select one parameter to boost more.
@@ -886,12 +905,12 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (new[] { "_weight", "_reload_duration", "_scatter_angle" }.Any(defaultParamValue.Id.Contains))
                 {
-                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam, 0, hinder);
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, false, boostedParam, 0, hinder, rarityExtraBoost);
                 }
                 else if (new[] { "_resist", "_damage", "_crit_damage", "_max_durability", "_accuracy", "_magazine_capacity" }
                          .Any(defaultParamValue.Id.Contains))
                 {
-                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist, hinder);
+                    AddIncreasedOrDecreased(defaultParamValue, ref magnumProject, itemRarity, true, boostedParam, averageResist, hinder, rarityExtraBoost);
                 }
                 else if (defaultParamValue.Id.Contains("_special_ability"))
                 {
@@ -965,13 +984,13 @@ namespace QM_PathOfQuasimorph.Core
             bool isMelee = false;
 
             var record = item.Record<WeaponRecord>();
-            Plugin.Logger.Log($"\t\t  WeaponRecord Exist: {record != null}");
+            _logger.Log($"\t\t  WeaponRecord Exist: {record != null}");
 
             if (record != null)
             {
                 isMelee = record.IsMelee;
             }
-            Plugin.Logger.Log($"\t\t  isMelee: {isMelee}");
+            _logger.Log($"\t\t  isMelee: {isMelee}");
 
             // Apply traits blacklist
             if (isMelee)
@@ -981,7 +1000,7 @@ namespace QM_PathOfQuasimorph.Core
                     var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
                     if (meleeTraitsBlacklist.Contains(key))
                     {
-                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
+                        _logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
                         traitsForItemTypeShuffled.Remove(key);
                     }
                 }
@@ -993,7 +1012,7 @@ namespace QM_PathOfQuasimorph.Core
                     var key = traitsForItemTypeShuffled.ElementAt(i).Value.Id;
                     if (rangedTraitsBlacklist.Contains(key))
                     {
-                        Plugin.Logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
+                        _logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
                         traitsForItemTypeShuffled.Remove(key);
                     }
                 }
@@ -1026,7 +1045,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            Plugin.Logger.Log($"\t\t  Unbreakable: {canAddUnbreakableTrait}");
+            _logger.Log($"\t\t  Unbreakable: {canAddUnbreakableTrait}");
 
             if (itemTraitType == ItemTraitType.ArmorTrait)
             {
@@ -1155,7 +1174,7 @@ namespace QM_PathOfQuasimorph.Core
             // Iterate whole list of record to get what we need.
             foreach (var param in Data.MagnumProjectParameters._records)
             {
-                // Plugin.Logger.Log($"\t\t record: {param.Key}"); // record: rangeweapon_damage
+                // _logger.Log($"\t\t record: {param.Key}"); // record: rangeweapon_damage
                 if (param.Value.ProjectType == projectType)
                 {
                     editable_magnum_projects_params.Add(param.Value.Id, param.Value);
@@ -1176,7 +1195,7 @@ namespace QM_PathOfQuasimorph.Core
             return editable_magnum_projects_params;
         }
 
-        private void ShuffleList<T>(IList<T> list)
+        public void ShuffleList<T>(IList<T> list)
         {
             // Fisher-Yates shuffle
             for (int i = list.Count - 1; i > 0; i--)
@@ -1188,7 +1207,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private Dictionary<TKey, TValue> ShuffleDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+        public Dictionary<TKey, TValue> ShuffleDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
         {
             List<TKey> keys = dictionary.Keys.ToList();
             ShuffleList(keys);  // Use the generic shuffle method for the list of keys
@@ -1209,7 +1228,7 @@ namespace QM_PathOfQuasimorph.Core
             // English as of time being.
 
             var magnumProjectWrapper = new MagnumProjectWrapper(magnumProject);
-            Plugin.Logger.LogWarning($"AddAffixes for {magnumProjectWrapper.ReturnItemUid()}.");
+            _logger.LogWarning($"AddAffixes for {magnumProjectWrapper.ReturnItemUid()}.");
 
             if (magnumProjectWrapper.PoqItem)
             {
@@ -1219,9 +1238,9 @@ namespace QM_PathOfQuasimorph.Core
                 // We got id.name now.
                 if (affix == null || affix.Count != 2)
                 {
-                    Plugin.Logger.LogWarning($"AddAffixes failed. Nothing was found.");
-                    Plugin.Logger.LogWarning($"\t\t affix == null {affix == null}");
-                    Plugin.Logger.LogWarning($"\t\t affix.Count {affix?.Count}");
+                    _logger.LogWarning($"AddAffixes failed. Nothing was found.");
+                    _logger.LogWarning($"\t\t affix == null {affix == null}");
+                    _logger.LogWarning($"\t\t affix.Count {affix?.Count}");
 
                     return;
                 }
@@ -1233,7 +1252,7 @@ namespace QM_PathOfQuasimorph.Core
                 //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
                 //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
 
-                //Plugin.Logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
+                //_logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
 
                 // Problem, on game load it doesn't have effect.
                 UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name",
@@ -1274,7 +1293,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
                 else
                 {
-                    Plugin.Logger.LogWarning($"UpdateKey issue. No key {lookupItemId}");
+                    _logger.LogWarning($"UpdateKey issue. No key {lookupItemId}");
                 }
             }
         }

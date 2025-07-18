@@ -18,13 +18,20 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace QM_PathOfQuasimorph.Core
 {
-    internal partial class PathOfQuasimorph
+    internal static partial class PathOfQuasimorph
     {
         private static bool isInitialized = false;
         private static bool enabled = false;
-        private static MagnumPoQProjectsController magnumProjectsController;
+        internal static MagnumPoQProjectsController magnumProjectsController;
+        internal static CreaturesControllerPoq creaturesControllerPoq = new CreaturesControllerPoq();
         private static TooltipGeneratorPoq tooltipGeneratorPoq = new TooltipGeneratorPoq();
-        private static bool done = false;
+        public static RaritySystem raritySystem = new RaritySystem();
+        internal static DungeonGameMode dungeonGameMode = null;
+        internal static GameCamera gameCamera = null;
+        internal static Camera camera = null;
+        internal static PixelizatorCameraAttachment pixelizatorCameraAttachment = null;
+
+        public static PerkFactory perkFactoryState { get; private set; }
 
         /* All magnum project are recipes that are always available in the game. You get access to exact recipe via chip.
         * Mod projects are just derivatives from that
@@ -36,16 +43,67 @@ namespace QM_PathOfQuasimorph.Core
         * This is where we intercept that logic and create our items.
         */
 
+        // Logging exclusions
+        static PathOfQuasimorph()
+        {
+            // Predefined types to exclude
+            Logger._excludedTypes.Add(typeof(CleanupSystem));
+            Logger._excludedTypes.Add(typeof(TooltipGeneratorPoq));
+            Logger._excludedTypes.Add(typeof(MagnumPoQProjectsController));
+            Logger._excludedTypes.Add(typeof(AffixManager));
+            Logger._excludedTypes.Add(typeof(RaritySystem));
+        }
+
+        public static void Initialize()
+        {
+            if (!isInitialized)
+            {
+                if (dungeonGameMode == null || gameCamera == null || camera == null)
+                {
+                    dungeonGameMode = GameObject.FindObjectOfType<DungeonGameMode>(true);
+                    gameCamera = dungeonGameMode._camera;
+                    camera = dungeonGameMode._camera.GetComponent<Camera>();
+
+                    if (pixelizatorCameraAttachment == null)
+                    {
+                        pixelizatorCameraAttachment = camera.GetComponent<PixelizatorCameraAttachment>();
+                    }
+                }
+            }
+        }
+
         [Hook(ModHookType.AfterSpaceLoaded)]
         public static void CleanupModeAfterSpaceLoaded(IModContext context)
         {
             CleanupSystem.CleanObsoleteProjects(context);
         }
 
+        [Hook(ModHookType.MainMenuStarted)]
+        public static void BeforeDungeonLoaded(IModContext context)
+        {
+            perkFactoryState = context.State.Get<PerkFactory>();
+        }
+
+        [Hook(ModHookType.DungeonStarted)]
+        public static void DungeonStarted(IModContext context)
+        {
+            Initialize();
+        }
+        [Hook(ModHookType.SpaceStarted)]
+        public static void SpaceStarted(IModContext context)
+        {
+            creaturesControllerPoq.CleanCreatureDataPoq();
+        }
+
         [Hook(ModHookType.DungeonFinished)]
-        public static void CleanupModeDungeonFinished(IModContext context)
+        public static void DungeonFinished(IModContext context)
         {
             CleanupSystem.CleanObsoleteProjects(context, true);
+            isInitialized = false;
+            dungeonGameMode = null;
+            gameCamera = null;
+            camera = null;
+            pixelizatorCameraAttachment = null;
         }
     }
 }

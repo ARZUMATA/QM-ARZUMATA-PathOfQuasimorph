@@ -1,6 +1,10 @@
-﻿using System;
+﻿using QM_PathOfQuasimorph;
+using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
+using Unity.Profiling;
 using UnityEngine;
 using Random = System.Random;
 
@@ -11,7 +15,7 @@ internal static class Helpers
     public static string AlphaAwareColorToHex(Color color) =>
         $"#{(int)(color.r * 255):X2}{(int)(color.g * 255):X2}{(int)(color.b * 255):X2}{(int)(color.a * 255):X2}";
 
-    public static Color HexStringToUnityColor(string hex)
+    public static Color HexStringToUnityColor(string hex, int alpha = 255)
     {
         if (string.IsNullOrEmpty(hex) || !hex.StartsWith("#"))
         {
@@ -21,7 +25,7 @@ internal static class Helpers
         // Check the length of the input string to determine if it has an alpha channel
         if (hex.Length == 7)  // No alpha channel provided, assume full opacity
         {
-            hex = "#" + hex.Substring(1) + "FF";
+            hex = "#" + hex.Substring(1) + alpha.ToString("X2");
         }
         else if (hex.Length != 9)
         {
@@ -95,7 +99,7 @@ internal static class Helpers
             long randomID = GenerateRandomID();
             string randomIDStr = randomID.ToString();
 
-            if (randomIDStr.Length < 16)    
+            if (randomIDStr.Length < 16)
             {
                 randomIDStr = randomIDStr.PadLeft(16, '1');
                 randomID = long.Parse(randomIDStr);
@@ -116,7 +120,7 @@ internal static class Helpers
             while (true)
             {
                 result = 0;
-                
+
                 // Use StandardRandom.Next() twice to get a 63-bit number (safe for 64-bit long)
                 for (int i = 0; i < 2; i++)
                 {
@@ -130,5 +134,39 @@ internal static class Helpers
                 }
             }
         }
+    }
+
+    public static Sprite LoadSpriteFromEmbeddedBundle(string bundleResourceName, string assetName)
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        using (Stream stream = assembly.GetManifestResourceStream(bundleResourceName))
+        {
+            if (stream == null)
+            {
+                Plugin.Logger.LogError($"Embedded AssetBundle resource '{bundleResourceName}' not found.");
+                return null;
+            }
+
+            byte[] bundleData = new byte[stream.Length];
+            stream.Read(bundleData, 0, bundleData.Length);
+
+            AssetBundle bundle = AssetBundle.LoadFromMemory(bundleData);
+            if (bundle == null)
+            {
+                Plugin.Logger.LogError($"Failed to load AssetBundle from memory for resource '{bundleResourceName}'.");
+                return null;
+            }
+
+            Sprite mySprite = bundle.LoadAsset<Sprite>(assetName);
+            bundle.Unload(false); // Unload to prevent memory leaks
+
+            return mySprite;
+        }
+    }
+
+    public static Sprite FindSpriteByName(string spriteName)
+    {
+        return Resources.FindObjectsOfTypeAll<Sprite>()
+            .FirstOrDefault(s => s.name == spriteName);
     }
 }

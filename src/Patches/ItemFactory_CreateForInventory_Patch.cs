@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
 using System;
+using System.Security.Cryptography;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
@@ -60,8 +61,21 @@ namespace QM_PathOfQuasimorph.Core
                         itemProjectType == MagnumProjectType.Leggings
                         )
                     {
+                        var rarityExtraBoost = false;
+
                         // Item is OK
-                        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId);
+                        if (MobContext.CurrentMobId != -1)
+                        {
+                            Plugin.Logger.Log($"ItemFactory_CreateForInventory called for Mob ID: {MobContext.CurrentMobId}");
+                            MobContext.CurrentMobId = -1;
+                            rarityExtraBoost = true;
+                        }
+                        else
+                        {
+                            rarityExtraBoost = false;
+                        }
+
+                        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId, rarityExtraBoost);
                     }
                     //else if (itemProjectType == MagnumProjectType.None ||
                     //         itemProjectType == MagnumProjectType.Mercenary ||
@@ -104,7 +118,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (__result != null)
                     {
-                        MagnumPoQProjectsController.raritySystem.ApplyTraits(ref __result);
+                        PathOfQuasimorph.raritySystem.ApplyTraits(ref __result);
                     }
                 }
             }
