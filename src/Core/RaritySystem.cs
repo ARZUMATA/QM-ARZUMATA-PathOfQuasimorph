@@ -349,13 +349,17 @@ namespace QM_PathOfQuasimorph.Core
             "cleave",
             "unthrowable",
             "critical_throw",
-
+            "backstab",
         };
+
         private List<string> meleeTraitsBlacklist = new List<string>(){
             "suppressor",
             "ramp_up",
             "bipod",
             "optic_sight",
+            "collimator",
+            "laser_sight",
+            "suppressive_fire",
         };
 
         // Define multipliers for each Rarity class
