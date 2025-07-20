@@ -57,16 +57,16 @@ namespace QM_PathOfQuasimorph.Core
 
         private List<string> statsToModify = new List<string>
         {
-             "Health",
-            "Dodge",
+            "Health",
             "ActionPoints",
-            "MeleeAccuracy",
             "RangeAccuracy",
             "LosLevel",
+            "MeleeAccuracy",
             "MeleeDamage_MinMax",
             "MeleeDamage_CritChance",
             "MeleeDamage_CritDmg",
             "MeleeThrowbackChance",
+            "Dodge",
 
             //  "PainThresholdLimit",
             //  "PainThresholdRegen",
@@ -158,6 +158,44 @@ namespace QM_PathOfQuasimorph.Core
 
             // public Color color;
             private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings();
+
+            public enum DiffType
+            {
+                Old,
+                New,
+                Diff,
+            }
+
+            public (float oldVal, float newVal, float diffVal) GetCreatureStats(CreatureDataPoq creatureData, string key)
+            {
+                float oldVal = creatureData.statsPanelOriginal.TryGetValue(key, out float oldValue) ? oldValue : 0f;
+                float newVal = creatureData.statsPanelNew.TryGetValue(key, out float newValue) ? newValue : 0f;
+                float diffVal = newVal - oldVal;
+
+                return (oldVal, newVal, diffVal);
+
+            }
+            public float GetCreatureStat(CreatureDataPoq creatureData, string key, DiffType type)
+            {
+                float value = 0f;
+
+                switch (type)
+                {
+                    case DiffType.Old:
+                        value = creatureData.statsPanelOriginal.TryGetValue(key, out float oldValue) ? oldValue : 0f;
+                        break;
+                    case DiffType.New:
+                        value = creatureData.statsPanelNew.TryGetValue(key, out float newValue) ? newValue : 0f;
+                        break;
+                    case DiffType.Diff:
+                        value = creatureData.statsPanelDiff.TryGetValue(key, out float diffValue) ? diffValue : 0f;
+                        break;
+                    default:
+                        throw new ArgumentException($"Invalid type: {type}");
+                }
+
+                return value;
+            }
 
             public string SerializeData()
             {
@@ -321,26 +359,7 @@ namespace QM_PathOfQuasimorph.Core
 
             if (creatureData != null)
             {
-                var _original_basicRangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
-                var _original_visionDistance = monster.CreatureData.GetLosLevel();
-                var _original_weaponsDamage = monster.CreatureData.GetTotalPerkRangeDamageBonus();
-                var _original_hitChance = monster.CreatureData.GetMeleeAccuracyNorm(null, false, false);
-                var _original_handsDamageMin = (float)Math.Round(monster.CreatureData.MeleeDamage.minDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
-                var _original_handsDamageMax = (float)Math.Round(monster.CreatureData.MeleeDamage.maxDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
-                var _original_meleeBoost = monster.CreatureData.GetTotalPerkMeleeDamageBonus();
-                var _original_meleeCritChance = monster.CreatureData.GetFinalMeleeCritChance();
-                var _original_dodgeChance = monster.CreatureData.GetDodge();
-
-                creatureData.statsPanelOriginal.Add("_health", monster.CreatureData.Health.MaxValue);
-                creatureData.statsPanelOriginal.Add("_basicRangeAccuracy", _original_basicRangeAccuracy);
-                creatureData.statsPanelOriginal.Add("_visionDistance", _original_visionDistance);
-                creatureData.statsPanelOriginal.Add("_weaponsDamage", _original_weaponsDamage);
-                creatureData.statsPanelOriginal.Add("_hitChance", _original_hitChance);
-                creatureData.statsPanelOriginal.Add("_handsDamageMin", _original_handsDamageMin);
-                creatureData.statsPanelOriginal.Add("_handsDamageMax", _original_handsDamageMax);
-                creatureData.statsPanelOriginal.Add("_meleeBoost", _original_meleeBoost);
-                creatureData.statsPanelOriginal.Add("_meleeCritChance", _original_meleeCritChance);
-                creatureData.statsPanelOriginal.Add("_dodgeChance", _original_dodgeChance);
+                FillCreatureData(monster, creatureData.statsPanelOriginal);
             }
 
             // Perks
@@ -355,42 +374,60 @@ namespace QM_PathOfQuasimorph.Core
             // Save new stats
             if (creatureData != null)
             {
-                var _newdata_basicRangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
-                var _newdata_visionDistance = monster.CreatureData.GetLosLevel();
-                var _newdata_weaponsDamage = monster.CreatureData.GetTotalPerkRangeDamageBonus();
-                var _newdata_hitChance = monster.CreatureData.GetMeleeAccuracyNorm(null, false, false);
-                var _newdata_handsDamageMin = (float)Math.Round(monster.CreatureData.MeleeDamage.minDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
-                var _newdata_handsDamageMax = (float)Math.Round(monster.CreatureData.MeleeDamage.maxDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
-                var _newdata_meleeBoost = monster.CreatureData.GetTotalPerkMeleeDamageBonus();
-                var _newdata_meleeCritChance = monster.CreatureData.GetFinalMeleeCritChance();
-                var _newdata_dodgeChance = monster.CreatureData.GetDodge();
-
-                creatureData.statsPanelNew.Add("_health", monster.CreatureData.Health.MaxValue);
-                creatureData.statsPanelNew.Add("_basicRangeAccuracy", _newdata_basicRangeAccuracy);
-                creatureData.statsPanelNew.Add("_visionDistance", _newdata_visionDistance);
-                creatureData.statsPanelNew.Add("_weaponsDamage", _newdata_weaponsDamage);
-                creatureData.statsPanelNew.Add("_hitChance", _newdata_hitChance);
-                creatureData.statsPanelNew.Add("_handsDamageMin", _newdata_handsDamageMin);
-                creatureData.statsPanelNew.Add("_handsDamageMax", _newdata_handsDamageMax);
-                creatureData.statsPanelNew.Add("_meleeBoost", _newdata_meleeBoost);
-                creatureData.statsPanelNew.Add("_meleeCritChance", _newdata_meleeCritChance);
-                creatureData.statsPanelNew.Add("_dodgeChance", _newdata_dodgeChance);
+                FillCreatureData(monster, creatureData.statsPanelNew);
 
                 // Assign the difference manually
-                creatureData.statsPanelDiff["_health"] = creatureData.statsPanelNew["_health"] - creatureData.statsPanelOriginal["_health"];
-                creatureData.statsPanelDiff["_basicRangeAccuracy"] = creatureData.statsPanelNew["_basicRangeAccuracy"] - creatureData.statsPanelOriginal["_basicRangeAccuracy"];
-                creatureData.statsPanelDiff["_visionDistance"] = creatureData.statsPanelNew["_visionDistance"] - creatureData.statsPanelOriginal["_visionDistance"];
-                creatureData.statsPanelDiff["_weaponsDamage"] = creatureData.statsPanelNew["_weaponsDamage"] - creatureData.statsPanelOriginal["_weaponsDamage"];
-                creatureData.statsPanelDiff["_hitChance"] = creatureData.statsPanelNew["_hitChance"] - creatureData.statsPanelOriginal["_hitChance"];
-                creatureData.statsPanelDiff["_handsDamageMin"] = creatureData.statsPanelNew["_handsDamageMin"] - creatureData.statsPanelOriginal["_handsDamageMin"];
-                creatureData.statsPanelDiff["_handsDamageMax"] = creatureData.statsPanelNew["_handsDamageMax"] - creatureData.statsPanelOriginal["_handsDamageMax"];
-                creatureData.statsPanelDiff["_meleeBoost"] = creatureData.statsPanelNew["_meleeBoost"] - creatureData.statsPanelOriginal["_meleeBoost"];
-                creatureData.statsPanelDiff["_meleeCritChance"] = creatureData.statsPanelNew["_meleeCritChance"] - creatureData.statsPanelOriginal["_meleeCritChance"];
-                creatureData.statsPanelDiff["_dodgeChance"] = creatureData.statsPanelNew["_dodgeChance"] - creatureData.statsPanelOriginal["_dodgeChance"];
+                FillCreatureDataDifference(creatureData.statsPanelOriginal, creatureData.statsPanelNew, creatureData.statsPanelDiff);
             }
 
             // Save new stats to mob
             monster.CreatureData.UltimateSkullItemId = creatureData.SerializeData();
+        }
+
+        private void FillCreatureDataDifference(Dictionary<string, float> statsPanelOriginal, Dictionary<string, float> statsPanelNew, Dictionary<string, float> statsPanelDiff)
+        {
+            foreach (var key in statsPanelOriginal.Keys)
+            {
+                if (statsPanelNew.TryGetValue(key, out float newValue))
+                {
+                    statsPanelDiff[key] = newValue - statsPanelOriginal[key];
+                }
+            }
+        }
+
+        private void FillCreatureData(Monster monster, Dictionary<string, float> statsPanel)
+        {
+            var health = monster.CreatureData.Health.MaxValue;
+            var actionPoints = monster.CreatureData.BaseActionPoints;
+
+            var rangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
+            var losLevel = monster.CreatureData.GetLosLevel();
+            var weaponsDamageBonus = monster.CreatureData.GetTotalPerkRangeDamageBonus();
+
+            var hitChance = monster.CreatureData.GetMeleeAccuracyNorm(null, false, false);
+            var handsDamageMin = (float)Math.Round(monster.CreatureData.MeleeDamage.minDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
+            var handsDamageMax = (float)Math.Round(monster.CreatureData.MeleeDamage.maxDmg * monster.CreatureData.OverallMeleeDamageMult(null, false), 0);
+            var meleeDamageBonus = monster.CreatureData.GetTotalPerkMeleeDamageBonus();
+            var meleeCritChance = monster.CreatureData.GetFinalMeleeCritChance();
+            var meleeCritDamage = monster.CreatureData.MeleeDamage.critDmg;
+
+            var dodge = monster.CreatureData.GetDodge();
+
+            statsPanel.Add("health", health);
+            statsPanel.Add("actionPoints", actionPoints);
+
+            statsPanel.Add("rangeAccuracy", rangeAccuracy);
+            statsPanel.Add("losLevel", losLevel);
+            statsPanel.Add("weaponsDamageBonus", weaponsDamageBonus);
+
+            statsPanel.Add("hitChance", hitChance);
+            statsPanel.Add("handsDamageMin", handsDamageMin);
+            statsPanel.Add("handsDamageMax", handsDamageMax);
+            statsPanel.Add("meleeDamageBonus", meleeDamageBonus);
+            statsPanel.Add("meleeCritChance", meleeCritChance);
+            statsPanel.Add("meleeCritDamage", meleeCritDamage);
+
+            statsPanel.Add("dodge", dodge);
         }
 
         private void ApplyPerks(Monster monster, MonsterMasteryTier rarity)
@@ -556,7 +593,6 @@ namespace QM_PathOfQuasimorph.Core
 
                 switch (prop)
                 {
-
                     case "Health":
                         ApplyModifier<int>(ref monster.CreatureData.BaseHealth, finalModifier, hinder, out outOldValue, out outNewValue);
                         outOldValue = monster.CreatureData.Health.MaxValue;
@@ -569,16 +605,8 @@ namespace QM_PathOfQuasimorph.Core
                         outNewValue = monster.CreatureData.Health.MaxValue;
                         break;
 
-                    case "Dodge":
-                        ApplyModifier<float>(ref monster.CreatureData.BaseDodge, finalModifier, hinder, out outOldValue, out outNewValue);
-                        break;
-
                     case "ActionPoints":
                         ApplyModifier<int>(ref monster.CreatureData.BaseActionPoints, finalModifier, hinder, out outOldValue, out outNewValue);
-                        break;
-
-                    case "MeleeAccuracy":
-                        ApplyModifier<float>(ref monster.CreatureData.BaseMeleeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "RangeAccuracy":
@@ -587,6 +615,12 @@ namespace QM_PathOfQuasimorph.Core
 
                     case "LosLevel":
                         ApplyModifier<int>(ref monster.CreatureData.BaseLosLevel, finalModifier, hinder, out outOldValue, out outNewValue);
+                        break;
+
+
+
+                    case "MeleeAccuracy":
+                        ApplyModifier<float>(ref monster.CreatureData.BaseMeleeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_MinMax":
@@ -605,11 +639,16 @@ namespace QM_PathOfQuasimorph.Core
                     case "MeleeThrowbackChance":
                         ApplyModifier<float>(ref monster.CreatureData.MeleeThrowbackChance, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
+
+
+
+                    case "Dodge":
+                        ApplyModifier<float>(ref monster.CreatureData.BaseDodge, finalModifier, hinder, out outOldValue, out outNewValue);
+                        break;
                 }
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
-
             }
         }
 
@@ -651,5 +690,8 @@ namespace QM_PathOfQuasimorph.Core
 
             outNewValue = tempValue;
         }
+
+      
+        
     }
 }

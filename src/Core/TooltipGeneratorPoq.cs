@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq.CreatureDataPoq;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using static UnityEngine.Rendering.DebugUI;
 
@@ -114,6 +115,22 @@ namespace QM_PathOfQuasimorph.Core
 
 
             return isPositive ? "+" : "-";
+        }
+
+        static string FormatDifference(float difference, bool invertColor = false, bool invertSign = false)
+        {
+            string sign = GetDifferenceSign(difference, invertSign);
+            string color = GetDifferenceColor(difference, invertColor);
+            if (sign == "=")
+            {
+                return $"<color=#{color}>{difference.ToString()}</color>";
+
+
+            }
+            else
+            {
+                return $"<color=#{color}>{sign}{difference.ToString()}</color>";
+            }
         }
 
         static string FormatDifference(string label, float difference, bool invertColor = false, bool invertSign = false)
@@ -501,84 +518,120 @@ namespace QM_PathOfQuasimorph.Core
                 _tooltip._equippedIcon.type = Image.Type.Simple;
                 _tooltip._equippedIcon.preserveAspect = true;
                 _tooltip._compareBlock.SetActive(value: true);
-                
+
                 //foreach(var entry in Data.TooltipIcons.Entries)
                 //{
                 //    Console.WriteLine($"{entry.Tag} -=- {entry.SpriteName}");
                 //}
 
-               
                 //health
-                var value = $"({FormatDifference(Math.Abs(creatureData.statsPanelDiff["_health"]).ToString(), creatureData.statsPanelDiff["_health"])})";
+                var (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "health");
+
+                var valueBrackets = $"({FormatDifference(Math.Abs(diffVal))})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_health").LocalizeName($"tooltip.Health")
-                    .SetValue($"{creatureData.statsPanelNew["_health"]} {value}")
-                    .SetComparsionValue(creatureData.statsPanelOriginal["_health"].ToString());
+                    .SetValue($"{newVal} {valueBrackets}")
+                    .SetComparsionValue(oldVal.ToString());
 
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").WrapInColor(DifferenceColorMap["positive"]));
+                // action points
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "actionPoints");
+
+                valueBrackets = $"({FormatDifference(Math.Abs(diffVal))})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_action_points").LocalizeName($"tooltip.ActionPoints")
+                  .SetValue($"{newVal} {valueBrackets}")
+                  .SetComparsionValue(oldVal.ToString());
+
+                // Ranged Combat
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _basicRangeAccuracy
-                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_basicRangeAccuracy"]), false), creatureData.statsPanelDiff["_basicRangeAccuracy"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "rangeAccuracy");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_accuracy").LocalizeName($"ui.mercclass.basicaccuracy")
-                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_basicRangeAccuracy"], false)} {value}")
-                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_basicRangeAccuracy"], false).ToString());
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // _visionDistance
-                value = $"({FormatDifference(Math.Abs(creatureData.statsPanelDiff["_visionDistance"]).ToString(), creatureData.statsPanelDiff["_visionDistance"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "losLevel");
+
+                valueBrackets = $"({FormatDifference(Math.Abs(diffVal))})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_vision").LocalizeName($"ui.mercclass.visiondistance")
-                    .SetValue($"{creatureData.statsPanelNew["_visionDistance"].ToString()} {value}")
-                    .SetComparsionValue(creatureData.statsPanelOriginal["_visionDistance"].ToString());
+                  .SetValue($"{newVal} {valueBrackets}")
+                  .SetComparsionValue(oldVal.ToString());
 
                 // _weaponsDamage
-                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_weaponsDamage"]), false), creatureData.statsPanelDiff["_weaponsDamage"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "weaponsDamageBonus");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_damage").LocalizeName($"ui.mercclass.weaponsdamage")
-                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_weaponsDamage"], false)} {value}")
-                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_weaponsDamage"], false).ToString());
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
-
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").WrapInColor(DifferenceColorMap["positive"]));
+                // Close Combat
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _hitChance
-                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_hitChance"]), false), creatureData.statsPanelDiff["_hitChance"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "weaponsDamageBonus");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_accuracy").LocalizeName($"ui.mercclass.hitchance")
-                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_hitChance"], false)} {value}")
-                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_hitChance"], false).ToString());
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // _handsDamageMin Max
-                value = $"({FormatDifference(string.Format("{0}-{1}", creatureData.statsPanelDiff["_handsDamageMin"], creatureData.statsPanelDiff["_handsDamageMax"]).ToString(), creatureData.statsPanelDiff["_handsDamageMax"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "handsDamageMin");
+                var (oldVal2, newVal2, diffVal2) = creatureData.GetCreatureStats(creatureData, "handsDamageMax");
 
-                //value = $"({FormatDifference(creatureData.statsPanelDiff["_handsDamageMax"].ToString(), creatureData.statsPanelDiff["_handsDamageMax"])}";
+                valueBrackets = $"({FormatDifference(string.Format("{0}-{1}", diffVal, diffVal2).ToString(), diffVal2)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_damage_melee").LocalizeName($"ui.mercclass.handsdamage")
-                    .SetValue($"{creatureData.statsPanelNew["_handsDamageMin"]} - {creatureData.statsPanelNew["_handsDamageMax"]} {value}")
-                    .SetComparsionValue($"{creatureData.statsPanelOriginal["_handsDamageMin"]} - {creatureData.statsPanelOriginal["_handsDamageMax"]}");
+                    .SetValue($"{newVal} - {newVal2} {valueBrackets}")
+                    .SetComparsionValue($"{oldVal} - {oldVal2}");
 
                 // _meleeBoost
-                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_meleeBoost"]), false), creatureData.statsPanelDiff["_meleeBoost"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "meleeDamageBonus");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_damage").LocalizeName($"ui.mercclass.meleeboost")
-                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_meleeBoost"], false)} {value}")
-                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_meleeBoost"], false).ToString());
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // _meleeCritChance
-                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_meleeCritChance"]), false), creatureData.statsPanelDiff["_meleeCritChance"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "meleeCritChance");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_critchance").LocalizeName($"ui.mercclass.meleecritchance")
-                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_meleeCritChance"], false)} {value}")
-                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_meleeCritChance"], false).ToString());
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").WrapInColor(DifferenceColorMap["positive"]));
+                // meleeCritDamage
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "meleeCritDamage");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
+
+                _factory.AddPanelToTooltip().SetIcon("common_critdamage").LocalizeName($"tooltip.CritDamage")
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
+
+                // Defense
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _dodgeChance
-                value = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(creatureData.statsPanelDiff["_dodgeChance"]), false), creatureData.statsPanelDiff["_dodgeChance"])})";
+                (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "dodge");
+
+                valueBrackets = $"({FormatDifference(FormatHelper.To100Percent(Math.Abs(diffVal), false), diffVal)})";
 
                 _factory.AddPanelToTooltip().SetIcon("common_dodge").LocalizeName($"ui.mercclass.dodgechance")
-                    .SetValue($"{FormatHelper.To100Percent(creatureData.statsPanelNew["_dodgeChance"], false)} {value}")
-                    .SetComparsionValue(FormatHelper.To100Percent(creatureData.statsPanelOriginal["_dodgeChance"], false).ToString());
+                    .SetValue($"{FormatHelper.To100Percent(newVal, false)} {valueBrackets}")
+                    .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 _factory._lastItemMousePos = Input.mousePosition;
             }

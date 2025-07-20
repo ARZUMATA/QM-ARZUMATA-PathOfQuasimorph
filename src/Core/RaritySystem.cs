@@ -342,7 +342,6 @@ namespace QM_PathOfQuasimorph.Core
             "none"
         };
 
-
         private List<string> rangedTraitsBlacklist = new List<string> {
             "perfect_throw",
             "piercing_throw",
