@@ -1,6 +1,7 @@
 ﻿using MGSC;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -444,12 +445,28 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
             _logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
 
-            if (durabilityDifference != 0)
+            bool unbreakable = false;
+
+            foreach(var component in item.Components)
+            {
+                var breakableItemComponent = component as BreakableItemComponent;
+
+                if (breakableItemComponent != null)
+                {
+                    if (breakableItemComponent.Unbreakable)
+                    {
+                        unbreakable = true;
+                        break;
+                    }
+                }
+            }
+
+            if (durabilityDifference != 0 || unbreakable)
             {
                 var value = $"{recordPoq.MaxDurability.ToString()} ({FormatDifference(Math.Abs(durabilityDifference).ToString(), durabilityDifference)})".WrapInColor(Colors.Green);
-
+                
                 _factory.AddPanelToTooltip().SetIcon("common_condition").LocalizeName("tooltip.Condition")
-                .SetValue(recordPoq.Unbreakable == true ? "∞" : value, true)
+                .SetValue(unbreakable == true ? Localization.Get("poq.ui.tooltip.unbreakable") : value, true)
                 .SetComparsionValue(genericRecord.MaxDurability.ToString());
             }
         }
