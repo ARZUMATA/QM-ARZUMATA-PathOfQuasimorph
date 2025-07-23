@@ -29,7 +29,7 @@ namespace QM_PathOfQuasimorph.Core
             if (__instance.UltimateSkullItemId != null)// && __instance.UltimateSkullItemId.EndsWith("=="))
             {
                 // Try deserialize first
-                var creatureDataPoq = CreatureDataPoq.DeserializeData(__instance.UltimateSkullItemId);
+                var creatureDataPoq = CreatureDataPoq.DeserializeDataBase64(__instance.UltimateSkullItemId);
                 if (creatureDataPoq != null)
                 {
                     if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__instance.UniqueId) == false)

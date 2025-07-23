@@ -26,17 +26,20 @@ namespace QM_PathOfQuasimorph.Core
         {
             static CreatureDataPoq creatureDataPoq;
 
-            public static bool Prefix(bool spawnEquipment, Creatures creatures)
+            public static bool Prefix(Difficulty difficulty, Creatures creatures, TurnController turnController, string mobClassId, CellPosition pos, int groupIndex = -1, bool spawnEquipment = true, int customActionPoints = -1, bool isLeader = false, int techLevelLimit = -1, int skinIndex = -1, string specificBodyTypeId = null, string hairType = "", string hairColor = "", string factionId = "", Creature actAfter = null)
             {
                 if (!Plugin.Config.EnableMobs)
                 {
                     return true;
                 }
 
-                // Decide mob rarity
+                Plugin.Logger.Log($"Prefix");
+                Plugin.Logger.Log($"spawnEquipment {spawnEquipment}");
+
+                // Decide mob rarity only if spawnEquipment is true
                 if (spawnEquipment)
                 {
-                    var creatureDataPoq = new CreatureDataPoq();
+                    creatureDataPoq = new CreatureDataPoq();
                     creatureDataPoq.rarity = PathOfQuasimorph.creaturesControllerPoq.SelectRarity();
                     MobContext.Rarity = creatureDataPoq.rarity;
 
@@ -46,9 +49,12 @@ namespace QM_PathOfQuasimorph.Core
                     MobContext.ProcesingMobRarity = true;
 
                     Plugin.Logger.Log($"SpawnMonsterFromMobClass: Upcoming creature Id: {MobContext.CurrentMobId}");
+                    Plugin.Logger.Log($"SpawnEquipment is TRUE. Assigned rarity: {creatureDataPoq.rarity}");
+
                 }
                 else
                 {
+                    Plugin.Logger.Log("spawnEquipment is FALSE - Skipping rarity assignment.");
                     MobContext.Rarity = CreaturesControllerPoq.MonsterMasteryTier.None;
                     MobContext.CurrentMobId = -1;
                     MobContext.ProcesingMobRarity = false;
@@ -86,7 +92,7 @@ namespace QM_PathOfQuasimorph.Core
 
 
                     PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Add(__result.CreatureData.UniqueId, creatureDataPoq);
-                    __result.CreatureData.UltimateSkullItemId = creatureDataPoq.SerializeData();
+                    __result.CreatureData.UltimateSkullItemId = creatureDataPoq.SerializeDataBase64();
 
                     PathOfQuasimorph.creaturesControllerPoq.ApplyStatsFromRarity(ref __result, creatureDataPoq.rarity);
 

@@ -5,6 +5,7 @@ using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -28,6 +29,7 @@ namespace QM_PathOfQuasimorph.Core
         internal ArmorRecordProcessorPoq armorRecordProcessorPoq;
         internal LeggingsRecordProcessorPoq leggingsRecordProcessorPoq;
         internal BootsRecordProcessorPoq bootsRecordProcessorPoq;
+        public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
 
         private Logger _logger = new Logger(null, typeof(ItemRecordsControllerPoq));
 
@@ -43,6 +45,11 @@ namespace QM_PathOfQuasimorph.Core
             bootsRecordProcessorPoq = new BootsRecordProcessorPoq(this);
         }
 
+        public void AddItemRecords()
+        {
+            PathOfQuasimorph.magnumProjectsController.AddItemRecords(_jsonSettings);
+        }
+
         internal string CreateNew(string itemId, bool mobRarityBoost)
         {
             var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
@@ -52,7 +59,7 @@ namespace QM_PathOfQuasimorph.Core
                 return itemId;
             }
 
-            if (!PathOfQuasimorph.magnumProjectsController.CanProcessItemRecord(itemId))
+            if (!PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemId))
             {
                 return itemId;
             }
@@ -109,6 +116,9 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"oldId {Data.Items._records.Keys.Contains(oldId)}");
 
             RaritySystem.AddAffixes(itemId);
+
+            // Also add records entry in our dummy magnum project placeholder
+            PathOfQuasimorph.magnumProjectsController.AddItemRecord(itemId, recordsList, _jsonSettings);
 
             return itemId;
         }
@@ -338,6 +348,99 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return false;
+        }
+
+        public ItemProduceReceipt GetPlaceHolderItemProduceReceipt()
+        {
+            // If we already found it, reuse it as iteration and calls are very intensive for the hook.
+            if (itemProduceReceiptPlaceHolder != null && itemProduceReceiptPlaceHolder.Id != string.Empty)
+            {
+                return itemProduceReceiptPlaceHolder;
+            }
+
+            // Iterate whole receipts do find our placeholder.
+            for (int i = 0; i < Data.ProduceReceipts.Count; i++)
+            {
+                // Item has no recipe, let's add placeholder as we won't see it in recipe's list anyway.
+                if (Data.ProduceReceipts[i].OutputItem == "pills_sorbent")
+                {
+                    itemProduceReceiptPlaceHolder = Data.ProduceReceipts[i];
+                    return itemProduceReceiptPlaceHolder;
+                }
+            }
+
+            return itemProduceReceiptPlaceHolder;
+        }
+
+        public bool CanProcessItemRecord(string id)
+        {
+            bool canProcess = true;
+
+            // Blacklist some items
+            List<string> blacklistedCategories = new List<string>
+                {
+                    "Possessed",
+                    "CyberAug",
+                    "PossessedAug",
+                    "QuasiAug",
+                    "none"
+                };
+
+            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(id, true) as CompositeItemRecord;
+
+            foreach (var rec in compositeItemRecord.Records)
+            {
+                Type recordType = rec.GetType();
+                bool checkWeaponRecord = false;
+
+                switch (recordType.Name)
+                {
+                    case nameof(WeaponRecord):
+                        checkWeaponRecord = true;
+                        break;
+                    case nameof(ArmorRecord):
+                    case nameof(HelmetRecord):
+                    case nameof(LeggingsRecord):
+                    case nameof(BootsRecord):
+                        break;
+                    case nameof(AugmentationRecord):
+                        canProcess = false;
+                        break;
+                    default:
+                        canProcess = false;
+                        break;
+                }
+
+                if (checkWeaponRecord)
+                {
+                    var weaponRecord = rec as WeaponRecord;
+                    if (weaponRecord != null)
+                    {
+                        //_logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
+                        if (weaponRecord.IsImplicit)
+                        {
+                            canProcess = false;
+                            break;
+                        }
+
+                        foreach (var mod in weaponRecord.Categories)
+                        {
+                            if (blacklistedCategories.Contains(mod))
+                            {
+                                canProcess = false;
+                                break;
+                            }
+
+                            //_logger.Log($"\t\t\t Category  {mod}");
+                        }
+
+                        //_logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
+                        //_logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
+                    }
+                }
+            }
+
+            return canProcess;
         }
     }
 }

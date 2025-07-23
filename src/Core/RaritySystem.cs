@@ -1255,7 +1255,7 @@ namespace QM_PathOfQuasimorph.Core
             // English as of time being.
 
             var wrapper = new MagnumProjectWrapper(magnumProject);
-            _logger.LogWarning($"AddAffixes for {wrapper.ReturnItemUid()}.");
+            _logger.LogWarning($"AddAffixes for {wrapper.ReturnItemUid()}, PoqItem {wrapper.PoqItem}.");
 
             if (wrapper.PoqItem)
             {

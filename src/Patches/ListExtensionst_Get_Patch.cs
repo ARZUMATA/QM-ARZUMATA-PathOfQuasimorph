@@ -23,7 +23,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (__result == null || __result.Id == string.Empty)
                 {
-                    ItemProduceReceipt itemProduceReceiptPlaceHolder = magnumProjectsController.GetPlaceHolderItemProduceReceipt();
+                    ItemProduceReceipt itemProduceReceiptPlaceHolder = itemRecordsControllerPoq.GetPlaceHolderItemProduceReceipt();
                     __result = itemProduceReceiptPlaceHolder;
                 }
             }

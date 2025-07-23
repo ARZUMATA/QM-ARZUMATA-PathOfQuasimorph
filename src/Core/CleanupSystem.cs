@@ -269,6 +269,7 @@ namespace QM_PathOfQuasimorph.Core
                 // LINQ maybe?
 
                 MagnumProjects magnumProjects = context.State.Get<MagnumProjects>();
+
                 _logger.Log("CleanupMagnumProjects");
 
                 if (magnumProjects != null)
@@ -279,7 +280,7 @@ namespace QM_PathOfQuasimorph.Core
                         var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
                         _logger.Log($"magnumProjects != null");
 
-                        if (projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
+                        if (!projectWrapper.SerializedStorage && projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
                         {
                             _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
 

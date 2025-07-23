@@ -1,12 +1,14 @@
-﻿using System;
+﻿using MGSC;
+using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Core;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
-using MGSC;
-using QM_PathOfQuasimorph.Core;
-using UnityEngine;
 using System.Security.Policy;
+using UnityEngine;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -15,28 +17,96 @@ namespace QM_PathOfQuasimorph.Core
         public const long MAGNUM_PROJECT_START_TIME = 1337L;
 
         public static MagnumProjects magnumProjects;
-        public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
         public List<string> traitsTracker = new List<string>();
         private Logger _logger = new Logger(null, typeof(MagnumPoQProjectsController));
+        internal MagnumProject dataPlaceholderProject;
 
         public MagnumPoQProjectsController(MagnumProjects _magnumProjects)
         {
             magnumProjects = _magnumProjects;
-            //AffixManager.LocadlocalizationData();
+            //AffixManager.LoadLocalizationData();
         }
 
-        public static bool IsPoqProject(MagnumProject magnumProject)
+        public void AddItemRecord(string itemId, List<BasePickupItemRecord> recordsList, Newtonsoft.Json.JsonSerializerSettings jsonSettings)
         {
-            if (magnumProject.StartTime.Ticks == MAGNUM_PROJECT_START_TIME && magnumProject.FinishTime.Ticks > 0)
+            _logger.Log($"AddItemRecord: {itemId} recordsList Count: {recordsList.Count}");
+
+            PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
+            dataPlaceholderProject.UpcomingModifications.Add(itemId, DataSerializerHelper.SerializeData(recordsList, jsonSettings));
+        }
+
+        public void AddItemRecords(JsonSerializerSettings jsonSettings)
+        {
+            _logger.Log($"AddItemRecords");
+
+            PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
+
+            foreach (var keyValuePair in dataPlaceholderProject.UpcomingModifications)
             {
-                return true;
-            }
-            else
-            {
-                return false;
+                _logger.Log($"adding: {keyValuePair.Key}");
+
+                var deserializedData = DataSerializerHelper.DeserializeData<List<BasePickupItemRecord>>(keyValuePair.Value, jsonSettings);
+
+                foreach(var record in deserializedData)
+                {
+                    Data.Items.AddRecord(keyValuePair.Key, record);
+                }
             }
         }
 
+        public MagnumProject CreateDataHolderProject()
+        {
+            // Find and create if required our dataPlaceholderProject
+            PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
+
+
+            if (magnumProjects == null)
+            {
+                throw new Exception("Magnum project instance missing");
+            }
+            
+            if (dataPlaceholderProject != null)
+            {
+                return dataPlaceholderProject;
+            }
+
+            foreach (var project in magnumProjects.Values)
+            {
+                _logger.Log($"CreateDataHolderProject: checking project {project.DevelopId} {project.FinishTime}");
+
+                if (MagnumProjectWrapper.IsSerializedStorage(project.FinishTime.Ticks))
+                {
+                    _logger.Log($"CreateDataHolderProject: IsSerializedStorage");
+
+                    return project;
+                }
+            }
+
+            _logger.Log($"creating new project");
+
+            MagnumProject newProject = new MagnumProject(MagnumProjectType.MeleeWeapon, "common_knife_1");
+            var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();
+            DigitInfo digits = DigitInfo.GetDigits(randomUid);
+            digits.FillZeroes();
+            digits.Rarity = (int)ItemRarity.Standard;
+            // boostedParamIndex, randomPrefix
+            digits.BoostedParam = 99;
+            digits.IsSerialized = true;
+            var randomUidInjected = digits.ReturnUID();
+            newProject.StartTime = DateTime.FromBinary(MAGNUM_PROJECT_START_TIME);
+            newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected));
+
+            _logger.Log($"randomUidInjected {randomUidInjected}");
+            _logger.Log($"IsSerializedStorage {MagnumProjectWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
+            _logger.Log($"dataPlaceholderProject {dataPlaceholderProject.DevelopId}");
+
+            MagnumDevelopmentSystem.InjectItemRecord(newProject);
+            magnumProjects.Values.Add(newProject);
+
+            return newProject;
+        }
+
+        [Obsolete]
         public bool CanProcessItemRecord(string id)
         {
             bool canProcess = true;
@@ -108,6 +178,7 @@ namespace QM_PathOfQuasimorph.Core
             return canProcess;
         }
 
+        [Obsolete]
         public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId, bool rarityExtraBoost)
         {
             // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
@@ -202,6 +273,7 @@ namespace QM_PathOfQuasimorph.Core
             return null; // Return null if no project is found
         }
 
+        [Obsolete]
         public static ItemRarity GetItemRarity(long finishTime)
         {
             DigitInfo digits = DigitInfo.GetDigits(finishTime);
@@ -209,41 +281,24 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Yes I dont know to get it right in IL opcodes.
+        [Obsolete]
         public static ItemTransformationRecord GetItemTransformationRecord(ItemTransformationRecord record, MagnumProject project)
         {
+            Plugin.Logger.Log($"GetItemTransformationRecord");
+
             if (record == null || record.Id == string.Empty)
             {
                 // Item breaks into this, unless it has it's own record.
                 return Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
 
+            Plugin.Logger.Log($"AddAffixes");
+
             // Since this method used during InjectItemRecord, we can safely extra update our language keys.
             // I don't like making classes static but this won't hurt.
             RaritySystem.AddAffixes(project);
 
             return record;
-        }
-
-        public ItemProduceReceipt GetPlaceHolderItemProduceReceipt()
-        {
-            // If we already found it, reuse it as iteration and calls are very intensive for the hook.
-            if (itemProduceReceiptPlaceHolder != null && itemProduceReceiptPlaceHolder.Id != string.Empty)
-            {
-                return itemProduceReceiptPlaceHolder;
-            }
-
-            // Iterate whole receipts do find our placeholder.
-            for (int i = 0; i < Data.ProduceReceipts.Count; i++)
-            {
-                // Item has no recipe, let's add placeholder as we won't see it in recipe's list anyway.
-                if (Data.ProduceReceipts[i].OutputItem == "pills_sorbent")
-                {
-                    itemProduceReceiptPlaceHolder = Data.ProduceReceipts[i];
-                    return itemProduceReceiptPlaceHolder;
-                }
-            }
-
-            return itemProduceReceiptPlaceHolder;
         }
     }
 }

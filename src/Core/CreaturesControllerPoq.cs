@@ -199,12 +199,22 @@ namespace QM_PathOfQuasimorph.Core
 
             public string SerializeData()
             {
+                return DataSerializerHelper.SerializeData(this);
+            }
+
+            public string SerializeDataBase64()
+            {
                 return DataSerializerHelper.SerializeDataBase64(this);
             }
 
             public static CreatureDataPoq DeserializeData(string _dataString)
             {
                 return DataSerializerHelper.DeserializeData<CreatureDataPoq>(_dataString);
+            }
+
+            public static CreatureDataPoq DeserializeDataBase64(string _dataString)
+            {
+                return DataSerializerHelper.DeserializeDataBase64<CreatureDataPoq>(_dataString);
             }
         }
 
@@ -319,7 +329,7 @@ namespace QM_PathOfQuasimorph.Core
                 return;
             }
 
-            // Define baseModifier used to boost parameters
+            // Define baseModifier used to boost stats
             float baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity, _masteryModifiers);
 
             // Store original values
@@ -344,7 +354,7 @@ namespace QM_PathOfQuasimorph.Core
             // Stats
             ApplyStats(monster, baseModifier);
 
-            // Save new parameters
+            // Save new stats
             if (creatureData != null)
             {
                 FillCreatureData(monster, creatureData.statsPanelNew);
@@ -353,8 +363,8 @@ namespace QM_PathOfQuasimorph.Core
                 FillCreatureDataDifference(creatureData.statsPanelOriginal, creatureData.statsPanelNew, creatureData.statsPanelDiff);
             }
 
-            // Save new parameters to mob
-            monster.CreatureData.UltimateSkullItemId = creatureData.SerializeData();
+            // Save new stats to mob
+            monster.CreatureData.UltimateSkullItemId = creatureData.SerializeDataBase64();
         }
 
         private void FillCreatureDataDifference(Dictionary<string, float> statsPanelOriginal, Dictionary<string, float> statsPanelNew, Dictionary<string, float> statsPanelDiff)
