@@ -6,18 +6,32 @@ namespace QM_PathOfQuasimorph.Core
     {
         public class DigitInfo
         {
+            private int _serializedStorage;
+
+
             // I don't like how this works. Byte array seems much better. But it works so.
             public string LeftPart { get; set; }
-            public int UnusedData { get; set; } // X
+            public int SerializedStorage // X
+            {
+                get => _serializedStorage;
+                set => _serializedStorage = value;
+            }
             public int UnusedData2 { get; set; } // XX
             public int BoostedParam { get; set; } // XX
             public int Rarity { get; set; } // X
+
+            public bool IsSerialized
+            {
+                get => _serializedStorage == 1;
+                set => _serializedStorage = value ? 1 : 0;
+            }
+
 
             public DigitInfo(string leftPart, int unusedData, int boostedParam, int unusedData2, int rarity)
             {
                 // Use last 6 digits of as identifier
                 LeftPart = leftPart;
-                UnusedData = unusedData;
+                IsSerialized = false;
                 UnusedData2 = unusedData2;
                 BoostedParam = boostedParam;
                 Rarity = rarity; // ItemRarity
@@ -25,7 +39,7 @@ namespace QM_PathOfQuasimorph.Core
 
             public void FillZeroes()
             {
-                UnusedData = 0;
+                IsSerialized = false;
                 BoostedParam = 0;
                 UnusedData2 = 0;
                 Rarity = 0;
@@ -33,7 +47,7 @@ namespace QM_PathOfQuasimorph.Core
 
             public string ReturnUID()
             {
-                return $"{LeftPart}{UnusedData:D1}{BoostedParam:D2}{UnusedData2:D2}{Rarity:D1}";
+                return $"{LeftPart}{SerializedStorage:D1}{BoostedParam:D2}{UnusedData2:D2}{Rarity:D1}";
             }
 
             public static DigitInfo GetDigits(long uid)

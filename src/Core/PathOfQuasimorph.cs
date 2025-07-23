@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
+using QM_PathOfQuasimorph.Core.Processors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace QM_PathOfQuasimorph.Core
         private static bool enabled = false;
         internal static MagnumPoQProjectsController magnumProjectsController;
         internal static CreaturesControllerPoq creaturesControllerPoq = new CreaturesControllerPoq();
+        internal static ItemRecordsControllerPoq itemRecordsControllerPoq = new ItemRecordsControllerPoq();
         private static TooltipGeneratorPoq tooltipGeneratorPoq = new TooltipGeneratorPoq();
         public static RaritySystem raritySystem = new RaritySystem();
         internal static DungeonGameMode dungeonGameMode = null;

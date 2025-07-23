@@ -1,0 +1,115 @@
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using QM_PathOfQuasimorph.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+public static class DataSerializerHelper
+{
+    private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings();
+
+    public static string SerializeData<T>(T _data) where T : class
+    {
+        return SerializeData<T>(_data, _jsonSettings);
+    }
+
+    public static string SerializeData<T>(T _data, JsonSerializerSettings _jsonSettings) where T : class
+    {
+        var _dataString = JsonConvert.SerializeObject(_data, _jsonSettings);
+        return _dataString;
+    }
+
+    public static string SerializeDataBase64<T>(T _data) where T : class
+    {
+        return SerializeDataBase64<T>(_data, _jsonSettings);
+    }
+
+    public static string SerializeDataBase64<T>(T _data, JsonSerializerSettings _jsonSettings) where T : class
+    {
+        var _dataString = Convert.ToBase64String(
+                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_data, _jsonSettings)));
+        return _dataString;
+    }
+
+    public static T DeserializeData<T>(string _dataString) where T : class
+    {
+        return DeserializeData<T>(_dataString, _jsonSettings);
+
+    }
+
+    public static T DeserializeData<T>(string _dataString, JsonSerializerSettings _jsonSettings) where T : class
+    {
+        var deserializedData = JsonConvert.DeserializeObject<T>(_dataString, _jsonSettings);
+        return deserializedData;
+    }
+
+    public static T DeserializeDataBase64<T>(string _dataString) where T : class
+    {
+        return DeserializeDataBase64<T>(_dataString, _jsonSettings);
+
+    }
+    public static T DeserializeDataBase64<T>(string _dataString, JsonSerializerSettings _jsonSettings) where T : class
+    {
+        try
+        {
+            var base64 = _dataString.Trim();
+            if (base64.Length % 4 != 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                var jsonBytes = Convert.FromBase64String(base64);
+                var deserializedData = DeserializeData<T>(Encoding.UTF8.GetString(jsonBytes), _jsonSettings);
+                //var deserializedData = JsonConvert.DeserializeObject<T>(
+                    //Encoding.UTF8.GetString(jsonBytes), _jsonSettings);
+                return deserializedData;
+            }
+            catch (FormatException)
+            {
+                // Invalid Base64 string
+                return null;
+            }
+        }
+        catch (Exception)
+        {
+            // Any other decoding or deserialization error
+            return null;
+        }
+    }
+
+    internal class CompositeItemRecordResolver : DefaultContractResolver
+    {
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+
+            // Explicitly include the Records property
+            if (property.PropertyName == "Records")
+            {
+                property.ShouldSerialize = _ => true;
+            }
+
+            // Explicitly exclude problematic properties
+            else if (property.PropertyName == "ItemDesc" ||
+                     property.PropertyName == "PrimaryRecord")
+            {
+                property.ShouldSerialize = _ => false;
+            }
+
+            // Optionally exclude all Unity types like GameObject
+            if (property.PropertyType.Namespace == "UnityEngine")
+            {
+                property.ShouldSerialize = _ => false;
+            }
+
+            return property;
+        }
+
+    }
+}

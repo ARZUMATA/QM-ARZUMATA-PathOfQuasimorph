@@ -1,8 +1,13 @@
 ﻿using HarmonyLib;
 using MGSC;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Security.Cryptography;
 using UnityEngine;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
@@ -43,7 +48,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
-                if (project == null)
+                // No more magnum projects
+                if (false)//project == null)
                 {
 
                     // Create new
@@ -91,6 +97,53 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
 
+
+
+                // Log stack trace and calling method
+                /*
+                StackTrace stackTrace = new StackTrace(true);
+                string formattedStackTrace = stackTrace.ToString();
+                Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch :: Prefix :: Called by: {formattedStackTrace}");
+                */
+
+                var magnumProjectWrapper = MagnumProjectWrapper.SplitItemUid(itemId);
+
+                if (magnumProjectWrapper.PoqItem || magnumProjectWrapper.SerializedStorage)
+                {
+                    return true;
+                }
+
+
+                if (PathOfQuasimorph.itemRecordsControllerPoq.HasRecord(itemId) == true)
+                {
+
+                }
+
+                if (PathOfQuasimorph.itemRecordsControllerPoq.HasRecord(itemId) == false)
+                {
+                    var mobRarityBoost = false;
+
+                    // Item is OK
+                    if (MobContext.CurrentMobId != -1)
+                    {
+                        Plugin.Logger.Log($"ItemFactory_CreateForInventory called for Mob ID: {MobContext.CurrentMobId}");
+
+                        if (MobContext.Rarity == MonsterMasteryTier.None)
+                        {
+                            mobRarityBoost = false;
+                        }
+
+                        mobRarityBoost = true;
+                    }
+                    else
+                    {
+                        mobRarityBoost = false;
+                    }
+
+                    // Create new item record
+                    itemId = PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemId, mobRarityBoost);
+                }
+
                 return true;  // Allow original method.
             }
 
@@ -98,6 +151,7 @@ namespace QM_PathOfQuasimorph.Core
                 ref BasePickupItem __result,
                 ItemFactory __instance)
             {
+                return;
                 // Here we need to apply traits and other stuff that magnum projects don't cover.
                 // That's why we have traitsTracker in MagnumPoQProjectsController.
                 // We don't rely on magnum project here so we just look for traits tracker and slap them here.

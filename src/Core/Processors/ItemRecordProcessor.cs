@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using static MGSC.SpawnSystem;
 using static MGSC.TurnDebugLogger;
+using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
 using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Core.Processors
@@ -57,7 +58,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             {
                 finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
 
-                _logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier}");
+                _logger.Log($"\t\t boostedParamString exist, boosting final modifier from {baseModifier} to {finalModifier}");
             }
             else
             {
@@ -79,9 +80,12 @@ namespace QM_PathOfQuasimorph.Core.Processors
         internal void PrepGenericData(out float baseModifier, out float finalModifier, out int numToHinder, out int numToImprove, out int boostedParam, out string boostedParamString, out int improvedCount, out int hinderedCount, out bool increase)
         {
             baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
+
             if (mobRarityBoost)
             {
-                baseModifier *= baseModifier;
+                float mobModifier = baseModifier * PathOfQuasimorph.raritySystem.GetRarityModifier(MobContext.Rarity, PathOfQuasimorph.creaturesControllerPoq._masteryModifiers);
+                _logger.Log($"\t\t mobRarityBoost exist, boosting final modifier from {baseModifier} to {mobModifier}");
+                baseModifier = mobModifier;
             }
 
             finalModifier = 0;
@@ -112,7 +116,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             // Determine if we need increase or decrease
             increase = true;
         }
-
+        
         //protected abstract List<DmgResist> GetResistSheet();
         //protected abstract float GetResist(string resistName);
         //protected abstract void SetResist(string resistName, float value);

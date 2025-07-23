@@ -70,10 +70,10 @@ namespace QM_PathOfQuasimorph.Core
         private const int DICE_SIDES = 20; // Number of sides on the dice
         public static float PARAMETER_BOOST_MIN = 1.2f;
         public static float PARAMETER_BOOST_MAX = 1.8f;
-        private float AVERAGE_RESIST_APPLY_CHANCE = 50;
-        private float PARAMETER_HINDER_CHANCE = 50;
+        public float AVERAGE_RESIST_APPLY_CHANCE = 50;
+        public float PARAMETER_HINDER_CHANCE = 50;
         public float PARAMETER_HINDER_PERCENT = 20;
-        private float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
+        public float UNBREAKABLE_ENTRY_CHANCE = 0.20f;
         private RarityRolls rarityRoll = RarityRolls.WeightedRolls;
 
         public RaritySystem()
@@ -342,6 +342,8 @@ namespace QM_PathOfQuasimorph.Core
             "none"
         };
 
+
+        [Obsolete]
         private List<string> rangedTraitsBlacklist = new List<string> {
             "perfect_throw",
             "piercing_throw",
@@ -351,6 +353,7 @@ namespace QM_PathOfQuasimorph.Core
             "backstab",
         };
 
+        [Obsolete]
         private List<string> meleeTraitsBlacklist = new List<string>(){
             "suppressor",
             "ramp_up",
@@ -362,7 +365,7 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define multipliers for each Rarity class
-        private Dictionary<ItemRarity, (float Min, float Max)> _rarityModifiers = new Dictionary<ItemRarity, (float Min, float Max)>
+        public Dictionary<ItemRarity, (float Min, float Max)> _rarityModifiers = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,   ( 1.0f,   1.0f  ) },  // Standard = Common // No change for Standard 
             { ItemRarity.Enhanced,   ( 1.05f,  1.15f ) },  // Enhanced = Magic
@@ -399,7 +402,7 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define the percentage of parameters to modify per Rarity
-        public static Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
+        public Dictionary<ItemRarity, (float Min, float Max)> rarityParamPercentages = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,  (0f    , 0f   ) },          // 0% of editableParams
             { ItemRarity.Enhanced,  (0.125f , 0.25f) },       // 25%
@@ -410,7 +413,7 @@ namespace QM_PathOfQuasimorph.Core
         };
 
         // Define the percentage of traits to modify per Rarity
-        private Dictionary<ItemRarity, (float Min, float Max)> rarityTraitRanges = new Dictionary<ItemRarity, (float Min, float Max)>
+        public Dictionary<ItemRarity, (float Min, float Max)> rarityTraitRanges = new Dictionary<ItemRarity, (float Min, float Max)>
         {
             { ItemRarity.Standard,  (0f,     0f) },          // Ignored, no traits applied
             { ItemRarity.Enhanced,  (0f,     0.0435f) },     // 1 trait (4.35% of max 23 traits)
@@ -420,7 +423,7 @@ namespace QM_PathOfQuasimorph.Core
             { ItemRarity.Quantum,   (0.348f, 0.348f) },      // 8 traits (34.78% of max 23)
         };
 
-        private readonly Dictionary<ItemRarity, float> unbreakableTraitPercent = new Dictionary<ItemRarity, float>
+        public readonly Dictionary<ItemRarity, float> unbreakableTraitPercent = new Dictionary<ItemRarity, float>
         {
             { ItemRarity.Standard,  0f },       // 0% (never gets unbreakable)
             { ItemRarity.Enhanced,  0.1f },      // 0.1% in eligible pool
@@ -807,6 +810,7 @@ namespace QM_PathOfQuasimorph.Core
             return modifier;
         }
 
+        [Obsolete]
         internal int ApplyProjectParameters(ref MagnumProject magnumProject, ItemRarity itemRarity, bool rarityExtraBoost)
         {
             var editableParameters = GetEditableParameters(magnumProject.ProjectType);
@@ -974,10 +978,11 @@ namespace QM_PathOfQuasimorph.Core
             int maxTraitsInclusive = (int)Math.Ceiling(Max * maxTraits);
 
             // For fixed values, min and max traits will be the same
-            return _random.Next(minTraits, maxTraitsInclusive + 1);
+            return Helpers._random.Next(minTraits, maxTraitsInclusive + 1);
         }
 
         // Traits
+        [Obsolete]
         private void ApplyTraits(ref BasePickupItem item, ItemRarity itemRarity, ItemTraitType itemTraitType, CompositeItemRecord compositeItemRecord)
         {
             var traitsForItemType = GetAddeableTraits(itemTraitType);
@@ -1123,6 +1128,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        [Obsolete]
         internal void ApplyTraits(ref BasePickupItem item)
         {
             var wrapper = MagnumProjectWrapper.SplitItemUid(item.Id);
@@ -1154,6 +1160,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        [Obsolete]
         private static Dictionary<string, ItemTraitRecord> GetAddeableTraits(ItemTraitType itemTraitType)
         {
             Dictionary<string, ItemTraitRecord> addeableTraits = new Dictionary<string, ItemTraitRecord>();
@@ -1169,6 +1176,7 @@ namespace QM_PathOfQuasimorph.Core
             return addeableTraits;
         }
 
+        [Obsolete]
         private static Dictionary<string, MagnumProjectParameter> GetEditableParameters(MagnumProjectType projectType)
         {
             // Get magnum_projects_params that we can edit for that projectType
@@ -1225,18 +1233,34 @@ namespace QM_PathOfQuasimorph.Core
             return shuffled;
         }
 
+        internal static void AddAffixes(string itemId)
+        {
+            var wrapper = MagnumProjectWrapper.SplitItemUid(itemId);
+            var digitInfo = DigitInfo.GetDigits(wrapper.FinishTime.Ticks);
+            var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId, digitInfo.BoostedParam);
+
+
+            UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
+                affix[0].Text, "",
+                wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+
+            UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
+                "", affix[1].Text,
+                wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+        }
+
         internal static void AddAffixes(MagnumProject magnumProject)
         {
             // Add affixes for localization data.
             // English as of time being.
 
-            var magnumProjectWrapper = new MagnumProjectWrapper(magnumProject);
-            _logger.LogWarning($"AddAffixes for {magnumProjectWrapper.ReturnItemUid()}.");
+            var wrapper = new MagnumProjectWrapper(magnumProject);
+            _logger.LogWarning($"AddAffixes for {wrapper.ReturnItemUid()}.");
 
-            if (magnumProjectWrapper.PoqItem)
+            if (wrapper.PoqItem)
             {
                 var digitInfo = DigitInfo.GetDigits(magnumProject.FinishTime.Ticks);
-                var affix = AffixManager.GetAffix(magnumProjectWrapper.RarityClass, magnumProject, digitInfo.BoostedParam);
+                var affix = AffixManager.GetAffix(wrapper.RarityClass, magnumProject, digitInfo.BoostedParam);
 
                 // We got id.name now.
                 if (affix == null || affix.Count != 2)
@@ -1252,18 +1276,18 @@ namespace QM_PathOfQuasimorph.Core
                 // We do it here because this method fires earlier than we actually inject item record.
                 //// Since Localization.DuplicateKey just copies key and nothing else, it will do same in inject item record method.
 
-                //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".name", "item." + magnumProjectWrapper.ReturnItemUid() + ".name");
-                //Localization.DuplicateKey("item." + magnumProjectWrapper.Id + ".shortdesc", "item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc");
+                //Localization.DuplicateKey("item." + wrapper.Id + ".name", "item." + wrapper.ReturnItemUid() + ".name");
+                //Localization.DuplicateKey("item." + wrapper.Id + ".shortdesc", "item." + wrapper.ReturnItemUid() + ".shortdesc");
 
-                //_logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {magnumProjectWrapper.ReturnItemUid()}");
+                //_logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {wrapper.ReturnItemUid()}");
 
                 // Problem, on game load it doesn't have effect.
-                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".name",
+                UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
                     affix[0].Text, "",
-                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.UnusedData2);
-                UpdateKey("item." + magnumProjectWrapper.ReturnItemUid() + ".shortdesc",
+                    wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+                UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
                     "", affix[1].Text,
-                    magnumProjectWrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+                    wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
             }
         }
 
@@ -1301,7 +1325,40 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        public void Apply<T>(Action<T> setter, Func<T> getter, float modifier, bool increase, out float oldValue, out float newValue) where T : struct // ensure T is a non-nullable value type
+        {
+            T value = getter();
+            oldValue = Convert.ToSingle(value); // Safe cast to float
+            ApplyModifier(ref value, modifier, increase, out _, out newValue);
+            setter(value);
+        }
 
+        public void ApplyModifier<T>(ref T value, float finalModifier, bool increase, out float outOldValue, out float outNewValue) where T : struct // ensure T is a non-nullable value type
+        {
+            outOldValue = (float)Convert.ChangeType(value, typeof(float));
 
+            float tempValue = outOldValue;
+            tempValue = increase ? tempValue * finalModifier : tempValue / finalModifier;
+
+            if (typeof(T) == typeof(int))
+            {
+                tempValue = (float)Math.Ceiling(tempValue);
+            }
+
+            if (value is int intValue)
+            {
+                value = (T)Convert.ChangeType((int)tempValue, typeof(T));
+            }
+            else if (value is float)
+            {
+                value = (T)Convert.ChangeType(tempValue, typeof(T));
+            }
+            else
+            {
+                Plugin.Logger.Log($"Unsupported type: {typeof(T)}, {nameof(value)}");
+            }
+
+            outNewValue = tempValue;
+        }
     }
 }

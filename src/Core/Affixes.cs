@@ -89,6 +89,107 @@ namespace QM_PathOfQuasimorph.Core
             return affixes.ToArray();
         }
 
+
+        internal static List<Affix> GetAffix(ItemRarity rarityClass, string itemId, int boostedParam)
+        {
+            _logger.Log($"GetAffix :: NonProject");
+
+            var affixRarityTypeToLookFor = (AffixRarityType)rarityClass;
+            AffixCategory affixCategoryLookFor = AffixCategory.None;
+            var affixesList = new List<Affix>();
+            string itemClass = string.Empty;
+            string parameter = PathOfQuasimorph.itemRecordsControllerPoq.GetItemBoostedStat(itemId, boostedParam);
+
+            _logger.Log($"parameter {parameter}");
+
+            CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(itemId, true) as CompositeItemRecord;
+            Type recordType = compositeItemRecord.PrimaryRecord.GetType();
+
+            switch (recordType.Name)
+            {
+                case nameof(WeaponRecord):
+                    if (((WeaponRecord)compositeItemRecord.PrimaryRecord).IsMelee)
+                    {
+                        itemClass = ((WeaponRecord)compositeItemRecord.PrimaryRecord).WeaponClass.ToString();
+                    }
+                    else
+                    {
+                        itemClass = ((WeaponRecord)compositeItemRecord.PrimaryRecord).WeaponSubClass.ToString();
+                    }
+                    affixCategoryLookFor = AffixCategory.Weapon;
+                    break;
+
+                case nameof(ArmorRecord):
+                    affixCategoryLookFor = AffixCategory.Armor;
+                    itemClass = ((ArmorRecord)compositeItemRecord.PrimaryRecord).ArmorClass.ToString();
+
+                    break;
+                case nameof(HelmetRecord):
+                    affixCategoryLookFor = AffixCategory.Armor;
+                    itemClass = ((HelmetRecord)compositeItemRecord.PrimaryRecord).ArmorClass.ToString();
+
+                    break;
+                case nameof(LeggingsRecord):
+                    affixCategoryLookFor = AffixCategory.Armor;
+                    itemClass = ((LeggingsRecord)compositeItemRecord.PrimaryRecord).ArmorClass.ToString();
+
+                    break;
+                case nameof(BootsRecord):
+                    affixCategoryLookFor = AffixCategory.Armor;
+                    itemClass = ((BootsRecord)compositeItemRecord.PrimaryRecord).ArmorClass.ToString();
+                    break;
+                default:
+                    break;
+            }
+
+            _logger.Log($"Selected AffixCategory: {affixCategoryLookFor}, AffixRarity: {affixRarityTypeToLookFor}, Class: {itemClass}");
+
+            if (affixCategoryLookFor == AffixCategory.None)
+            {
+                _logger.Log("AffixCategory is None, returning null.");
+                return null;
+            }
+
+            _logger.Log($"affixes.Length {affixes.Length}");
+
+            if (affixes.Length > 0)
+            {
+                // Filter affixes by rarity and project type and prefixes, suffixes
+                var matchingPrefixes = affixes
+                    .Where(affix => affix.AffixCategory == affixCategoryLookFor &&
+                           affix.AffixType == AffixType.Prefix &&
+                           affix.AffixRarityType == affixRarityTypeToLookFor &&
+                           affix.Class == itemClass)
+                    .ToList();
+
+                var matchingSuffixes = affixes
+                    .Where(affix => affix.AffixRarityType == affixRarityTypeToLookFor &&
+                                    affix.AffixCategory == affixCategoryLookFor &&
+                                    affix.AffixType == AffixType.Suffix &&
+                                    affix.Parameter == parameter
+                                    )
+                    .ToList();
+
+                _logger.Log($"MatchingPrefixes count: {matchingPrefixes.Count}, MatchingSuffixes count: {matchingSuffixes.Count}");
+
+                if (matchingPrefixes.Count >= 1 && matchingSuffixes.Count >= 1)
+                {
+                    affixesList.Add(matchingPrefixes[0]);
+                    _logger.Log($"Added Prefix: {matchingPrefixes[0]}");
+                    affixesList.Add(matchingSuffixes[0]); // There will be only one suffix anyway.
+                    _logger.Log($"Added Suffix: {matchingSuffixes[0]}");
+
+                    return affixesList;
+                }
+
+                _logger.Log("No matching affixes found.");
+            }
+
+            return null; // Return null if no matching affix is found
+
+        }
+
+        [Obsolete]
         internal static List<Affix> GetAffix(ItemRarity rarityClass, MagnumProject magnumProject, int BoostedParam)
         {
             var affixRarityTypeToLookFor = (AffixRarityType)rarityClass;

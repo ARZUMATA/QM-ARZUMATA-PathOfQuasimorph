@@ -15,7 +15,8 @@ namespace QM_PathOfQuasimorph.Core
             public DateTime StartTime { get; set; }
             public DateTime FinishTime { get; set; }
             public bool PoqItem { get; set; }
-
+            public bool SerializedStorage { get; set; }
+            
             public MagnumProjectWrapper(MagnumProject newProject)
             {
                 // Generate metadata
@@ -71,6 +72,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 var digitinfo = DigitInfo.GetDigits(finishTime.Ticks);
                 this.RarityClass = (ItemRarity)digitinfo.Rarity;
+                this.SerializedStorage = digitinfo.IsSerialized;
                 //this.Rarity = RarityClass.ToString().ToLower();
                 this.StartTime = startTime;
                 this.FinishTime = finishTime;
