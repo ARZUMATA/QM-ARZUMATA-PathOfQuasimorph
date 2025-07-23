@@ -1,6 +1,7 @@
-﻿using System;
-using System.Net;
-using MGSC;
+﻿using MGSC;
+using System;
+using System.Runtime.CompilerServices;
+using static Rewired.Demos.GamepadTemplateUI.GamepadTemplateUI;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -10,43 +11,34 @@ namespace QM_PathOfQuasimorph.Core
         {
             public string Id { get; set; }
             public string CustomId { get; set; }
-            //public string Rarity { get; set; }
             public ItemRarity RarityClass { get; set; }
             public DateTime StartTime { get; set; }
             public DateTime FinishTime { get; set; }
             public bool PoqItem { get; set; }
             public bool SerializedStorage { get; set; }
-            
+
             public MagnumProjectWrapper(MagnumProject newProject)
             {
                 // Generate metadata
                 this.Id = newProject.DevelopId;
 
                 // This is our project based on time.
-                if (MagnumPoQProjectsController.IsPoqProject(newProject))
-                {
-                    PoqItem = true;
-                }
-                else
-                {
-                    PoqItem = false;
-                }
+                this.PoqItem = IsPoqProject(newProject);
 
                 if (PoqItem)
                 {
                     CustomId = $"{Id}_custom_poq";
-                    var digitinfo = DigitInfo.GetDigits(newProject.FinishTime.Ticks);
-                    RarityClass = (ItemRarity)digitinfo.Rarity;
-                    //Rarity = RarityClass.ToString().ToLower();
+                    var digitInfo = DigitInfo.GetDigits(newProject.FinishTime.Ticks);
+                    RarityClass = (ItemRarity)digitInfo.Rarity;
+                    SerializedStorage = digitInfo.IsSerialized;
                     StartTime = newProject.StartTime;
                     FinishTime = newProject.FinishTime;
-
                 }
                 else
                 {
                     CustomId = $"{Id}_custom";
                     RarityClass = ItemRarity.Standard;
-                    //Rarity = RarityClass.ToString().ToLower();
+                    SerializedStorage = false;
                     StartTime = newProject.StartTime;
                     FinishTime = newProject.FinishTime;
                 }
@@ -54,104 +46,234 @@ namespace QM_PathOfQuasimorph.Core
 
             public MagnumProjectWrapper()
             {
-
             }
 
             public MagnumProjectWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime)
             {
                 this.Id = id;
-
-                if (poqItem)
-                {
-                    this.CustomId = $"{id}_custom_poq";
-                }
-                else
-                {
-                    this.CustomId = $"{id}_custom";
-                }
-
-                var digitinfo = DigitInfo.GetDigits(finishTime.Ticks);
-                this.RarityClass = (ItemRarity)digitinfo.Rarity;
-                this.SerializedStorage = digitinfo.IsSerialized;
-                //this.Rarity = RarityClass.ToString().ToLower();
+                this.PoqItem = poqItem;
                 this.StartTime = startTime;
                 this.FinishTime = finishTime;
-                this.PoqItem = poqItem;
+
+                this.CustomId = poqItem ? $"{id}_custom_poq" : $"{id}_custom";
+
+                var digitInfo = DigitInfo.GetDigits(finishTime.Ticks);
+                this.RarityClass = (ItemRarity)digitInfo.Rarity;
+                this.SerializedStorage = digitInfo.IsSerialized;
             }
 
             public string ReturnItemUid(bool originalId = false)
             {
                 if (originalId)
                 {
-                    return $"{this.Id}";
+                    return Id;
                 }
 
-                if (PoqItem)
+                if (!PoqItem)
                 {
-                    return $"{this.CustomId}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
-                    //return $"{this.CustomId}_{this.Rarity}_{this.StartTime.Ticks.ToString()}_{this.FinishTime.Ticks.ToString()}";
+                    return CustomId;
                 }
-                else
-                {
-                    return $"{this.CustomId}";
-                }
+
+                return $"{CustomId}_{StartTime.Ticks}_{FinishTime.Ticks}";
             }
 
-            public static string GetPoqItemId(MagnumProject newProject)
+            // Avoid object creation — fast path
+            public static string GetPoqItemId(MagnumProject project)
             {
-                // Check our project, detect if it has metadata we injected.
-                return new MagnumProjectWrapper(newProject).ReturnItemUid();
+                var id = project.DevelopId;
+                var isPoq = IsPoqProject(project);
+
+                if (!isPoq)
+                    return $"{id}_custom";
+
+                var startTime = project.StartTime;
+                var finishTime = project.FinishTime;
+                return $"{id}_custom_poq_{startTime.Ticks}_{finishTime.Ticks}";
             }
 
+            // Lightweight checkers — no object allocation
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsPoqItemUid(string uid)
+            {
+                return uid?.Contains("_custom_poq") == true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryGetRarityClass(string uid, out ItemRarity rarity)
+            {
+                if (IsPoqItemUid(uid))
+                {
+                    var parts = uid.Split('_');
+                    if (parts.Length >= 7)
+                    {
+                        var finishStr = parts[parts.Length - 1];
+                        if (long.TryParse(finishStr, out long finishTicks))
+                        {
+                            var digitInfo = DigitInfo.GetDigits(finishTicks);
+                            rarity = (ItemRarity)digitInfo.Rarity;
+                            return true;
+                        }
+                    }
+                }
+
+                rarity = ItemRarity.Standard;
+                return false;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryGetStartTime(string uid, out DateTime startTime)
+            {
+                startTime = default(DateTime);
+                if (!IsPoqItemUid(uid)) return false;
+
+                var parts = uid.Split('_');
+                if (parts.Length >= 7)
+                {
+                    var startStr = parts[parts.Length - 2];
+                    if (long.TryParse(startStr, out long ticks))
+                    {
+                        startTime = new DateTime(ticks);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryGetFinishTime(string uid, out DateTime finishTime)
+            {
+                finishTime = default(DateTime);
+                if (!IsPoqItemUid(uid)) return false;
+
+                var parts = uid.Split('_');
+                if (parts.Length >= 6)
+                {
+                    var finishStr = parts[parts.Length - 1];
+                    if (long.TryParse(finishStr, out long ticks))
+                    {
+                        finishTime = new DateTime(ticks);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryGetSerializedStorage(string uid, out bool isSerialized)
+            {
+                isSerialized = false;
+                if (!IsPoqItemUid(uid)) return false;
+
+                if (TryGetFinishTime(uid, out var finishTime))
+                {
+                    var digitInfo = DigitInfo.GetDigits(finishTime.Ticks);
+                    isSerialized = digitInfo.IsSerialized;
+                    return true;
+                }
+
+                return false;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryGetBaseId(string uid, out string baseId)
+            {
+                if (uid == null)
+                {
+                    baseId = null;
+                    return false;
+                }
+
+                baseId = uid.Contains("_custom_poq")
+                    ? uid.Substring(0, uid.IndexOf("_custom_poq"))
+                    : uid.Replace("_custom", "");
+
+                return !string.IsNullOrEmpty(baseId);
+            }
+
+            // Reuse existing logic safely, only instantiate when necessary
             public static MagnumProjectWrapper SplitItemUid(string uid)
             {
-                // trucker_pistol_1_custom_poq_quantum_1337_808576342000005
+                if (string.IsNullOrEmpty(uid)) return null;
 
-                // This is used for dynamic item creation during CreateForInventory
-                if (uid.Contains("_poq_"))
+                if (IsPoqItemUid(uid))
                 {
-                    var splittedUid = uid.Split(new string[] { "_poq_" }, StringSplitOptions.None);
-                    /* Two parts:
-                     * First:
-                     * trucker_pistol_1_custom
-                     * _poq_
-                     * Second:
-                     * quantum_1337_808576342000005
-                     * */
+                    var idx = uid.IndexOf("_custom_poq");
+                    if (idx <= 0) return null;
 
-                    var realId = splittedUid[0].Replace("_custom", string.Empty); // Real Base item ID
-                    var suffixParts = splittedUid[1].Split('_'); // T_T
+                    var realId = uid.Substring(0, idx);
+                    var suffix = uid.Substring(idx + "_custom_poq_".Length);
+                    var suffixParts = suffix.Split('_');
 
-                    /* 
-                    * quantum
-                    * 1337
-                    * 808576342000005
-                    */
-
-                    //  string id, bool poqItem, ItemRarity rarityClass, DateTime startTime, DateTime finishTime)
-                    var wrapper = new MagnumProjectWrapper(
-                        id: realId,
-                        poqItem: true,
-                        startTime: new DateTime(Int64.Parse(suffixParts[0])),
-                        finishTime: new DateTime(Int64.Parse(suffixParts[1]))
+                    if (suffixParts.Length >= 2 &&
+                        long.TryParse(suffixParts[0], out long startTicks) &&
+                        long.TryParse(suffixParts[1], out long finishTicks))
+                    {
+                        return new MagnumProjectWrapper(
+                            id: realId,
+                            poqItem: true,
+                            startTime: new DateTime(startTicks),
+                            finishTime: new DateTime(finishTicks)
                         );
-
-                    return wrapper;
+                    }
                 }
 
-                var realBaseId2 = uid.Replace("_custom", string.Empty); // Real Base item ID
-                var customId2 = realBaseId2 + "_custom"; // Custom ID
-
+                // Handle non-PoQ item
+                var baseId = uid.Replace("_custom", "");
                 return new MagnumProjectWrapper
                 {
-                    Id = realBaseId2,
-                    CustomId = customId2,
-                    //Rarity = "Standard",
+                    Id = baseId,
+                    CustomId = uid,
                     RarityClass = ItemRarity.Standard,
                     StartTime = DateTime.MinValue,
                     FinishTime = DateTime.MinValue,
-                    PoqItem = false
+                    PoqItem = false,
+                    SerializedStorage = false
                 };
+            }
+
+            // Static helper to detect project type without allocation
+            public static bool IsPoqProject(MagnumProject project)
+            {
+                // We can actually have rarity of any kind
+                //return DigitInfo.GetDigits(project.FinishTime.Ticks).Rarity > 0;
+                if (project.StartTime.Ticks == MAGNUM_PROJECT_START_TIME && project.FinishTime.Ticks > 0)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static ItemRarity GetRarityClass(string uid)
+            {
+                if (TryGetFinishTime(uid, out var finishTime))
+                {
+                    return DigitInfo.GetRarityClass(finishTime.Ticks);
+                }
+                return ItemRarity.Standard;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsSerializedStorage(string uid)
+            {
+                return TryGetFinishTime(uid, out var finish) &&
+                       DigitInfo.IsSerializedStorage(finish.Ticks);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsSerializedStorage(long ticks)
+            {
+                return DigitInfo.IsSerializedStorage(ticks);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static int GetBoostedParam(string uid)
+            {
+                return TryGetFinishTime(uid, out var finish)
+                    ? DigitInfo.GetBoostedParam(finish.Ticks)
+                    : 0;
             }
         }
     }
