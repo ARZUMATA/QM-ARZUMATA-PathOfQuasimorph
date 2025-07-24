@@ -57,6 +57,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             float averageResist = 0;
             int resistCount = 0;
             var resistSheet = itemRecord.ResistSheet;
+            bool averageResistApplied = false;
 
             _logger.Log($"\t\t\t\t itemRecord null {itemRecord == null}");
             _logger.Log($"\t\t\t\t resistSheet null {resistSheet == null}");
@@ -85,8 +86,28 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 {
                     var resistName = stat.Split('_')[1];
                     var resistValue = itemRecord.GetResist(resistName);
-                    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref resistValue, finalModifier, increase, out outOldValue, out outNewValue);
-                    itemRecord.SetResist(resistName, outNewValue);
+
+                    if (resistValue == 0)
+                    {
+                        if (averageResistApplied == false)
+                        {
+                            // Roll random
+                            var canApply = Helpers._random.Next(0, 100 + 1) < RaritySystem.AVERAGE_RESIST_APPLY_CHANCE;
+
+                            if (canApply)
+                            {
+                                _logger.Log($"\t\t\t Resist with defaultValue {resistValue}, setting to {averageResist} (averageResist)");
+                                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref averageResist, finalModifier, increase, out outOldValue, out outNewValue);
+                                itemRecord.SetResist(resistName, averageResist);
+                                averageResistApplied = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref resistValue, finalModifier, increase, out outOldValue, out outNewValue);
+                        itemRecord.SetResist(resistName, outNewValue);
+                    }
                 }
                 else
                 {
