@@ -29,7 +29,8 @@ namespace QM_PathOfQuasimorph.Core
             MaxDepth = 10,
         };
 
-        internal AugmentationRecordControllerPoq augmentationRecordControllerPoq;
+        internal AugmentationRecordProcessorPoq augmentationRecordProcessorPoq;
+        internal ImplantRecordProcessorPoq implantRecordProcessorPoq;
         internal WeaponRecordProcessorPoq weaponRecordProcessorPoq;
         internal HelmetRecordProcessorPoq helmetRecordProcessorPoq;
         internal ArmorRecordProcessorPoq armorRecordProcessorPoq;
@@ -43,7 +44,8 @@ namespace QM_PathOfQuasimorph.Core
 
         internal ItemRecordsControllerPoq()
         {
-            augmentationRecordControllerPoq = new AugmentationRecordControllerPoq(this);
+            augmentationRecordProcessorPoq = new AugmentationRecordProcessorPoq(this);
+            implantRecordProcessorPoq = new ImplantRecordProcessorPoq(this);
             weaponRecordProcessorPoq = new WeaponRecordProcessorPoq(this);
             helmetRecordProcessorPoq = new HelmetRecordProcessorPoq(this);
             armorRecordProcessorPoq = new ArmorRecordProcessorPoq(this);
@@ -62,8 +64,11 @@ namespace QM_PathOfQuasimorph.Core
 
             if (itemRarity == ItemRarity.Standard)
             {
-                return itemId;
+                //return itemId;
             }
+
+            //debug
+            itemRarity = ItemRarity.Standard;
 
             if (!PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemId))
             {
@@ -113,7 +118,7 @@ namespace QM_PathOfQuasimorph.Core
             foreach (var recordEntry in recordsList)
             {
                 // Replace Id since we have new one now
-                recordEntry.Id = itemId;
+                //recordEntry.Id = itemId;
                 _logger.Log($"record test {recordEntry.Id}");
                 Data.Items.AddRecord(itemId, recordEntry);
             }
@@ -123,13 +128,15 @@ namespace QM_PathOfQuasimorph.Core
                 _logger.Log($"old record test {recordEntry.Id}");
             }
 
+            Data.Items._records.Add(itemId, obj);
+
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(itemId)}");
             _logger.Log($"oldId {Data.Items._records.Keys.Contains(oldId)}");
 
             RaritySystem.AddAffixes(itemId);
 
             // Also add records entry in our dummy magnum project placeholder
-            PathOfQuasimorph.magnumProjectsController.AddItemRecord(itemId, recordsList, _jsonSettings);
+            PathOfQuasimorph.magnumProjectsController.AddItemRecord(itemId, obj, _jsonSettings);
 
             return itemId;
         }
@@ -176,7 +183,9 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (weaponRecord != null)
                 {
-                    WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
+                    _logger.Log($"weaponRecord processing");
+
+                    WeaponRecord weaponRecordNew = weaponRecord.Clone($"*{itemId}");
                     weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = weaponRecordProcessorPoq.ProcessRecord();
                     recordsList.Add(weaponRecordNew);
@@ -186,6 +195,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (helmetRecord != null)
                 {
+                    _logger.Log($"helmetRecord processing");
+
                     HelmetRecord helmetRecordNew = helmetRecord.Clone(itemId);
                     helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = helmetRecordProcessorPoq.ProcessRecord();
@@ -196,6 +207,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (armorRecord != null)
                 {
+                    _logger.Log($"armorRecord processing");
+
                     ArmorRecord armorRecordNew = armorRecord.Clone(itemId);
                     armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = armorRecordProcessorPoq.ProcessRecord();
@@ -206,6 +219,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (leggingsRecord != null)
                 {
+                    _logger.Log($"leggingsRecord processing");
+
                     LeggingsRecord leggingsRecordNew = leggingsRecord.Clone(itemId);
                     leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = leggingsRecordProcessorPoq.ProcessRecord();
@@ -217,6 +232,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (bootsRecord != null)
                 {
+                    _logger.Log($"bootsRecord processing");
+
                     BootsRecord bootsRecordNew = bootsRecord.Clone(itemId);
                     bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = bootsRecordProcessorPoq.ProcessRecord();
@@ -230,83 +247,35 @@ namespace QM_PathOfQuasimorph.Core
                     //breakableItemRecord.Unbreakable;
                 }
 
-                //else
-                //{
-                //    ArmorRecord armorRecord = basePickupItemRecord as ArmorRecord;
-                //    if (armorRecord != null)
-                //    {
-                //        ArmorRecord armorRecord2 = armorRecord.Clone(text);
-                //        Data.Items.AddRecord(text, armorRecord2);
-                //        project.ApplyModifications(armorRecord2);
-                //    }
-                //    else
-                //    {
-                //        HelmetRecord helmetRecord = basePickupItemRecord as HelmetRecord;
-                //        if (helmetRecord != null)
-                //        {
-                //            HelmetRecord helmetRecord2 = helmetRecord.Clone(text);
-                //            Data.Items.AddRecord(text, helmetRecord2);
-                //            project.ApplyModifications(helmetRecord2);
-                //        }
-                //        else
-                //        {
-                //            LeggingsRecord leggingsRecord = basePickupItemRecord as LeggingsRecord;
-                //            if (leggingsRecord != null)
-                //            {
-                //                LeggingsRecord leggingsRecord2 = leggingsRecord.Clone(text);
-                //                Data.Items.AddRecord(text, leggingsRecord2);
-                //                project.ApplyModifications(leggingsRecord2);
-                //            }
-                //            else
-                //            {
-                //                BootsRecord bootsRecord = basePickupItemRecord as BootsRecord;
-                //                if (bootsRecord != null)
-                //                {
-                //                    BootsRecord bootsRecord2 = bootsRecord.Clone(text);
-                //                    Data.Items.AddRecord(text, bootsRecord2);
-                //                    project.ApplyModifications(bootsRecord2);
-                //                }
-                //
-                //                var itemRecord = rec as WeaponRecord;
-                //                Console.WriteLine($"itemRecord != null {itemRecord != null}");
-                //
-                //                if (itemRecord != null)
-                //                {
-                //                    Console.WriteLine($"itemRecord id: {itemRecord.Id}");
-                //
-                //                    //itemRecord.Id = $"{itemId}";
-                //                    WeaponRecord weaponRecord2 = shotgunAUGWP;// itemRecord.Clone($"*{itemId}");
-                //                    Data.Items.AddRecord(itemId, weaponRecord2);
-                //                }
-                //
-                //                var augmentationRecord = rec as AugmentationRecord;
-                //                Console.WriteLine($"augmentationRecord != null {augmentationRecord != null}");
-                //
-                //                if (augmentationRecord != null)
-                //                {
-                //                    Console.WriteLine($"augmentationRecord id: {augmentationRecord.Id}");
-                //
-                //                    AugmentationRecord augmentationRecord2 = AugmentationRecordHelper.CloneAugmentationRecord(augmentationRecord, itemId);
-                //                    //augmentationRecord2.Id = oldId;
-                //                    //augmentationRecord.Id = $"{itemId}";
-                //                    Data.Items.AddRecord(itemId, augmentationRecord2);
-                //
-                //                    //AugmentationRecord augmentationRecord2 = new AugmentationRecord
-                //                    //{
-                //                    //    Id = oldId,
-                //                    //};
-                //
-                //
-                //                }
+                ImplantRecord implantRecord = basePickupItemRecord as ImplantRecord;
+
+                if (implantRecord != null)
+                {
+                    if (implantRecord.IsActive == false)
+                    {
+                        _logger.Log($"implantRecord processing");
+
+                        ImplantRecord implantRecordNew = ItemRecordHelpers.CloneImplantRecord(implantRecord, itemId);
+                        implantRecordProcessorPoq.Init(implantRecordNew, itemRarity, mobRarityBoost);
+                        boostedStat = bootsRecordProcessorPoq.ProcessRecord();
+                        recordsList.Add(implantRecordNew);
+                    }
+                }
+
+                AugmentationRecord augmentationRecord = basePickupItemRecord as AugmentationRecord;
+
+                if (augmentationRecord != null)
+                {
+                    _logger.Log($"augmentationRecord processing");
+
+                    AugmentationRecord augmentationRecordNew = ItemRecordHelpers.CloneAugmentationRecord(augmentationRecord, itemId);
+                    augmentationRecordProcessorPoq.Init(augmentationRecordNew, itemRarity, mobRarityBoost);
+                    boostedStat = bootsRecordProcessorPoq.ProcessRecord();
+                    recordsList.Add(augmentationRecordNew);
+                }
             }
 
-
-
-
-
             return boostedStat;
-
-
         }
 
 
@@ -402,10 +371,10 @@ namespace QM_PathOfQuasimorph.Core
             // Blacklist some items
             List<string> blacklistedCategories = new List<string>
                 {
-                    "Possessed",
-                    "CyberAug",
-                    "PossessedAug",
-                    "QuasiAug",
+                    //"Possessed",
+                    //"CyberAug",
+                    //"PossessedAug",
+                    //"QuasiAug",
                     "none"
                 };
 
@@ -415,6 +384,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 Type recordType = rec.GetType();
                 bool checkWeaponRecord = false;
+                bool checkAugmentationRecord = false;
 
                 switch (recordType.Name)
                 {
@@ -427,7 +397,8 @@ namespace QM_PathOfQuasimorph.Core
                     case nameof(BootsRecord):
                         break;
                     case nameof(AugmentationRecord):
-                        canProcess = false;
+                        checkAugmentationRecord = true;
+                        //canProcess = false;
                         break;
                     default:
                         canProcess = false;
@@ -437,6 +408,19 @@ namespace QM_PathOfQuasimorph.Core
                 if (checkWeaponRecord)
                 {
                     var weaponRecord = rec as WeaponRecord;
+
+
+
+
+
+
+
+
+
+
+
+
+
                     if (weaponRecord != null)
                     {
                         //_logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
@@ -459,6 +443,29 @@ namespace QM_PathOfQuasimorph.Core
 
                         //_logger.Log($"\t\t\t ItemClass {weaponRecord.ItemClass}");
                         //_logger.Log($"\t\t\t WeaponClass {weaponRecord.WeaponClass}");
+                    }
+                }
+
+                if (checkAugmentationRecord)
+                {
+                    var augmentationRecord = rec as AugmentationRecord;
+                    if (augmentationRecord != null)
+                    {
+
+                        _logger.Log($"InventorySortOrder {augmentationRecord.InventorySortOrder}");
+                        _logger.Log($"ContentDescriptor {augmentationRecord.ContentDescriptor.name}");
+                        _logger.Log($"ContentDescriptor {augmentationRecord.ContentDescriptor.hideFlags}");
+                        _logger.Log($"ItemClass {augmentationRecord.ItemClass}");
+                        _logger.Log($"ItemDesc {augmentationRecord.ItemDesc.name}");
+                        _logger.Log($"ItemDesc {augmentationRecord.ItemDesc.Icon}");
+                        _logger.Log($"ItemDesc {augmentationRecord.ItemDesc.SmallIcon}");
+                        _logger.Log($"ItemDesc {augmentationRecord.ItemDesc}");
+                        _logger.Log($"ItemDesc {augmentationRecord.ItemDesc}");
+
+
+
+
+
                     }
                 }
             }

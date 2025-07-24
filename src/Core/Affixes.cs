@@ -94,6 +94,12 @@ namespace QM_PathOfQuasimorph.Core
         {
             _logger.Log($"GetAffix :: NonProject");
 
+            if (boostedParam == 99)
+            {
+                _logger.Log("boostedParam == 99, returning null.");
+                return null;
+            }
+
             var affixRarityTypeToLookFor = (AffixRarityType)rarityClass;
             AffixCategory affixCategoryLookFor = AffixCategory.None;
             var affixesList = new List<Affix>();
