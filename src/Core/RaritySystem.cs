@@ -1239,6 +1239,10 @@ namespace QM_PathOfQuasimorph.Core
             var digitInfo = DigitInfo.GetDigits(wrapper.FinishTime.Ticks);
             var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId, digitInfo.BoostedParam);
 
+            if (affix == null)
+            {
+                return;
+            }
 
             UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
                 affix[0].Text, "",

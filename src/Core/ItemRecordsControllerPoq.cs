@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static UnityEngine.Rendering.Universal.TemporalAA;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -18,7 +19,9 @@ namespace QM_PathOfQuasimorph.Core
         private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Include,
             Formatting = Formatting.Indented,
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
             ContractResolver = new DataSerializerHelper.CompositeItemRecordResolver(),
             MaxDepth = 10,
         };
@@ -65,9 +68,9 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             CompositeItemRecord obj = Data.Items.GetRecord(itemId) as CompositeItemRecord;
-            var recordsList = new List<BasePickupItemRecord>(obj.Records);
+            var recordsList = new List<BasePickupItemRecord>();
 
-            var boostedParamIndex = ApplyRarityStats(recordsList, itemRarity, mobRarityBoost);
+            var boostedParamIndex = ApplyRarityStats(recordsList, obj.Records, itemRarity, mobRarityBoost, itemId);
 
             // Generate a new UID
             var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();
@@ -112,6 +115,11 @@ namespace QM_PathOfQuasimorph.Core
                 Data.Items.AddRecord(itemId, recordEntry);
             }
 
+            foreach (var recordEntry in obj.Records)
+            {
+                _logger.Log($"old record test {recordEntry.Id}");
+            }
+
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(itemId)}");
             _logger.Log($"oldId {Data.Items._records.Keys.Contains(oldId)}");
 
@@ -146,16 +154,18 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private int ApplyRarityStats(List<BasePickupItemRecord> recordsList, ItemRarity itemRarity, bool mobRarityBoost)
+        private int ApplyRarityStats(List<BasePickupItemRecord> recordsList, List<BasePickupItemRecord> records, ItemRarity itemRarity, bool mobRarityBoost, string itemId)
         {
             _logger.Log($"ApplyRarityStats");
             int boostedStat = 99;
 
             // Iterate over item records, apply parameters, return ready to go item record.
 
-            _logger.Log($"Iterating records list with count of {recordsList.Count}");
+            _logger.Log($"Iterating records list with count of {records.Count}");
 
-            foreach (BasePickupItemRecord basePickupItemRecord in recordsList)
+            /* itemId stays as original here as we need to determine new id later on */
+
+            foreach (BasePickupItemRecord basePickupItemRecord in records)
             {
                 _logger.Log($"record: {basePickupItemRecord.Id}");
 
@@ -163,41 +173,51 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (weaponRecord != null)
                 {
-                    weaponRecordProcessorPoq.Init(weaponRecord, itemRarity, mobRarityBoost);
+                    WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
+                    weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = weaponRecordProcessorPoq.ProcessRecord();
+                    recordsList.Add(weaponRecordNew);
                 }
 
                 HelmetRecord helmetRecord = basePickupItemRecord as HelmetRecord;
 
                 if (helmetRecord != null)
                 {
-                    helmetRecordProcessorPoq.Init(helmetRecord, itemRarity, mobRarityBoost);
+                    HelmetRecord helmetRecordNew = helmetRecord.Clone(itemId);
+                    helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = helmetRecordProcessorPoq.ProcessRecord();
+                    recordsList.Add(helmetRecordNew);
                 }
-
 
                 ArmorRecord armorRecord = basePickupItemRecord as ArmorRecord;
 
                 if (armorRecord != null)
                 {
-                    armorRecordProcessorPoq.Init(armorRecord, itemRarity, mobRarityBoost);
+                    ArmorRecord armorRecordNew = armorRecord.Clone(itemId);
+                    armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = armorRecordProcessorPoq.ProcessRecord();
+                    recordsList.Add(armorRecordNew);
                 }
-             
+
                 LeggingsRecord leggingsRecord = basePickupItemRecord as LeggingsRecord;
 
                 if (leggingsRecord != null)
                 {
-                    leggingsRecordProcessorPoq.Init(leggingsRecord, itemRarity, mobRarityBoost);
+                    LeggingsRecord leggingsRecordNew = leggingsRecord.Clone(itemId);
+                    leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = leggingsRecordProcessorPoq.ProcessRecord();
+                    recordsList.Add(leggingsRecordNew);
+
                 }
 
                 BootsRecord bootsRecord = basePickupItemRecord as BootsRecord;
 
                 if (bootsRecord != null)
                 {
-                    bootsRecordProcessorPoq.Init(bootsRecord, itemRarity, mobRarityBoost);
+                    BootsRecord bootsRecordNew = bootsRecord.Clone(itemId);
+                    bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost);
                     boostedStat = bootsRecordProcessorPoq.ProcessRecord();
+                    recordsList.Add(bootsRecordNew);
                 }
 
                 BreakableItemRecord breakableItemRecord = basePickupItemRecord as BreakableItemRecord;

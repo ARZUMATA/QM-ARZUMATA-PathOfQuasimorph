@@ -95,6 +95,14 @@ public static class DataSerializerHelper
                 property.ShouldSerialize = _ => true;
             }
 
+            // Explicitly include ResistSheet
+            else if (property.PropertyName == "ResistSheet")
+            {
+                property.ShouldSerialize = _ => true;
+                property.Ignored = false;
+                property.Readable = true;
+                property.Writable = true; // Ensure it can be set
+            }
             // Explicitly exclude problematic properties
             else if (property.PropertyName == "ItemDesc" ||
                      property.PropertyName == "PrimaryRecord")

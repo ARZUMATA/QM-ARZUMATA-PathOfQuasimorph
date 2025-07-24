@@ -181,7 +181,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (resistDifference != 0)
                 {
-                    var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(Math.Abs(resistDifference).ToString(), resistDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
@@ -230,9 +230,6 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitWeapon(WeaponRecord recordPoq, string genericId, PickupItem item)
         {
-            var component = item.Comp<WeaponComponent>();
-
-            _logger.Log($"component {component == null}");
             _logger.Log($"genericId {genericId}");
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
             bool grenadeLauncher = recordPoq.WeaponClass == WeaponClass.GrenadeLauncher;

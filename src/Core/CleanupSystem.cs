@@ -278,7 +278,7 @@ namespace QM_PathOfQuasimorph.Core
                     foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
                     {
                         var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
-                        _logger.Log($"magnumProjects != null");
+                        _logger.Log($"PoqItem {projectWrapper.PoqItem}, SerializedStorage {projectWrapper.SerializedStorage}");
 
                         if (!projectWrapper.SerializedStorage && projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
                         {

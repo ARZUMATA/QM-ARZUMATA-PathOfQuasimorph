@@ -100,7 +100,7 @@ namespace QM_PathOfQuasimorph.Core
             string itemClass = string.Empty;
             string parameter = PathOfQuasimorph.itemRecordsControllerPoq.GetItemBoostedStat(itemId, boostedParam);
 
-            _logger.Log($"parameter {parameter}");
+            _logger.Log($"itemId: {itemId}, boostedParam: {boostedParam}, parameter: {parameter}");
 
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(itemId, true) as CompositeItemRecord;
             Type recordType = compositeItemRecord.PrimaryRecord.GetType();

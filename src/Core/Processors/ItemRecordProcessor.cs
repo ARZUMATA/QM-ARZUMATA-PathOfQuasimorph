@@ -84,7 +84,9 @@ namespace QM_PathOfQuasimorph.Core.Processors
             if (mobRarityBoost)
             {
                 float mobModifier = baseModifier * PathOfQuasimorph.raritySystem.GetRarityModifier(MobContext.Rarity, PathOfQuasimorph.creaturesControllerPoq._masteryModifiers);
-                _logger.Log($"\t\t mobRarityBoost exist, boosting final modifier from {baseModifier} to {mobModifier}");
+                _logger.Log($"\t\t mobRarityBoost exist, MobContext Rarity: {MobContext.Rarity}, CurrentMobId: {MobContext.CurrentMobId}");
+                _logger.Log($"\t\t boosting final modifier from {baseModifier} to {mobModifier}");
+
                 baseModifier = mobModifier;
             }
 

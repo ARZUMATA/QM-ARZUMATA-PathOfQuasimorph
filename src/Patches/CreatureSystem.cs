@@ -90,7 +90,8 @@ namespace QM_PathOfQuasimorph.Core
                 if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__result.CreatureData.UniqueId) == false)
                 {
 
-
+                    if (MobContext.ProcesingMobRarity)
+                    {
                     PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.Add(__result.CreatureData.UniqueId, creatureDataPoq);
                     __result.CreatureData.UltimateSkullItemId = creatureDataPoq.SerializeDataBase64();
 
@@ -101,6 +102,7 @@ namespace QM_PathOfQuasimorph.Core
                     MobContext.Rarity = CreaturesControllerPoq.MonsterMasteryTier.None;
                     MobContext.CurrentMobId = -1;
                     MobContext.ProcesingMobRarity = false;
+                    }
                 }
             }
         }

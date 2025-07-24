@@ -41,33 +41,35 @@ namespace QM_PathOfQuasimorph.Core
 
             PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
 
+            _logger.Log($"dataPlaceholderProject.UpcomingModifications.Count {dataPlaceholderProject.UpcomingModifications.Count}");
+
             foreach (var keyValuePair in dataPlaceholderProject.UpcomingModifications)
             {
                 _logger.Log($"adding: {keyValuePair.Key}");
+                _logger.Log($"{keyValuePair.Value}");
+
 
                 var deserializedData = DataSerializerHelper.DeserializeData<List<BasePickupItemRecord>>(keyValuePair.Value, jsonSettings);
 
-                foreach(var record in deserializedData)
+                foreach (var record in deserializedData)
                 {
                     Data.Items.AddRecord(keyValuePair.Key, record);
                 }
             }
         }
 
-        public MagnumProject CreateDataHolderProject()
+        public void CreateDataHolderProject()
         {
             // Find and create if required our dataPlaceholderProject
-            PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
-
 
             if (magnumProjects == null)
             {
                 throw new Exception("Magnum project instance missing");
             }
-            
+
             if (dataPlaceholderProject != null)
             {
-                return dataPlaceholderProject;
+                return;
             }
 
             foreach (var project in magnumProjects.Values)
@@ -78,7 +80,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     _logger.Log($"CreateDataHolderProject: IsSerializedStorage");
 
-                    return project;
+                    dataPlaceholderProject = project;
                 }
             }
 
@@ -98,12 +100,11 @@ namespace QM_PathOfQuasimorph.Core
 
             _logger.Log($"randomUidInjected {randomUidInjected}");
             _logger.Log($"IsSerializedStorage {MagnumProjectWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
-            _logger.Log($"dataPlaceholderProject {dataPlaceholderProject.DevelopId}");
 
             MagnumDevelopmentSystem.InjectItemRecord(newProject);
             magnumProjects.Values.Add(newProject);
 
-            return newProject;
+            dataPlaceholderProject = newProject;
         }
 
         [Obsolete]
