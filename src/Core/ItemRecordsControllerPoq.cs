@@ -1,5 +1,6 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using QM_PathOfQuasimorph.Core.Processors;
 using QM_PathOfQuasimorph.PoQHelpers;
 using System;
@@ -22,6 +23,8 @@ namespace QM_PathOfQuasimorph.Core
             NullValueHandling = NullValueHandling.Include,
             Formatting = Formatting.Indented,
             ObjectCreationHandling = ObjectCreationHandling.Replace,
+            TypeNameHandling = TypeNameHandling.Objects,
+            MissingMemberHandling = MissingMemberHandling.Error,
             ContractResolver = new DataSerializerHelper.CompositeItemRecordResolver(),
             MaxDepth = 10,
         };

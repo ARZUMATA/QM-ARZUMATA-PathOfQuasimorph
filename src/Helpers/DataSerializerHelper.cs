@@ -89,6 +89,20 @@ public static class DataSerializerHelper
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
 
+            // Enable writing to properties with protected/private setters
+            if (property.Writable == false)
+            {
+                var propertyInfo = member as PropertyInfo;
+                if (propertyInfo != null)
+                {
+                    // Check if there's a non-public setter
+                    if (propertyInfo.GetSetMethod(nonPublic: true) != null)
+                    {
+                        property.Writable = true;
+                    }
+                }
+            }
+
             // Explicitly include the Records property
             if (property.PropertyName == "Records")
             {
@@ -118,6 +132,7 @@ public static class DataSerializerHelper
 
             return property;
         }
+
 
     }
 }
