@@ -70,7 +70,7 @@ namespace QM_PathOfQuasimorph.Core
         private const int DICE_SIDES = 20; // Number of sides on the dice
         public static float PARAMETER_BOOST_MIN = 1.2f;
         public static float PARAMETER_BOOST_MAX = 1.8f;
-        public float AVERAGE_RESIST_APPLY_CHANCE = 50;
+        public static float AVERAGE_RESIST_APPLY_CHANCE = 50;
         public float PARAMETER_HINDER_CHANCE = 50;
         public float PARAMETER_HINDER_PERCENT = 20;
         public float UNBREAKABLE_ENTRY_CHANCE = 0.20f;

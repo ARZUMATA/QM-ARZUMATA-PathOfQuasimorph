@@ -46,8 +46,7 @@ namespace QM_PathOfQuasimorph.Core
             foreach (var keyValuePair in dataPlaceholderProject.UpcomingModifications)
             {
                 _logger.Log($"adding: {keyValuePair.Key}");
-                _logger.Log($"{keyValuePair.Value}");
-
+                //_logger.Log($"{keyValuePair.Value}");
 
                 var deserializedData = DataSerializerHelper.DeserializeData<List<BasePickupItemRecord>>(keyValuePair.Value, jsonSettings);
 
