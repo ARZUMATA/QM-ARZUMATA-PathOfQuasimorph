@@ -75,7 +75,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 _logger.Log($"CreateDataHolderProject: checking project {project.DevelopId} {project.FinishTime}");
 
-                if (MagnumProjectWrapper.IsSerializedStorage(project.FinishTime.Ticks))
+                if (MetadataWrapper.IsSerializedStorage(project.FinishTime.Ticks))
                 {
                     _logger.Log($"CreateDataHolderProject: IsSerializedStorage");
 
@@ -98,7 +98,7 @@ namespace QM_PathOfQuasimorph.Core
             newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected));
 
             _logger.Log($"randomUidInjected {randomUidInjected}");
-            _logger.Log($"IsSerializedStorage {MagnumProjectWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
+            _logger.Log($"IsSerializedStorage {MetadataWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
 
             MagnumDevelopmentSystem.InjectItemRecord(newProject);
             magnumProjects.Values.Add(newProject);
@@ -222,7 +222,7 @@ namespace QM_PathOfQuasimorph.Core
             newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
 
             // Resulting Uid
-            var magnumProjectWrapper = new MagnumProjectWrapper(newProject);
+            var magnumProjectWrapper = new MetadataWrapper(newProject);
             var newId = magnumProjectWrapper.ReturnItemUid();
 
             // Add our new Id to traits tracker as traits can't be added during project in game.
@@ -245,7 +245,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             if (itemId.Contains("_poq_"))
             {
-                var wrapped = MagnumProjectWrapper.SplitItemUid(itemId);
+                var wrapped = MetadataWrapper.SplitItemUid(itemId);
 
                 foreach (MagnumProject magnumProject in magnumProjects.Values)
                 {
@@ -284,15 +284,13 @@ namespace QM_PathOfQuasimorph.Core
         [Obsolete]
         public static ItemTransformationRecord GetItemTransformationRecord(ItemTransformationRecord record, MagnumProject project)
         {
-            Plugin.Logger.Log($"GetItemTransformationRecord");
-
             if (record == null || record.Id == string.Empty)
             {
+                Plugin.Logger.Log($"GetItemTransformationRecord adding placeholder");
+
                 // Item breaks into this, unless it has it's own record.
                 return Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
-
-            Plugin.Logger.Log($"AddAffixes");
 
             // Since this method used during InjectItemRecord, we can safely extra update our language keys.
             // I don't like making classes static but this won't hurt.

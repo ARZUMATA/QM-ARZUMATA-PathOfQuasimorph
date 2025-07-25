@@ -5,7 +5,7 @@ using static Rewired.Demos.GamepadTemplateUI.GamepadTemplateUI;
 
 namespace QM_PathOfQuasimorph.Core
 {
-    public class MagnumProjectWrapper
+    public class MetadataWrapper
     {
         public string Id { get; set; }
         public string CustomId { get; set; }
@@ -16,7 +16,7 @@ namespace QM_PathOfQuasimorph.Core
         public bool PoqItem { get; set; }
         public bool SerializedStorage { get; set; }
 
-        public MagnumProjectWrapper(MagnumProject newProject)
+        public MetadataWrapper(MagnumProject newProject)
         {
             // Generate metadata
             this.Id = newProject.DevelopId;
@@ -43,11 +43,11 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        public MagnumProjectWrapper()
+        public MetadataWrapper()
         {
         }
 
-        public MagnumProjectWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime)
+        public MetadataWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime)
         {
             this.Id = id;
             this.PoqItem = poqItem;
@@ -191,7 +191,7 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Reuse existing logic safely, only instantiate when necessary
-        public static MagnumProjectWrapper SplitItemUid(string uid)
+        public static MetadataWrapper SplitItemUid(string uid)
         {
             if (string.IsNullOrEmpty(uid)) return null;
 
@@ -208,7 +208,7 @@ namespace QM_PathOfQuasimorph.Core
                     long.TryParse(suffixParts[0], out long startTicks) &&
                     long.TryParse(suffixParts[1], out long finishTicks))
                 {
-                    return new MagnumProjectWrapper(
+                    return new MetadataWrapper(
                         id: realId,
                         poqItem: true,
                         startTime: new DateTime(startTicks),
@@ -219,7 +219,7 @@ namespace QM_PathOfQuasimorph.Core
 
             // Handle non-PoQ item
             var baseId = uid.Replace("_custom", "");
-            return new MagnumProjectWrapper
+            return new MetadataWrapper
             {
                 Id = baseId,
                 CustomId = uid,

@@ -17,7 +17,7 @@ namespace QM_PathOfQuasimorph.Core
         public static Dictionary<string, WoundSlotRecord> WoundSlotRecords { get; set; } = new Dictionary<string, WoundSlotRecord>();
 
         [JsonProperty("magnumProjects")]
-        public static Dictionary<string, MagnumProjectWrapper> MagnumProjectWrapperRecords { get; set; } = new Dictionary<string, MagnumProjectWrapper>();
+        public static Dictionary<string, MetadataWrapper> MagnumProjectWrapperRecords { get; set; } = new Dictionary<string, MetadataWrapper>();
 
         public static bool HasRecord(string itemId)
         {

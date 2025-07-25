@@ -106,7 +106,7 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch :: Prefix :: Called by: {formattedStackTrace}");
                 */
 
-                var magnumProjectWrapper = MagnumProjectWrapper.SplitItemUid(itemId);
+                var magnumProjectWrapper = MetadataWrapper.SplitItemUid(itemId);
 
                 if (magnumProjectWrapper.PoqItem || magnumProjectWrapper.SerializedStorage)
                 {

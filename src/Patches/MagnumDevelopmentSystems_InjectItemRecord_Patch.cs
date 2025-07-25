@@ -17,7 +17,7 @@ namespace QM_PathOfQuasimorph.Core
                 // Get original instructions
                 var original = new List<CodeInstruction>(instructions);
 
-                var getPoqItemId = AccessTools.Method(typeof(MagnumProjectWrapper), nameof(MagnumProjectWrapper.GetPoqItemId));
+                var getPoqItemId = AccessTools.Method(typeof(MetadataWrapper), nameof(MetadataWrapper.GetPoqItemId));
                 var getItemTransformationRecord = AccessTools.Method(typeof(MagnumPoQProjectsController), nameof(MagnumPoQProjectsController.GetItemTransformationRecord));
 
                 // Using Codematcher to find instruction sequence we need.

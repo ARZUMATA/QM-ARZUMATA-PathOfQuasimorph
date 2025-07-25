@@ -19,7 +19,7 @@ namespace QM_PathOfQuasimorph.Core
                 // Temporarily remove projects that are not PoQ projects so they are not shown in craft.
                 foreach (var project in magnumProjects.Values.ToList())
                 {
-                    var wrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
+                    var wrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemId(project));
 
                     if (wrapper.PoqItem)
                     {

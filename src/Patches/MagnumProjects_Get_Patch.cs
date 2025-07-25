@@ -20,7 +20,7 @@ namespace QM_PathOfQuasimorph.Core
             public static void Postfix(string devId, ref MagnumProject __result, MagnumProjects __instance)
             {
                 // Result can be null if you start new project, so...
-                if (__result != null && MagnumProjectWrapper.IsPoqProject(__result))
+                if (__result != null && MetadataWrapper.IsPoqProject(__result))
                 {
                     __result = null;
                 }

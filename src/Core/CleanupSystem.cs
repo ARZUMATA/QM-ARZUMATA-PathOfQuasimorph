@@ -148,7 +148,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanupItem(PickupItem item)
         {
-            var wrapper = MagnumProjectWrapper.SplitItemUid(item.Id);
+            var wrapper = MetadataWrapper.SplitItemUid(item.Id);
 
             if (!wrapper.PoqItem)
             {
@@ -277,7 +277,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"magnumProjects != null");
                     foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
                     {
-                        var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
+                        var projectWrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemId(project));
                         _logger.Log($"PoqItem {projectWrapper.PoqItem}, SerializedStorage {projectWrapper.SerializedStorage}");
 
                         if (!projectWrapper.SerializedStorage && projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))

@@ -48,7 +48,7 @@ namespace QM_PathOfQuasimorph.Core
                     _factory._state.Resolve(_factory._itemTooltipBuilder);
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
-                    var wrappedItem = MagnumProjectWrapper.SplitItemUid(_factory._lastShowedItem.Id);
+                    var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
                     _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
 
                     if (wrappedItem.PoqItem)

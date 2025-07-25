@@ -26,7 +26,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     Plugin.Logger.LogWarning($"WARNING: PickupItem: compositeItemRecord == null {compositeItemRecord == null}");
                     Plugin.Logger.LogWarning($"WARNING: PickupItem: reverting id to the baseline.");
-                    var magnumProjectWrapper = MagnumProjectWrapper.SplitItemUid(__instance.Id);
+                    var magnumProjectWrapper = MetadataWrapper.SplitItemUid(__instance.Id);
                     __instance.Id = magnumProjectWrapper.Id; // This effectively makes item default.
                 }
 

@@ -1131,7 +1131,7 @@ namespace QM_PathOfQuasimorph.Core
         [Obsolete]
         internal void ApplyTraits(ref BasePickupItem item)
         {
-            var wrapper = MagnumProjectWrapper.SplitItemUid(item.Id);
+            var wrapper = MetadataWrapper.SplitItemUid(item.Id);
 
             // We have that item in list so we need to process it and remove later on.
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(item.Id, true) as CompositeItemRecord;
@@ -1235,7 +1235,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void AddAffixes(string itemId)
         {
-            var wrapper = MagnumProjectWrapper.SplitItemUid(itemId);
+            var wrapper = MetadataWrapper.SplitItemUid(itemId);
             var digitInfo = DigitInfo.GetDigits(wrapper.FinishTime.Ticks);
             var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
 
@@ -1259,7 +1259,7 @@ namespace QM_PathOfQuasimorph.Core
             // Add affixes for localization data.
             // English as of time being.
 
-            var wrapper = new MagnumProjectWrapper(magnumProject);
+            var wrapper = new MetadataWrapper(magnumProject);
 
             if (wrapper.PoqItem)
             {
