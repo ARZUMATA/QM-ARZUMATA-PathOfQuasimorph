@@ -64,28 +64,19 @@ namespace QM_PathOfQuasimorph.Core.Processors
         {
         }
 
-        internal override int ProcessRecord()
+        internal override void ProcessRecord()
         {
-            if (itemRarity == ItemRarity.Standard)
-            {
-                return 99;
-            }
-
-            int boostedStat;
-
             ApplyTraits();
-            boostedStat = ApplyParameters();
-
-            return boostedStat;
+            ApplyParameters();
         }
 
-        private int ApplyParameters()
+        private void ApplyParameters()
         {
             float baseModifier, finalModifier;
-            int numToHinder, numToImprove, boostedParam, improvedCount, hinderedCount;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
             string boostedParamString;
             bool increase;
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParam, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
             foreach (var stat in parameters)
             {
@@ -156,8 +147,6 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
-
-            return boostedParam;
         }
 
         internal void ApplyTraits()

@@ -90,23 +90,23 @@ namespace QM_PathOfQuasimorph.Core
         }
 
 
-        internal static List<Affix> GetAffix(ItemRarity rarityClass, string itemId, int boostedParam)
+        internal static List<Affix> GetAffix(ItemRarity rarityClass, string itemId)
         {
             _logger.Log($"GetAffix :: NonProject");
-
-            if (boostedParam == 99)
-            {
-                _logger.Log("boostedParam == 99, returning null.");
-                return null;
-            }
 
             var affixRarityTypeToLookFor = (AffixRarityType)rarityClass;
             AffixCategory affixCategoryLookFor = AffixCategory.None;
             var affixesList = new List<Affix>();
             string itemClass = string.Empty;
-            string parameter = PathOfQuasimorph.itemRecordsControllerPoq.GetItemBoostedStat(itemId, boostedParam);
+            //string boostedString = PathOfQuasimorph.itemRecordsControllerPoq.GetItemBoostedStat(itemId, boostedParam);
+            string boostedString = RecordCollection.GetBoostedString(itemId);
+            if (boostedString == string.Empty)
+            {
+                _logger.Log("boostedString == string.Empty, returning null.");
+                return null;
+            }
 
-            _logger.Log($"itemId: {itemId}, boostedParam: {boostedParam}, parameter: {parameter}");
+            _logger.Log($"itemId: {itemId}, boostedString: {boostedString}");
 
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(itemId, true) as CompositeItemRecord;
             Type recordType = compositeItemRecord.PrimaryRecord.GetType();
@@ -172,7 +172,7 @@ namespace QM_PathOfQuasimorph.Core
                     .Where(affix => affix.AffixRarityType == affixRarityTypeToLookFor &&
                                     affix.AffixCategory == affixCategoryLookFor &&
                                     affix.AffixType == AffixType.Suffix &&
-                                    affix.Parameter == parameter
+                                    affix.Parameter == boostedString
                                     )
                     .ToList();
 

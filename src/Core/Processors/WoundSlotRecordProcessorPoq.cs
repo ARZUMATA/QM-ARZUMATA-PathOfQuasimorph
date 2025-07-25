@@ -1,7 +1,9 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -13,9 +15,9 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Core.Processors
 {
-    internal class ImplantRecordProcessorPoq : ItemRecordProcessor<ImplantRecord>
+    internal class WoundSlotRecordProcessorPoq : ItemRecordProcessor<WoundSlotRecord>
     {
-        private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessorPoq));
+        private new Logger _logger = new Logger(null, typeof(WoundSlotRecordProcessorPoq));
 
         public override List<string> parameters => _parameters;
 
@@ -25,42 +27,26 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
         internal List<string> implicitBonusEffects = new List<string>()
         {
+            "accuracy_reduce",
+            "added_projectile",
+            "added_wound_chance_mult",
             "backpack_weight",
+            "bonus_vest_slot",
             "crit_damage",
             "critchance_reduce",
-            "food_calories",
-            "implant_cooldown",
+            "dodge_reduce",
+            "firearm_range",
+            "fov_angle",
             "income_pain",
+            "items_weight",
+            "los_reduce",
             "max_health",
+            "melee_accuracy",
             "melee_dmg_reduce",
             "melee_throw_range",
-            "pain_to_melee_dmg",
+            "multi_hit",
             "passive_regen",
-            "perk_cooldown",
-            "perk_exp_modifier",
             "qmorph",
-            "ranged_accuracy",
-            "reload_duration",
-            "resist_beam",
-            "resist_blunt",
-            "resist_fire",
-            "resist_lacer",
-            "resist_pierce",
-            "resist_poison",
-            "resist_shock",
-            "satiety",
-            "status_immune_shockEffect",
-            "wound_chance_mult",
-            "wound_immune_lacer",
-            "wound_immune_pierce",
-        };
-
-        internal List<string> implicitPenaltyEffects = new List<string>()
-        {
-            "addiction_chance",
-            "food_calories",
-            "income_pain",
-            "max_health",
             "ranged_accuracy",
             "regen_efficacy",
             "resist_beam",
@@ -68,14 +54,56 @@ namespace QM_PathOfQuasimorph.Core.Processors
             "resist_fire",
             "resist_lacer",
             "resist_pierce",
+            "resist_poison",
             "resist_shock",
-            "satiety",
+            "run_ap",
             "scatter_angle",
+            "throwback_immune",
+            "walk_spotted_signal",
             "wound_chance",
-            "wound_chance_mult",
+            "wound_heal_chance",
+            "wound_immune_fire",
+            "wound_immune_poison",
         };
 
-        public ImplantRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        internal List<string> implicitPenaltyEffects = new List<string>()
+        {
+            "arm_slot_unavailable",
+            "backpack_weight",
+            "dodge_reduce",
+            "fov_angle",
+            "income_critchance",
+            "los_reduce",
+            "max_health",
+            "melee_accuracy",
+            "melee_dmg_reduce",
+            "no_stealth",
+            "qmorph",
+            "ranged_accuracy",
+            "regen_efficacy",
+            "resist_blunt",
+            "resist_fire",
+            "resist_lacer",
+            "resist_pierce",
+            "resist_shock",
+            "run_unavailable",
+            "scatter_angle",
+            "wound_chance",
+        };
+
+        internal List<string> coreEffects = new List<string>()
+        {
+            "accuracy_reduce",
+            "action_dmg",
+            "CoreEffects",
+            "dodge_reduce",
+            "dot_dmg",
+            "los_reduce",
+            "melee_dmg_reduce",
+            "move_dmg",
+            "vomiting",
+        };
+        public WoundSlotRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
 
@@ -96,7 +124,16 @@ namespace QM_PathOfQuasimorph.Core.Processors
             float outOldValue = -1;
             float outNewValue = -1;
 
-            foreach (KeyValuePair<string, float> keyValuePair in itemRecord.ImplicitBonusEffects)
+
+            // Even though we're updating a value (not adding a new key), in some contexts this can still be considered a modification that invalidates the enumerator.//
+            // More importantly, any write operation to the dictionary during foreach enumeration is unsafe and can throw this exception.
+            // Capture all entries safely for this case
+
+            var entriesImplicitBonusEffects = itemRecord.ImplicitBonusEffects.ToList();
+            var entriesImplicitPenaltyEffects = itemRecord.ImplicitPenaltyEffects.ToList();
+            var entriesCoreEffects = itemRecord.CoreEffects.ToList();
+
+            foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
 
@@ -108,13 +145,25 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
 
-            foreach (KeyValuePair<string, float> keyValuePair in itemRecord.ImplicitPenaltyEffects)
+            foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
 
                 var value = keyValuePair.Value;
                 PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
                 itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = value;
+
+                Plugin.Logger.Log($"\t\t old value {outOldValue}");
+                Plugin.Logger.Log($"\t\t new value {outNewValue}");
+            }
+
+            foreach (KeyValuePair<string, float> keyValuePair in entriesCoreEffects)
+            {
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
+
+                var value = keyValuePair.Value;
+                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                itemRecord.CoreEffects[keyValuePair.Key] = value;
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");

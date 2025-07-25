@@ -1237,7 +1237,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             var wrapper = MagnumProjectWrapper.SplitItemUid(itemId);
             var digitInfo = DigitInfo.GetDigits(wrapper.FinishTime.Ticks);
-            var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId, digitInfo.BoostedParam);
+            var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
 
             if (affix == null)
             {
@@ -1246,23 +1246,25 @@ namespace QM_PathOfQuasimorph.Core
 
             UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
                 affix[0].Text, "",
-                wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+                wrapper.ReturnItemUid(true));
 
             UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
                 "", affix[1].Text,
-                wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+                wrapper.ReturnItemUid(true));
         }
 
+        [Obsolete]
         internal static void AddAffixes(MagnumProject magnumProject)
         {
             // Add affixes for localization data.
             // English as of time being.
 
             var wrapper = new MagnumProjectWrapper(magnumProject);
-            _logger.LogWarning($"AddAffixes for {wrapper.ReturnItemUid()}, PoqItem {wrapper.PoqItem}.");
 
             if (wrapper.PoqItem)
             {
+                _logger.LogWarning($"AddAffixes for {wrapper.ReturnItemUid()}, PoqItem {wrapper.PoqItem}.");
+
                 var digitInfo = DigitInfo.GetDigits(magnumProject.FinishTime.Ticks);
                 var affix = AffixManager.GetAffix(wrapper.RarityClass, magnumProject, digitInfo.BoostedParam);
 
@@ -1288,14 +1290,14 @@ namespace QM_PathOfQuasimorph.Core
                 // Problem, on game load it doesn't have effect.
                 UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
                     affix[0].Text, "",
-                    wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+                    wrapper.ReturnItemUid(true));
                 UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
                     "", affix[1].Text,
-                    wrapper.ReturnItemUid(true), digitInfo.UnusedData2);
+                    wrapper.ReturnItemUid(true));
             }
         }
 
-        private static void UpdateKey(string lookupItemId, string prefix, string suffix, string originalUid, int randomizedPrefix)
+        private static void UpdateKey(string lookupItemId, string prefix, string suffix, string originalUid)
         {
             foreach (KeyValuePair<Localization.Lang, Dictionary<string, string>> languageToDict in Singleton<Localization>.Instance.db)
             {

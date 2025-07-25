@@ -34,24 +34,19 @@ namespace QM_PathOfQuasimorph.Core.Processors
             _logger = new Logger(null, GetType()); // Ensures logger shows HelmetRecordProcessor, etc.
         }
 
-        internal override int ProcessRecord()
+        internal override void ProcessRecord()
         {
-            if (itemRarity == ItemRarity.Standard)
-            {
-                return 99;
-            }
-
-            return ApplyParameters();
+            ApplyParameters();
         }
 
-        private int ApplyParameters()
+        private void ApplyParameters()
         {
             float baseModifier, finalModifier;
-            int numToHinder, numToImprove, boostedParam, improvedCount, hinderedCount;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
             string boostedParamString;
             bool increase;
 
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParam, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
             // Get average resist for armor
             float averageResist = 0;
@@ -138,8 +133,6 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
-
-            return boostedParam;
         }
     }
 }

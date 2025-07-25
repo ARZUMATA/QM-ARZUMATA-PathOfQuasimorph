@@ -114,12 +114,12 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
 
-                if (PathOfQuasimorph.itemRecordsControllerPoq.HasRecord(itemId) == true)
+                if (RecordCollection.HasRecord(itemId) == true)
                 {
 
                 }
 
-                if (PathOfQuasimorph.itemRecordsControllerPoq.HasRecord(itemId) == false)
+                if (RecordCollection.HasRecord(itemId) == false)
                 {
                     var mobRarityBoost = false;
 

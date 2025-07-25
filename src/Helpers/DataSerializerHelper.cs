@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ModConfigMenu;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using QM_PathOfQuasimorph.Core;
 using System;
@@ -10,6 +11,28 @@ using System.Threading.Tasks;
 
 public static class DataSerializerHelper
 {
+    /// <summary>
+    /// Performs a deep copy of any serializable object using JSON serialization.
+    /// Handles: Lists, Dictionaries, Tuples, nested objects, etc.
+    /// </summary>
+    public static T MakeDeepCopy<T>(T value)
+    {
+        if (value == null) return default(T);
+
+        var settings = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            TypeNameHandling = TypeNameHandling.Auto,
+            NullValueHandling = NullValueHandling.Include,
+            Formatting = Formatting.Indented,
+        };
+
+        string json = JsonConvert.SerializeObject(value, settings);
+        Console.WriteLine(json);
+
+        return JsonConvert.DeserializeObject<T>(json, settings);
+    }
+
     private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings();
 
     public static string SerializeData<T>(T _data) where T : class

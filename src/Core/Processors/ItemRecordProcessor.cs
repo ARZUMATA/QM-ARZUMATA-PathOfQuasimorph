@@ -22,20 +22,22 @@ namespace QM_PathOfQuasimorph.Core.Processors
         public abstract List<string> parameters { get; }
         protected ItemRarity itemRarity;
         protected bool mobRarityBoost;
+        protected string itemId;
 
         internal ItemRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq)
         {
             this.itemRecordsControllerPoq = itemRecordsControllerPoq;
         }
 
-        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost)
+        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, string itemId)
         {
             this.itemRecord = itemRecord;
             this.itemRarity = itemRarity;
             this.mobRarityBoost = mobRarityBoost;
+            this.itemId = itemId;
         }
 
-        internal abstract int ProcessRecord();
+        internal abstract void ProcessRecord();
 
         internal float GetFinalModifier(float baseModifier, int numToHinder, int numToImprove, ref int improvedCount, ref int hinderedCount, string boostedParamString, ref bool increase, string stat, Logger _logger)
         {
@@ -77,7 +79,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             return finalModifier;
         }
 
-        internal void PrepGenericData(out float baseModifier, out float finalModifier, out int numToHinder, out int numToImprove, out int boostedParam, out string boostedParamString, out int improvedCount, out int hinderedCount, out bool increase)
+        internal void PrepGenericData(out float baseModifier, out float finalModifier, out int numToHinder, out int numToImprove, out string boostedParamString, out int improvedCount, out int hinderedCount, out bool increase)
         {
             baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
 
@@ -108,7 +110,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             // Select one parameter to boost more.
             // This parameter will be boosted more than the others.
             // We return index of parameter that was boosted for UID
-            boostedParam = parameters.Count == 0 ? 99 : Helpers._random.Next(parameters.Count);
+            var boostedParam = parameters.Count == 0 ? 99 : Helpers._random.Next(parameters.Count);
 
             _logger.Log($"\t\t boostedParam: {boostedParam}, parameters.Count: {parameters.Count}");
             

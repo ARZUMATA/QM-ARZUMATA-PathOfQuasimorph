@@ -1,5 +1,6 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 using static MGSC.SpawnSystem;
 using Random = System.Random;
 
@@ -23,93 +25,22 @@ namespace QM_PathOfQuasimorph.Core.Processors
         {
         };
 
-        internal List<string> woundSlotImplicitBonusEffects = new List<string>()
-        {
-            "accuracy_reduce",
-            "added_projectile",
-            "added_wound_chance_mult",
-            "backpack_weight",
-            "bonus_vest_slot",
-            "crit_damage",
-            "critchance_reduce",
-            "dodge_reduce",
-            "firearm_range",
-            "fov_angle",
-            "income_pain",
-            "items_weight",
-            "los_reduce",
-            "max_health",
-            "melee_accuracy",
-            "melee_dmg_reduce",
-            "melee_throw_range",
-            "multi_hit",
-            "passive_regen",
-            "qmorph",
-            "ranged_accuracy",
-            "regen_efficacy",
-            "resist_beam",
-            "resist_blunt",
-            "resist_fire",
-            "resist_lacer",
-            "resist_pierce",
-            "resist_poison",
-            "resist_shock",
-            "run_ap",
-            "scatter_angle",
-            "throwback_immune",
-            "walk_spotted_signal",
-            "wound_chance",
-            "wound_heal_chance",
-            "wound_immune_fire",
-            "wound_immune_poison",
-        };
-
-        internal List<string> woundSlotImplicitPenaltyEffects = new List<string>()
-        {
-            "arm_slot_unavailable",
-            "backpack_weight",
-            "dodge_reduce",
-            "fov_angle",
-            "income_critchance",
-            "los_reduce",
-            "max_health",
-            "melee_accuracy",
-            "melee_dmg_reduce",
-            "no_stealth",
-            "qmorph",
-            "ranged_accuracy",
-            "regen_efficacy",
-            "resist_blunt",
-            "resist_fire",
-            "resist_lacer",
-            "resist_pierce",
-            "resist_shock",
-            "run_unavailable",
-            "scatter_angle",
-            "wound_chance",
-        };
-
         public AugmentationRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
 
-        internal override int ProcessRecord()
+        internal override void ProcessRecord()
         {
-            if (itemRarity == ItemRarity.Standard)
-            {
-                return 99;
-            }
-
-            return ApplyParameters();
+            ApplyParameters();
         }
 
-        private int ApplyParameters()
+        private void ApplyParameters()
         {
             float baseModifier, finalModifier;
-            int numToHinder, numToImprove, boostedParam, improvedCount, hinderedCount;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
             string boostedParamString;
             bool increase;
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParam, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
             // Simply for logging
             float outOldValue = -1;
@@ -121,7 +52,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             bool swapWoundslots = false;
             bool randomizeSlotsStats = true;
 
-            if (swapWoundslots) 
+            if (swapWoundslots)
             {
                 foreach (var woundSlot in itemRecord.WoundSlotIds)
                 {
@@ -172,25 +103,45 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                     Plugin.Logger.Log($"Added new wound slot: {newSlot.Id} (type: {newSlot.SlotType})");
                 }
+
+                Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");
+
+                if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
+                {
+                    itemRecord.WoundSlotIds = newWoundSlotIds;
+                }
             }
 
 
             if (randomizeSlotsStats)
             {
+                Plugin.Logger.Log($"\t randomizeSlotsStats");
 
+                foreach (var woundSlot in itemRecord.WoundSlotIds)
+                {
+                    Plugin.Logger.Log($"\t processing wouldSlot: {woundSlot}");
+                    Plugin.Logger.Log($"\t new name will be {woundSlot}_{itemId}");
 
-            }
+                    var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
+                    WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{woundSlot}_{itemId}");
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{woundSlot}_{itemId}");
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord();
+                    //records.Add(augmentationRecordNew);
+                    // TODO
 
+                    newWoundSlotIds.Add($"{woundSlot}_{itemId}");
 
+                    Data.WoundSlots.AddRecord($"{woundSlot}_{itemId}", woundSlotRecordNew);
+                    RecordCollection.WoundSlotRecords.Add($"{woundSlot}_{itemId}", woundSlotRecordNew);
+                }
 
                 Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");
 
-            if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
-            {
-                itemRecord.WoundSlotIds = newWoundSlotIds;
+                if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
+                {
+                    itemRecord.WoundSlotIds = newWoundSlotIds;
+                }
             }
-
-            return boostedParam;
         }
     }
 }
