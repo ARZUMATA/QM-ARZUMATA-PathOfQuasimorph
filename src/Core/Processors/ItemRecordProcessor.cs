@@ -108,8 +108,11 @@ namespace QM_PathOfQuasimorph.Core.Processors
             // Select one parameter to boost more.
             // This parameter will be boosted more than the others.
             // We return index of parameter that was boosted for UID
-            boostedParam = Helpers._random.Next(parameters.Count);
-            boostedParamString = parameters[boostedParam];
+            boostedParam = parameters.Count == 0 ? 99 : Helpers._random.Next(parameters.Count);
+
+            _logger.Log($"\t\t boostedParam: {boostedParam}, parameters.Count: {parameters.Count}");
+            
+            boostedParamString = boostedParam == 99 ? string.Empty : parameters[boostedParam];
 
             // Counters to track how many parameters we've improved or hindered
             improvedCount = 0;
