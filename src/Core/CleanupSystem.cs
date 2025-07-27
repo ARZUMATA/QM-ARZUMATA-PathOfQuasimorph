@@ -73,6 +73,8 @@ namespace QM_PathOfQuasimorph.Core
             var listMercenariesCargo = CleanupMercenariesCargo(context);
             var listCreatureData = CleanupCreatureData(context);
             var listMagnumDepartmentsData = CleanupItemsMagnumDepartments(context);
+            var listMapObstacles = CleanupItemsMapObstacles(context);
+            var listItemsOnFloor = CleanupItemsItemsOnFloor(context);
 
             _logger.Log($"Lists count:");
             _logger.Log($"\t listMagnumCargo {listMagnumCargo.Count}");
@@ -81,6 +83,8 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"\t listMercenariesCargo {listMercenariesCargo.Count}");
             _logger.Log($"\t listCreatureData {listCreatureData.Count}");
             _logger.Log($"\t listMagnumDepartmentsData {listMagnumDepartmentsData.Count}");
+            _logger.Log($"\t listMapObstacles {listMapObstacles.Count}");
+            _logger.Log($"\t listItemsOnFloor {listMapObstacles.Count}");
 
             // Dedupe? There are not many entries anyway.
             idsToKeep.AddRange(listMagnumCargo);
@@ -89,6 +93,8 @@ namespace QM_PathOfQuasimorph.Core
             idsToKeep.AddRange(listCreatureData);
             idsToKeep.AddRange(listMagnumDepartmentsData);
             idsToKeep.AddRange(listStationItems);
+            idsToKeep.AddRange(listMapObstacles);
+            idsToKeep.AddRange(listItemsOnFloor);
 
             _logger.Log($"\t idsToKeep {idsToKeep.Count}");
 
@@ -97,6 +103,63 @@ namespace QM_PathOfQuasimorph.Core
             {
                 CleanupMagnumProjects(context, idsToKeep, force);
             }
+        }
+
+        private static List<string> CleanupItemsItemsOnFloor(IModContext context)
+        {
+            ItemsOnFloor itemsOnFloor = context.State.Get<ItemsOnFloor>();
+            List<string> items = new List<string>();
+
+            _logger.Log("CleanStationInternalStorage");
+
+            if (itemsOnFloor != null)
+            {
+                foreach (var value in itemsOnFloor.Values)
+                {
+                    if (value.Storage != null)
+                    {
+                        items.AddRange(CleanupPickupItem(value.Storage.Items));
+                    }
+
+                }
+            }
+
+            return items;
+        }
+
+        private static List<string> CleanupItemsMapObstacles(IModContext context)
+        {
+            MapObstacles obstacles = context.State.Get<MapObstacles>();
+            List<string> items = new List<string>();
+
+            _logger.Log("CleanupItemsMapObstacles");
+
+            if (obstacles != null)
+            {
+                foreach (var obstacle in obstacles.Obstacles)
+                {
+                    foreach (var comp in obstacle._comps)
+                    {
+                        var corpseStorage = comp as CorpseStorage;
+                        if (corpseStorage != null && corpseStorage._creatureData != null && corpseStorage._creatureData.Inventory != null)
+                        {
+                            foreach (ItemStorage storage in corpseStorage._creatureData.Inventory.AllContainers)
+                            {
+                                items.AddRange(CleanupPickupItem(storage.Items));
+                            }
+
+                            var store = comp as Store;
+
+                            if (store != null && store.storage != null && store.storage.Items != null)
+                            {
+                                items.AddRange(CleanupPickupItem(store.storage.Items));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return items;
         }
 
         internal static List<string> CleanupCreatureData(IModContext context)

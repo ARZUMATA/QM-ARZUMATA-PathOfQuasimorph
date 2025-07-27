@@ -275,7 +275,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (dmgDifferenceMin != 0 || dmgDifferenceMax != 0)
                 {
-                    value = $"{string.Format("{0}-{1}", damagePoq.Item1, damagePoq.Item2).ToString()} ({FormatDifference(string.Format("{0}-{1}", dmgDifferenceMin, dmgDifferenceMax).ToString(), dmgDifferenceMax)})".WrapInColor(Colors.Green);
+                    value = $"{string.Format("{0}-{1}", damagePoq.Item1, damagePoq.Item2).ToString()} ({FormatDifference(string.Format("{0}-{1}", Math.Abs(dmgDifferenceMin), Math.Abs(dmgDifferenceMax)).ToString(), dmgDifferenceMax)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon(icon).LocalizeName(tag)
                     .SetValue(value, true)
@@ -287,7 +287,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (critDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(damagePoq.Item3, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(critDifference, false).ToString(), critDifference)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(damagePoq.Item3, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(Math.Abs(critDifference), false).ToString(), critDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon("common_critdamage").LocalizeName("tooltip.CritDamage")
                     .SetValue(value, true)
@@ -301,7 +301,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (accuracyDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(accuracy, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(accuracyDifference, false).ToString(), accuracyDifference)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(accuracy, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(Math.Abs(accuracyDifference), false).ToString(), accuracyDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon(recordPoq.IsMelee ? "common_accuracy_melee" : "common_accuracy").
                     LocalizeName(recordPoq.IsMelee ? "tooltip.MeleeAccuracy" : "tooltip.RangeAccuracy")
@@ -438,7 +438,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (magCapacityDifference != 0)
                     {
-                        value = $"{magCapacityPoq} ({FormatDifference(magCapacityDifference.ToString(), magCapacityDifference)})".WrapInColor(Colors.Green);
+                        value = $"{magCapacityPoq} ({FormatDifference(Math.Abs(magCapacityDifference).ToString(), magCapacityDifference)})".WrapInColor(Colors.Green);
 
                         _factory.AddPanelToTooltip().SetIcon(iconMagCapacity).LocalizeName("item." + str + ".name")
                             .SetValue(value, true)

@@ -40,6 +40,12 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
             _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
             //_logger.Log($"itemRecords: {itemRecords}");
+
+            foreach (var id in ItemRecords.Keys.ToList())
+            {
+                _logger.Log($"logging serialziation: {id}");
+            }
+
             _logger.Log($"SerializeCollection Done");
 
         }
