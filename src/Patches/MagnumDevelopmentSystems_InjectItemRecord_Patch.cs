@@ -85,28 +85,29 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(MagnumProject project)
             {
-                Plugin.Logger.Log($"MagnumDevelopmentSystems_InjectItemRecord_Patch");
                 // Pickup the project since we already got item record
                 // Move it to our dict too
 
                 // As we have some leftovers for items in previous codebase that used magnum projects we need to add appropriate record to new system
                 var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
-                var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
-                Plugin.Logger.Log($"itemId  {itemId}");
-                Plugin.Logger.Log($"wrapper == null {wrapper == null}");
 
-                if (wrapper == null)
+                if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
                 {
                     // We need to add our records
                     wrapper = new MetadataWrapper(project);
 
                     if (wrapper.PoqItem)
                     {
+                        Plugin.Logger.Log($"MagnumDevelopmentSystems_InjectItemRecord_Patch");
+
+                        Plugin.Logger.Log($"itemId  {itemId}");
+                        Plugin.Logger.Log($"wrapper == null {wrapper == null}");
+
                         // Since record already injected
                         itemId = wrapper.ReturnItemUid();
                         var record = Data.Items.GetRecord(itemId) as CompositeItemRecord;
-                        RecordCollection.ItemRecords.AddRecord(itemId, record);
-                        RecordCollection.MetadataWrapperRecords.AddRecord(itemId, wrapper);
+                        RecordCollection.ItemRecords.Add(itemId, record);
+                        RecordCollection.MetadataWrapperRecords.Add(itemId, wrapper);
                     }
                 }
             }

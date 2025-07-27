@@ -4,17 +4,19 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace QM_PathOfQuasimorph.Core
 {
     public class RecordCollection
     {
-        public static ConfigRecordCollection<CompositeItemRecord> ItemRecords { get; private set; } = new ConfigRecordCollection<CompositeItemRecord>();
+        public static Dictionary<string, CompositeItemRecord> ItemRecords { get; private set; } = new Dictionary<string, CompositeItemRecord>();
 
-        public static ConfigRecordCollection<WoundSlotRecord> WoundSlotRecords { get; private set; } = new ConfigRecordCollection<WoundSlotRecord>();
+        public static Dictionary<string, WoundSlotRecord> WoundSlotRecords { get; private set; } = new Dictionary<string, WoundSlotRecord>();
 
-        public static ConfigRecordCollection<MetadataWrapper> MetadataWrapperRecords { get; private set; } = new ConfigRecordCollection<MetadataWrapper>();
+        public static Dictionary<string, MetadataWrapper> MetadataWrapperRecords { get; private set; } = new Dictionary<string, MetadataWrapper>();
 
         public void Init()
         {
@@ -24,9 +26,9 @@ namespace QM_PathOfQuasimorph.Core
             Plugin.Logger.Log($"SerializeCollection");
 
             PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
-            var itemRecords = DataSerializerHelper.SerializeData<ConfigRecordCollection<CompositeItemRecord>>(ItemRecords, DataSerializerHelper._jsonSettingsPoq);
-            var woundSlotRecords = DataSerializerHelper.SerializeData<ConfigRecordCollection<WoundSlotRecord>>(WoundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
-            var metadataWrapperRecords = DataSerializerHelper.SerializeData<ConfigRecordCollection<MetadataWrapper>>(MetadataWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
+            var itemRecords = DataSerializerHelper.SerializeData<Dictionary<string, CompositeItemRecord>>(ItemRecords, DataSerializerHelper._jsonSettingsPoq);
+            var woundSlotRecords = DataSerializerHelper.SerializeData<Dictionary<string, WoundSlotRecord>>(WoundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
+            var metadataWrapperRecords = DataSerializerHelper.SerializeData<Dictionary<string, MetadataWrapper>>(MetadataWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
 
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Clear();
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("ItemRecords", itemRecords);
@@ -39,43 +41,115 @@ namespace QM_PathOfQuasimorph.Core
 
         public static void DeserializeCollection(string itemRecords, string woundSlotRecords, string magnumProjectWrapperRecords)
         {
-            ItemRecords = DataSerializerHelper.DeserializeData<ConfigRecordCollection<CompositeItemRecord>>(itemRecords, DataSerializerHelper._jsonSettingsPoq);
-            WoundSlotRecords = DataSerializerHelper.DeserializeData<ConfigRecordCollection<WoundSlotRecord>>(woundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
-            MetadataWrapperRecords = DataSerializerHelper.DeserializeData<ConfigRecordCollection<MetadataWrapper>>(magnumProjectWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
+            ItemRecords = DataSerializerHelper.DeserializeData<Dictionary<string, CompositeItemRecord>>(itemRecords, DataSerializerHelper._jsonSettingsPoq);
+            WoundSlotRecords = DataSerializerHelper.DeserializeData<Dictionary<string, WoundSlotRecord>>(woundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
+            MetadataWrapperRecords = DataSerializerHelper.DeserializeData<Dictionary<string, MetadataWrapper>>(magnumProjectWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
 
             Plugin.Logger.Log($"List_ItemRecords: {ItemRecords.Count}");
             Plugin.Logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
             Plugin.Logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
 
-            foreach (var itemRecord in ItemRecords.Records)
+            Plugin.Logger.Log($"Verify records");
+
+            // This may be time consuming as we need to get item descriptors as we don't serialize them (idk if we need it tho)
+            // So we iterate all desciptors collections and find descriptor we need
+
+            foreach (var itemRecord in ItemRecords)
             {
-                Data.Items.AddRecord(itemRecord.Id, itemRecord);
+                Plugin.Logger.Log($"\t itemRecord: {itemRecord}");
+
+                var compositeRecord = itemRecord.Value;
+                var baseIdExist = MetadataWrapper.TryGetBaseId(compositeRecord.Id, out string baseId);
+
+                Plugin.Logger.Log($"\t baseId: {baseId}");
+                Plugin.Logger.Log($"\t baseIdExist: {baseIdExist}");
+
+                if (baseIdExist)
+                {
+                    Plugin.Logger.Log($"\t Data.Descriptors.Count: {Data.Descriptors.Count}");
+
+                    // Iterate every record to get proper descriptor
+                    foreach (var record in itemRecord.Value.Records)
+                    {
+                        var foundDescriptor = TryFindDescriptor(baseId);
+                        if (foundDescriptor != null)
+                        {
+                            record.ContentDescriptor = foundDescriptor;
+                        }
+                    }
+
+                    if (Data.Items._records.ContainsKey(itemRecord.Key))
+                    {
+                        Plugin.Logger.Log($"\t Data.Items._records removing key {itemRecord.Key}");
+
+                        Data.Items._records.Remove(itemRecord.Key);
+                    }
+
+                    Plugin.Logger.Log($"\t Data.Items._records adding key {itemRecord.Key} and compositeRecord {compositeRecord}");
+
+                    Data.Items._records.Add(compositeRecord.Id, compositeRecord);
+
+                    // Add localization
+                    Localization.DuplicateKey("item." + baseId + ".name", "item." + compositeRecord.Id + ".name");
+                    Localization.DuplicateKey("item." + baseId + ".shortdesc", "item." + compositeRecord.Id + ".shortdesc");
+
+                    // Add item transformations
+
+                    ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(baseId);
+
+                    if (itemTransformationRecord == null || itemTransformationRecord.Id == string.Empty)
+                    {
+                        // Item breaks into this, unless it has it's own itemTransformationRecord.
+                        itemTransformationRecord = Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
+                        Data.ItemTransformation.AddRecord(compositeRecord.Id, itemTransformationRecord.Clone(compositeRecord.Id));
+                    }
+
+
+                }
+                //Data.Items.AddRecord(itemRecord.Id, itemRecord);
             }
 
-            foreach (var woundSlotRecord in WoundSlotRecords.Records)
+            foreach (var woundSlotRecord in WoundSlotRecords)
             {
-                Data.WoundSlots.AddRecord(woundSlotRecord.Id, woundSlotRecord);
+                Data.WoundSlots.RemoveRecord(woundSlotRecord.Key);
+                Data.WoundSlots.AddRecord(woundSlotRecord.Key, woundSlotRecord.Value);
+            }
+        }
+
+        private static UnityEngine.Object TryFindDescriptor(string baseId)
+        {
+            foreach (var desc in Data.Descriptors)
+            {
+                var value = desc.Value;
+                if (value?.Ids == null) continue;
+
+                for (int i = 0; i < value.Ids.Count(); i++)
+                {
+                    if (value._ids[i] == baseId)
+                    {
+                        Plugin.Logger.Log($"\t\t\t MATCH FOUND! ID: {baseId}");
+
+                        return value._descriptors[i];
+                    }
+                }
             }
 
+            return null;
         }
 
         public static bool HasRecord(string itemId)
         {
-            return ItemRecords.Ids.Contains(itemId);
+            return ItemRecords.ContainsKey(itemId);
         }
 
         internal static string GetBoostedString(string itemId)
         {
-            var metaData = MetadataWrapperRecords.GetRecord(itemId);
-
-            if (metaData != null)
+            if (MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper metaData))
             {
                 return metaData.BoostedString;
             }
-
             return string.Empty;
         }
-
     }
 
 

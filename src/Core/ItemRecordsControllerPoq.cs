@@ -116,18 +116,17 @@ namespace QM_PathOfQuasimorph.Core
                 Data.Items.AddRecord(newId, recordEntry);
             }
 
-
             foreach (var recordEntry in obj.Records)
             {
                 _logger.Log($"\t old recordEntry test {recordEntry.Id}");
                 Plugin.Logger.Log($"recordEntry.GetType().Name {recordEntry.GetType().Name}");
-
             }
+
             Plugin.Logger.Log($"recordEntry.GetType().Name {obj.PrimaryRecord.GetType().Name}");
 
             //Data.Items.AddRecord(newId, newObj);
-            RecordCollection.ItemRecords.AddRecord(newId, newObj);
-            RecordCollection.MetadataWrapperRecords.AddRecord(newId, wrapper);
+            RecordCollection.ItemRecords.Add(newId, newObj);
+            RecordCollection.MetadataWrapperRecords.Add(newId, wrapper);
 
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(newId)}");
             _logger.Log($"oldId {Data.Items._records.Keys.Contains(itemIdOrigin)}");

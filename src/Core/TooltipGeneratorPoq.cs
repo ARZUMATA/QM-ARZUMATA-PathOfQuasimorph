@@ -49,9 +49,8 @@ namespace QM_PathOfQuasimorph.Core
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
                     var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
-                    var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(_factory._lastShowedItem.Id);
 
-                    if (wrapper == null)
+                    if (!RecordCollection.MetadataWrapperRecords.TryGetValue(_factory._lastShowedItem.Id, out MetadataWrapper wrapper))
                     {
                         if (MetadataWrapper.IsPoqItemUid(_factory._lastShowedItem.Id))
                         {

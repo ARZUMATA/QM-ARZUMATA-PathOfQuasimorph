@@ -132,7 +132,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
                     newWoundSlotIds.Add($"{woundSlot}_{itemId}");
 
                     Data.WoundSlots.AddRecord($"{woundSlot}_{itemId}", woundSlotRecordNew);
-                    RecordCollection.WoundSlotRecords.AddRecord($"{woundSlot}_{itemId}", woundSlotRecordNew);
+                    RecordCollection.WoundSlotRecords.Add($"{woundSlot}_{itemId}", woundSlotRecordNew);
                 }
 
                 Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");

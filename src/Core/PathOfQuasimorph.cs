@@ -102,6 +102,7 @@ namespace QM_PathOfQuasimorph.Core
         [Hook(ModHookType.SpaceStarted)]
         public static void SpaceStarted(IModContext context)
         {
+            CleanupSystem.CleanObsoleteProjects(context, true);
             creaturesControllerPoq.CleanCreatureDataPoq();
         }
 

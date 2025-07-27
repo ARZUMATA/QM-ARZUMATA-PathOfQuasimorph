@@ -149,9 +149,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanupItem(PickupItem item)
         {
-            var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(item.Id);
-
-            if (wrapper == null)
+            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out MetadataWrapper wrapper))
             {
                 if (MetadataWrapper.IsPoqItemUid(item.Id))
                 {
@@ -279,13 +277,11 @@ namespace QM_PathOfQuasimorph.Core
                 if (magnumProjects != null)
                 {
                     _logger.Log($"magnumProjects != null");
-                    foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
+                    foreach (var project in magnumProjects.Values.ToList()) // Using ToList() to avoid modification during iteration
                     {
                         var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
 
-                        var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
-
-                        if (wrapper == null)
+                        if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
                         {
                             if (MetadataWrapper.IsPoqItemUid(itemId))
                             {
@@ -305,7 +301,6 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
 
-                // Perform your time-based action here
                 _logger.Log("Time interval reached, doing something... CleanObsoleteProjects");
 
                 // Reset the timer
@@ -334,17 +329,6 @@ namespace QM_PathOfQuasimorph.Core
 
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
-
-                    // Part of all containers
-                    //foreach (ItemStorage storage in merc.CreatureData.Inventory.Storages)
-                    //{
-                    //    items.AddRange(CleanupPickupItem(storage.Items));
-                    //}
-
-                    //foreach (ItemStorage storage in merc.CreatureData.Inventory.Slots)
-                    //{
-                    //    items.AddRange(CleanupPickupItem(storage.Items));
-                    //}
 
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.WeaponSlots)
                     {

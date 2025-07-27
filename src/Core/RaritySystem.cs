@@ -1235,9 +1235,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void AddAffixes(string itemId)
         {
-            var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
-
-            if (wrapper == null)
+            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
             {
                 if (MetadataWrapper.IsPoqItemUid(itemId))
                 {

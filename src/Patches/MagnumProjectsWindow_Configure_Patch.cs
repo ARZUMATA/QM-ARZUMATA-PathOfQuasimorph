@@ -22,9 +22,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
 
-                    var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
-
-                    if (wrapper == null)
+                    if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
                     {
                         if (MetadataWrapper.IsPoqItemUid(itemId))
                         {
