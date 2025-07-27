@@ -102,6 +102,7 @@ namespace QM_PathOfQuasimorph.Core
             }
             else
             {
+                Data.ItemTransformation.AddRecord(newId, itemTransformationRecord.Clone(newId));
                 _logger.Log($"ItemTransformationRecord - exists: result will be item count {itemTransformationRecord.OutputItems.Count}");
             }
 
