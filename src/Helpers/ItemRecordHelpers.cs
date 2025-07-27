@@ -9,37 +9,59 @@ namespace QM_PathOfQuasimorph.PoQHelpers
 {
     internal class ItemRecordHelpers
     {
+        internal static WoundSlotRecord CloneWoundSlotRecord(WoundSlotRecord original, string newId)
+        {
+            Plugin.Logger.Log($"WoundSlotRecord: CloneWoundSlotRecord");
+
+            WoundSlotRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
+
+            // Deep copy dictionaries
+            clone.CoreEffects = DataSerializerHelper.MakeDeepCopy(original.CoreEffects);
+            clone.AmputationCoreEffects = DataSerializerHelper.MakeDeepCopy(original.AmputationCoreEffects);
+            clone.ImplicitBonusEffects = DataSerializerHelper.MakeDeepCopy(original.ImplicitBonusEffects);
+            clone.ImplicitPenaltyEffects = DataSerializerHelper.MakeDeepCopy(original.ImplicitPenaltyEffects);
+
+            // Deep copy lists
+            clone.IgnoreEffects = DataSerializerHelper.MakeDeepCopy(original.IgnoreEffects);
+            clone.IgnoreStatusEffects = DataSerializerHelper.MakeDeepCopy(original.IgnoreStatusEffects);
+            clone.AmputatedDrop = DataSerializerHelper.MakeDeepCopy(original.AmputatedDrop);
+            clone.AdditionalAmputation = DataSerializerHelper.MakeDeepCopy(original.AdditionalAmputation);
+
+            return clone;
+        }
+
         internal static AugmentationRecord CloneAugmentationRecord(AugmentationRecord original, string newId)
         {
-            AugmentationRecord clone = new AugmentationRecord
-            {
-                AugmentationClass = original.AugmentationClass,
-                TooltipIconTag = original.TooltipIconTag,
-                WoundSlotIds = SerializationHelper.MakeDeepCopy(original.WoundSlotIds)
-            };
+            Plugin.Logger.Log($"AugmentationRecord: CloneAugmentationRecord");
+            AugmentationRecord clone = ReflectionHelper.CloneViaProperties(original);
 
-            // Assign new Id
+            // Override with new ID
             clone.Id = newId;
+
+            // Deep copy known mutable collections
+            clone.WoundSlotIds = DataSerializerHelper.MakeDeepCopy(original.WoundSlotIds);
+            clone.Categories = DataSerializerHelper.MakeDeepCopy(original.Categories);
+
+            Plugin.Logger.Log($"\t CloneAugmentationRecord");
+            Plugin.Logger.Log($"\t original {original.Id}");
+            Plugin.Logger.Log($"\t ContentDescriptor {original.ContentDescriptor}");
+            Plugin.Logger.Log($"\t ItemDesc {original.ItemDesc}");
 
             return clone;
         }
 
         internal static ImplantRecord CloneImplantRecord(ImplantRecord original, string newId)
         {
-            ImplantRecord clone = new ImplantRecord
-            {
-                AugmentationClass = original.AugmentationClass,
-                IsActive = original.IsActive,
-                SlotType = original.SlotType,
-                NatureTypes = original.NatureTypes?.ToList(),
-                ImplicitBonusEffects = original.ImplicitBonusEffects?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
-                ImplicitPenaltyEffects = original.ImplicitPenaltyEffects?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
-                ChargeItemTypes = original.ChargeItemTypes?.ToList(),
-                CapacitySize = original.CapacitySize
-            };
+            Plugin.Logger.Log($"ImplantRecord: CloneImplantRecord");
 
-            // Assign new Id
+            ImplantRecord clone = ReflectionHelper.CloneViaProperties(original);
             clone.Id = newId;
+
+            clone.NatureTypes = DataSerializerHelper.MakeDeepCopy(original.NatureTypes);
+            clone.ImplicitBonusEffects = DataSerializerHelper.MakeDeepCopy(original.ImplicitBonusEffects);
+            clone.ImplicitPenaltyEffects = DataSerializerHelper.MakeDeepCopy(original.ImplicitPenaltyEffects);
+            clone.ChargeItemTypes = DataSerializerHelper.MakeDeepCopy(original.ChargeItemTypes);
 
             return clone;
         }
