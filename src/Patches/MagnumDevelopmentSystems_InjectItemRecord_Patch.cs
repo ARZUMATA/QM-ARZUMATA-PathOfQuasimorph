@@ -17,7 +17,7 @@ namespace QM_PathOfQuasimorph.Core
                 // Get original instructions
                 var original = new List<CodeInstruction>(instructions);
 
-                var getPoqItemId = AccessTools.Method(typeof(MetadataWrapper), nameof(MetadataWrapper.GetPoqItemId));
+                var getPoqItemId = AccessTools.Method(typeof(MetadataWrapper), nameof(MetadataWrapper.GetPoqItemIdFromProject));
                 var getItemTransformationRecord = AccessTools.Method(typeof(MagnumPoQProjectsController), nameof(MagnumPoQProjectsController.GetItemTransformationRecord));
 
                 // Using Codematcher to find instruction sequence we need.
@@ -80,13 +80,48 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectItemRecord))]
+        public static class MagnumDevelopmentSystems_InjectItemRecord_Patch
+        {
+            public static void Postfix(MagnumProject project)
+            {
+                Plugin.Logger.Log($"MagnumDevelopmentSystems_InjectItemRecord_Patch");
+                // Pickup the project since we already got item record
+                // Move it to our dict too
+
+                // As we have some leftovers for items in previous codebase that used magnum projects we need to add appropriate record to new system
+                var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
+                var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
+                Plugin.Logger.Log($"itemId  {itemId}");
+                Plugin.Logger.Log($"wrapper == null {wrapper == null}");
+
+                if (wrapper == null)
+                {
+                    // We need to add our records
+                    wrapper = new MetadataWrapper(project);
+
+                    if (wrapper.PoqItem)
+                    {
+                        // Since record already injected
+                        itemId = wrapper.ReturnItemUid();
+                        var record = Data.Items.GetRecord(itemId) as CompositeItemRecord;
+                        RecordCollection.ItemRecords.AddRecord(itemId, record);
+                        RecordCollection.MetadataWrapperRecords.AddRecord(itemId, wrapper);
+                    }
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(MagnumDevelopmentSystem), nameof(MagnumDevelopmentSystem.InjectProjectRecords))]
         public static class MagnumDevelopmentSystems_InjectItemRecords_Patch
         {
             public static void Postfix(MagnumProjects projects)
             {
+                Plugin.Logger.Log($"MagnumDevelopmentSystems_InjectItemRecords_Patch");
+                Plugin.Logger.Log($"magnumProjects Count: {projects.Values.Count}");
+
                 // Add our own item records
-                PathOfQuasimorph.itemRecordsControllerPoq.AddItemRecords();
+                PathOfQuasimorph.magnumProjectsController.AddItemRecords(DataSerializerHelper._jsonSettingsPoq);
             }
         }
     }

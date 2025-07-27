@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
@@ -19,7 +20,17 @@ namespace QM_PathOfQuasimorph.Core
                 // Temporarily remove projects that are not PoQ projects so they are not shown in craft.
                 foreach (var project in magnumProjects.Values.ToList())
                 {
-                    var wrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemId(project));
+                    var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
+
+                    var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
+
+                    if (wrapper == null)
+                    {
+                        if (MetadataWrapper.IsPoqItemUid(itemId))
+                        {
+                            throw new Exception($"MagnumProjectsWindow_Configure_Patch: trying to cleanup poq item but record is missing.");
+                        }
+                    }
 
                     if (wrapper.PoqItem)
                     {

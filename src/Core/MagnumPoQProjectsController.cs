@@ -4,6 +4,7 @@ using QM_PathOfQuasimorph.Core;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
@@ -27,34 +28,26 @@ namespace QM_PathOfQuasimorph.Core
             //AffixManager.LoadLocalizationData();
         }
 
-        public void AddItemRecord(string itemId, List<BasePickupItemRecord> recordsList, Newtonsoft.Json.JsonSerializerSettings jsonSettings)
-        {
-            _logger.Log($"AddItemRecord: {itemId} recordsList Count: {recordsList.Count}");
-
-            PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
-            dataPlaceholderProject.UpcomingModifications.Add(itemId, DataSerializerHelper.SerializeData(recordsList, jsonSettings));
-        }
-
         public void AddItemRecords(JsonSerializerSettings jsonSettings)
         {
             _logger.Log($"AddItemRecords");
 
-            PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
+            CreateDataHolderProject();
 
             _logger.Log($"dataPlaceholderProject.UpcomingModifications.Count {dataPlaceholderProject.UpcomingModifications.Count}");
 
-            foreach (var keyValuePair in dataPlaceholderProject.UpcomingModifications)
+            // We store 3 strings
+            if (dataPlaceholderProject.UpcomingModifications.Count == 3)
             {
-                _logger.Log($"adding: {keyValuePair.Key}");
-                //_logger.Log($"{keyValuePair.Value}");
+                // ElementAt is slow but for three entries it's ok.
+                var entry0 = dataPlaceholderProject.UpcomingModifications.ElementAt(0);
+                var entry1 = dataPlaceholderProject.UpcomingModifications.ElementAt(1);
+                var entry2 = dataPlaceholderProject.UpcomingModifications.ElementAt(2);
 
-                var deserializedData = DataSerializerHelper.DeserializeData<List<BasePickupItemRecord>>(keyValuePair.Value, jsonSettings);
-
-                foreach (var record in deserializedData)
-                {
-                    Data.Items.AddRecord(keyValuePair.Key, record);
-                }
+                RecordCollection.DeserializeCollection(entry0.Value, entry1.Value, entry2.Value);
             }
+
+            //Data.Items.AddRecord(keyValuePair.Key, deserializedData);
         }
 
         public void CreateDataHolderProject()
@@ -75,11 +68,12 @@ namespace QM_PathOfQuasimorph.Core
             {
                 _logger.Log($"CreateDataHolderProject: checking project {project.DevelopId} {project.FinishTime}");
 
-                if (MetadataWrapper.IsSerializedStorage(project.FinishTime.Ticks))
+                if (MetadataWrapper.IsSerializedStorage(project.FinishTime.Ticks) && project.UpcomingModifications.Count == 3)
                 {
                     _logger.Log($"CreateDataHolderProject: IsSerializedStorage");
 
                     dataPlaceholderProject = project;
+                    return;
                 }
             }
 
@@ -100,7 +94,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"randomUidInjected {randomUidInjected}");
             _logger.Log($"IsSerializedStorage {MetadataWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
 
-            MagnumDevelopmentSystem.InjectItemRecord(newProject);
+            //MagnumDevelopmentSystem.InjectItemRecord(newProject);
             magnumProjects.Values.Add(newProject);
 
             dataPlaceholderProject = newProject;
@@ -241,6 +235,7 @@ namespace QM_PathOfQuasimorph.Core
             return newId;
         }
 
+        [Obsolete]
         internal static MagnumProject GetProjectById(string itemId)
         {
             if (itemId.Contains("_poq_"))

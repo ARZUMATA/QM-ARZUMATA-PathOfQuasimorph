@@ -49,6 +49,16 @@ namespace QM_PathOfQuasimorph.Core
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
                     var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
+                    var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(_factory._lastShowedItem.Id);
+
+                    if (wrapper == null)
+                    {
+                        if (MetadataWrapper.IsPoqItemUid(_factory._lastShowedItem.Id))
+                        {
+                            throw new Exception($"HandlePoqTooltip: trying to get poq item but record is missing.");
+                        }
+                    }
+
                     _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
 
                     if (wrappedItem.PoqItem)

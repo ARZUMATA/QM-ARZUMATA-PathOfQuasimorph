@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -148,11 +149,14 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanupItem(PickupItem item)
         {
-            var wrapper = MetadataWrapper.SplitItemUid(item.Id);
+            var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(item.Id);
 
-            if (!wrapper.PoqItem)
+            if (wrapper == null)
             {
-                return;
+                if (MetadataWrapper.IsPoqItemUid(item.Id))
+                {
+                    throw new Exception($"CleanupItem: trying to cleanup poq item but record is missing.");
+                }
             }
 
             item.Id = wrapper.Id;
@@ -277,12 +281,24 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"magnumProjects != null");
                     foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
                     {
-                        var projectWrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemId(project));
-                        _logger.Log($"PoqItem {projectWrapper.PoqItem}, SerializedStorage {projectWrapper.SerializedStorage}");
+                        var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
 
-                        if (!projectWrapper.SerializedStorage && projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
+                        var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
+
+                        if (wrapper == null)
                         {
-                            _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
+                            if (MetadataWrapper.IsPoqItemUid(itemId))
+                            {
+                                throw new Exception($"CleanupMagnumProjects: trying to cleanup poq item but record is missing.");
+                            }
+                        }
+
+                        //var projectWrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemIdFromProject(project));
+                        _logger.Log($"PoqItem {wrapper.PoqItem}, SerializedStorage {wrapper.SerializedStorage}");
+
+                        if (!wrapper.SerializedStorage && wrapper.PoqItem && !idsToKeep.Contains(wrapper.ReturnItemUid()))
+                        {
+                            _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {wrapper.ReturnItemUid()}");
 
                             magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
                         }

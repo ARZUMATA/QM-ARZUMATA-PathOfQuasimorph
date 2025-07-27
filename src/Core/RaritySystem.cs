@@ -1235,8 +1235,16 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void AddAffixes(string itemId)
         {
-            var wrapper = MetadataWrapper.SplitItemUid(itemId);
-            var digitInfo = DigitInfo.GetDigits(wrapper.FinishTime.Ticks);
+            var wrapper = RecordCollection.MetadataWrapperRecords.GetRecord(itemId);
+
+            if (wrapper == null)
+            {
+                if (MetadataWrapper.IsPoqItemUid(itemId))
+                {
+                    throw new Exception($"AddAffixes: trying to get poq item but record is missing.");
+                }
+            }
+
             var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
 
             if (affix == null)

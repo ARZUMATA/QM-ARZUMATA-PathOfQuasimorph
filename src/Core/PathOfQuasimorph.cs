@@ -32,6 +32,7 @@ namespace QM_PathOfQuasimorph.Core
         internal static GameCamera gameCamera = null;
         internal static Camera camera = null;
         internal static PixelizatorCameraAttachment pixelizatorCameraAttachment = null;
+        private static Logger _logger = new Logger(null, typeof(PathOfQuasimorph));
 
         public static PerkFactory perkFactoryState { get; private set; }
 
@@ -49,11 +50,17 @@ namespace QM_PathOfQuasimorph.Core
         static PathOfQuasimorph()
         {
             // Predefined types to exclude
-            Logger._excludedTypes.Add(typeof(CleanupSystem));
-            Logger._excludedTypes.Add(typeof(TooltipGeneratorPoq));
-            Logger._excludedTypes.Add(typeof(MagnumPoQProjectsController));
-            Logger._excludedTypes.Add(typeof(AffixManager));
-            Logger._excludedTypes.Add(typeof(RaritySystem));
+            //Logger._excludedTypes.Add(typeof(CleanupSystem));
+            //Logger._excludedTypes.Add(typeof(TooltipGeneratorPoq));
+            //Logger._excludedTypes.Add(typeof(MagnumPoQProjectsController));
+            //Logger._excludedTypes.Add(typeof(AffixManager));
+            //Logger._excludedTypes.Add(typeof(RaritySystem));
+            //Logger._excludedTypes.Add(typeof(ItemRecordsControllerPoq));
+            //Logger._excludedTypes.Add(typeof(CreaturesControllerPoq));
+            //Logger._excludedTypes.Add(typeof(AugmentationRecordControllerPoq));
+            //Logger._excludedTypes.Add(typeof(AugmentationRecordControllerPoq));
+            //Logger._excludedTypes.Add(typeof(ArmorRecordProcessorPoq));
+
         }
 
         public static void Initialize()
@@ -91,6 +98,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             Initialize();
         }
+        
         [Hook(ModHookType.SpaceStarted)]
         public static void SpaceStarted(IModContext context)
         {

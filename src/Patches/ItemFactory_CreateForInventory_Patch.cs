@@ -46,56 +46,56 @@ namespace QM_PathOfQuasimorph.Core
                     return true;
                 }
 
-                MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
+                //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 // No more magnum projects
-                if (false)//project == null)
-                {
+                //if (false)//project == null)
+                //{
 
-                    // Create new
-                    MagnumProjectType itemProjectType = MagnumDevelopmentSystem.GetItemProjectType(itemId);
-                    //Plugin.Logger.Log($"\t\t itemProjectType : {itemProjectType}");
+                //    // Create new
+                //    MagnumProjectType itemProjectType = MagnumDevelopmentSystem.GetItemProjectType(itemId);
+                //    //Plugin.Logger.Log($"\t\t itemProjectType : {itemProjectType}");
 
-                    if (
-                        //itemProjectType == MagnumProjectType.Weapons ||
-                        itemProjectType == MagnumProjectType.RangeWeapon ||
-                        itemProjectType == MagnumProjectType.MeleeWeapon ||
-                        //itemProjectType == MagnumProjectType.Armors ||
-                        itemProjectType == MagnumProjectType.Armor ||
-                        itemProjectType == MagnumProjectType.Helmet ||
-                        itemProjectType == MagnumProjectType.Boots ||
-                        itemProjectType == MagnumProjectType.Leggings
-                        )
-                    {
-                        var rarityExtraBoost = false;
+                //    if (
+                //        //itemProjectType == MagnumProjectType.Weapons ||
+                //        itemProjectType == MagnumProjectType.RangeWeapon ||
+                //        itemProjectType == MagnumProjectType.MeleeWeapon ||
+                //        //itemProjectType == MagnumProjectType.Armors ||
+                //        itemProjectType == MagnumProjectType.Armor ||
+                //        itemProjectType == MagnumProjectType.Helmet ||
+                //        itemProjectType == MagnumProjectType.Boots ||
+                //        itemProjectType == MagnumProjectType.Leggings
+                //        )
+                //    {
+                //        var rarityExtraBoost = false;
 
-                        // Item is OK
-                        if (MobContext.CurrentMobId != -1)
-                        {
-                            Plugin.Logger.Log($"ItemFactory_CreateForInventory called for Mob ID: {MobContext.CurrentMobId}");
-                            MobContext.CurrentMobId = -1;
-                            rarityExtraBoost = true;
-                        }
-                        else
-                        {
-                            rarityExtraBoost = false;
-                        }
+                //        // Item is OK
+                //        if (MobContext.CurrentMobId != -1)
+                //        {
+                //            Plugin.Logger.Log($"ItemFactory_CreateForInventory called for Mob ID: {MobContext.CurrentMobId}");
+                //            MobContext.CurrentMobId = -1;
+                //            rarityExtraBoost = true;
+                //        }
+                //        else
+                //        {
+                //            rarityExtraBoost = false;
+                //        }
 
-                        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId, rarityExtraBoost);
-                    }
-                    //else if (itemProjectType == MagnumProjectType.None ||
-                    //         itemProjectType == MagnumProjectType.Mercenary ||
-                    //         itemProjectType == MagnumProjectType.MercenaryClass ||
-                    //         itemProjectType == MagnumProjectType.QuasiPact ||
-                    //         itemProjectType == MagnumProjectType.Augmentic)
-                    //{
-                    else
-                    {
-                        //Plugin.Logger.Log($"\t\t itemProjectType is NOT OK: {itemProjectType}");
-                        // Skip if the project type is not OK
-                        //return true;
-                    }
-                }
+                //        itemId = magnumProjectsController.CreateMagnumProjectWithMods(itemProjectType, itemId, rarityExtraBoost);
+                //    }
+                //    //else if (itemProjectType == MagnumProjectType.None ||
+                //    //         itemProjectType == MagnumProjectType.Mercenary ||
+                //    //         itemProjectType == MagnumProjectType.MercenaryClass ||
+                //    //         itemProjectType == MagnumProjectType.QuasiPact ||
+                //    //         itemProjectType == MagnumProjectType.Augmentic)
+                //    //{
+                //    else
+                //    {
+                //        //Plugin.Logger.Log($"\t\t itemProjectType is NOT OK: {itemProjectType}");
+                //        // Skip if the project type is not OK
+                //        //return true;
+                //    }
+                //}
 
 
 
@@ -105,22 +105,23 @@ namespace QM_PathOfQuasimorph.Core
                 string formattedStackTrace = stackTrace.ToString();
                 Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch :: Prefix :: Called by: {formattedStackTrace}");
                 */
+                Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch");
+                Plugin.Logger.Log($"wrapper {itemId}");
+                var wrapper = MetadataWrapper.SplitItemUid(itemId);
+                Plugin.Logger.Log($"wrapper == null {wrapper == null}");
 
-                var magnumProjectWrapper = MetadataWrapper.SplitItemUid(itemId);
-
-                if (magnumProjectWrapper.PoqItem || magnumProjectWrapper.SerializedStorage)
+                if (wrapper.PoqItem || wrapper.SerializedStorage)
                 {
+                    Plugin.Logger.Log($"wrapper.PoqItem {wrapper.PoqItem}");
+                    Plugin.Logger.Log($"wrapper.SerializedStorage {wrapper.SerializedStorage}");
+
                     return true;
-                }
-
-
-                if (RecordCollection.HasRecord(itemId) == true)
-                {
-
                 }
 
                 if (RecordCollection.HasRecord(itemId) == false)
                 {
+                    Plugin.Logger.Log($"RecordCollection.HasRecord(itemId) == false");
+
                     var mobRarityBoost = false;
 
                     // Item is OK

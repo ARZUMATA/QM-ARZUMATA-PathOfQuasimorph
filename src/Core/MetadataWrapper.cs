@@ -16,6 +16,7 @@ namespace QM_PathOfQuasimorph.Core
         public bool PoqItem { get; set; }
         public bool SerializedStorage { get; set; }
 
+        [Obsolete]
         public MetadataWrapper(MagnumProject newProject)
         {
             // Generate metadata
@@ -77,7 +78,8 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Avoid object creation — fast path
-        public static string GetPoqItemId(MagnumProject project)
+        [Obsolete]
+        public static string GetPoqItemIdFromProject(MagnumProject project)
         {
             var id = project.DevelopId;
             var isPoq = IsPoqProject(project);
