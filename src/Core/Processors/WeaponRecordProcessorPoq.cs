@@ -64,17 +64,17 @@ namespace QM_PathOfQuasimorph.Core.Processors
         {
         }
 
-        internal override void ProcessRecord()
+        internal override void ProcessRecord(ref string boostedParamString)
         {
             ApplyTraits();
-            ApplyParameters();
+            ApplyParameters(ref boostedParamString);
         }
 
-        private void ApplyParameters()
+        private void ApplyParameters(ref string boostedParamString)
         {
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
-            string boostedParamString;
+            //string boostedParamString;
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 

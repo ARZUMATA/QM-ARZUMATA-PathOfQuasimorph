@@ -566,7 +566,7 @@ namespace QM_PathOfQuasimorph.Core
                   .SetComparsionValue(oldVal.ToString());
 
                 // Ranged Combat
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _basicRangeAccuracy
                 (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "rangeAccuracy");
@@ -596,7 +596,7 @@ namespace QM_PathOfQuasimorph.Core
                     .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // Close Combat
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _hitChance
                 (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "weaponsDamageBonus");
@@ -645,7 +645,7 @@ namespace QM_PathOfQuasimorph.Core
                     .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // Defense
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _dodgeChance
                 (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "dodge");

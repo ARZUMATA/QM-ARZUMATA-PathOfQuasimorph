@@ -37,7 +37,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             this.itemId = itemId;
         }
 
-        internal abstract void ProcessRecord();
+        internal abstract void ProcessRecord(ref string boostedParamString);
 
         internal float GetFinalModifier(float baseModifier, int numToHinder, int numToImprove, ref int improvedCount, ref int hinderedCount, string boostedParamString, ref bool increase, string stat, Logger _logger)
         {

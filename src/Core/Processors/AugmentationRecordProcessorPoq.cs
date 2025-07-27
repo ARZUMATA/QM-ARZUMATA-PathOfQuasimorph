@@ -29,7 +29,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
         {
         }
 
-        internal override void ProcessRecord()
+        internal override void ProcessRecord(ref string boostedParamString)
         {
             ApplyParameters();
         }
@@ -125,7 +125,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{woundSlot}_{itemId}");
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{woundSlot}_{itemId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord();
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     //records.Add(augmentationRecordNew);
                     // TODO
 
