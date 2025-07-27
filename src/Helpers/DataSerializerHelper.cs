@@ -33,7 +33,20 @@ public static class DataSerializerHelper
         return JsonConvert.DeserializeObject<T>(json, settings);
     }
 
-    private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings();
+    public static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings();
+
+    public static readonly JsonSerializerSettings _jsonSettingsPoq = new JsonSerializerSettings
+    {
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+        NullValueHandling = NullValueHandling.Include,
+        Formatting = Formatting.Indented,
+        ObjectCreationHandling = ObjectCreationHandling.Replace,
+        TypeNameHandling = TypeNameHandling.Objects,
+        MissingMemberHandling = MissingMemberHandling.Error,
+        ContractResolver = new DataSerializerHelper.CompositeItemRecordResolver(),
+        MaxDepth = 10,
+    };
+
 
     public static string SerializeData<T>(T _data) where T : class
     {

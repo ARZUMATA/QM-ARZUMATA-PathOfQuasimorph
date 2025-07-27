@@ -17,18 +17,6 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal class ItemRecordsControllerPoq
     {
-        private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
-        {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            NullValueHandling = NullValueHandling.Include,
-            Formatting = Formatting.Indented,
-            ObjectCreationHandling = ObjectCreationHandling.Replace,
-            TypeNameHandling = TypeNameHandling.Objects,
-            MissingMemberHandling = MissingMemberHandling.Error,
-            ContractResolver = new DataSerializerHelper.CompositeItemRecordResolver(),
-            MaxDepth = 10,
-        };
-
         internal AugmentationRecordProcessorPoq augmentationRecordProcessorPoq;
         internal ImplantRecordProcessorPoq implantRecordProcessorPoq;
         internal WeaponRecordProcessorPoq weaponRecordProcessorPoq;
