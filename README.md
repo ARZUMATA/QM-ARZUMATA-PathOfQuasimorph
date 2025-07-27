@@ -206,3 +206,12 @@ Thanks community for feedback.
 - Enabled an option to toggle mob generation.
 - Updated helper functions and logger for better performance.
 - Updated Unity assets.
+
+## 1.6-pre (7935d11)
+### Enhancements
+- Major refactor of item serialization architecture (Magnum Projects removed)
+- Added `MobModifier` rarity, items get boosted stats from mob rarity as well
+- Added support for **augmentations**, **implants**
+
+### Bug Fixes
+- Fixed unbreakable entry display in tooltips
