@@ -33,6 +33,7 @@ namespace QM_PathOfQuasimorph.Core
         internal static Camera camera = null;
         internal static PixelizatorCameraAttachment pixelizatorCameraAttachment = null;
         private static Logger _logger = new Logger(null, typeof(PathOfQuasimorph));
+        public static IModContext _context;
 
         public static PerkFactory perkFactoryState { get; private set; }
 
@@ -84,24 +85,29 @@ namespace QM_PathOfQuasimorph.Core
         [Hook(ModHookType.AfterSpaceLoaded)]
         public static void CleanupModeAfterSpaceLoaded(IModContext context)
         {
-            CleanupSystem.CleanObsoleteProjects(context);
+            _logger.Log($"AfterSpaceLoaded");
+            CleanupSystem.CleanObsoleteProjects(context, true);
         }
 
         [Hook(ModHookType.MainMenuStarted)]
-        public static void BeforeDungeonLoaded(IModContext context)
+        public static void MainMenuStarted(IModContext context)
         {
+            _context = context;
+            _logger.Log($"MainMenuStarted");
             perkFactoryState = context.State.Get<PerkFactory>();
         }
 
         [Hook(ModHookType.DungeonStarted)]
         public static void DungeonStarted(IModContext context)
         {
+            _logger.Log($"DungeonStarted");
             Initialize();
         }
         
         [Hook(ModHookType.SpaceStarted)]
         public static void SpaceStarted(IModContext context)
         {
+            _logger.Log($"SpaceStarted");
             CleanupSystem.CleanObsoleteProjects(context, true);
             creaturesControllerPoq.CleanCreatureDataPoq();
         }
@@ -109,6 +115,7 @@ namespace QM_PathOfQuasimorph.Core
         [Hook(ModHookType.DungeonFinished)]
         public static void DungeonFinished(IModContext context)
         {
+            _logger.Log($"DungeonFinished");
             CleanupSystem.CleanObsoleteProjects(context, true);
             isInitialized = false;
             dungeonGameMode = null;

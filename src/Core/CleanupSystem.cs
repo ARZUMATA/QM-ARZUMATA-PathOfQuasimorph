@@ -62,7 +62,7 @@ namespace QM_PathOfQuasimorph.Core
             return items;
         }
 
-        internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false)
+        internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false, bool force = false)
         {
             List<string> idsToKeep = new List<string>();
 
@@ -84,7 +84,7 @@ namespace QM_PathOfQuasimorph.Core
             // Cleanup magnum projects.
             if (cleanProjects)
             {
-                CleanupMagnumProjects(context, idsToKeep);
+                CleanupMagnumProjects(context, idsToKeep, force);
             }
         }
 
@@ -206,6 +206,8 @@ namespace QM_PathOfQuasimorph.Core
             Stations stations = context.State.Get<Stations>();
             List<string> items = new List<string>();
 
+            _logger.Log("CleanStationInternalStorage");
+
             if (stations != null)
             {
                 foreach (var station in stations.Values)
@@ -225,6 +227,8 @@ namespace QM_PathOfQuasimorph.Core
         {
             ItemsOnFloor itemsOnFloor = context.State.Get<ItemsOnFloor>();
             List<string> items = new List<string>();
+
+            _logger.Log("CleanupItemsOnFloor");
 
             if (itemsOnFloor != null)
             {
@@ -258,12 +262,12 @@ namespace QM_PathOfQuasimorph.Core
             return items;
         }
 
-        internal static void CleanupMagnumProjects(IModContext context, List<string> idsToKeep)
+        internal static void CleanupMagnumProjects(IModContext context, List<string> idsToKeep, bool force = false)
         {
             // Get the current game time (you can also use Time.time or Time.unscaledTime depending on your need)
             float currentTime = Time.time;
 
-            if (currentTime - lastIntervalCheckTime >= interval)
+            if (currentTime - lastIntervalCheckTime >= interval || force)
             {
                 // We need to quick cleanup magnum projects that are no longer in use by anything.
                 // Mercs, mission rewards, station cargo.
@@ -279,25 +283,32 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"magnumProjects != null");
                     foreach (var project in magnumProjects.Values.ToList()) // Using ToList() to avoid modification during iteration
                     {
+                        _logger.Log($"\t checking project {project.DevelopId}");
+
                         var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
 
                         if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
                         {
-                            if (MetadataWrapper.IsPoqItemUid(itemId))
+                            if (MetadataWrapper.IsPoqItemUid(itemId) && !MetadataWrapper.IsSerializedStorage(itemId))
                             {
+                                // Handle our dataholder project
                                 throw new Exception($"CleanupMagnumProjects: trying to cleanup poq item but record is missing.");
                             }
                         }
-
-                        //var projectWrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemIdFromProject(project));
-                        _logger.Log($"PoqItem {wrapper.PoqItem}, SerializedStorage {wrapper.SerializedStorage}");
-
-                        if (!wrapper.SerializedStorage && wrapper.PoqItem && !idsToKeep.Contains(wrapper.ReturnItemUid()))
+                        else
                         {
-                            _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {wrapper.ReturnItemUid()}");
+                            // Here we assume record exist in records collection already so we remove any project that is POQ but not dataholder.
 
-                            magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
+                            _logger.Log($"PoqItem {wrapper.PoqItem}, SerializedStorage {wrapper.SerializedStorage}");
+
+                            if (!wrapper.SerializedStorage && wrapper.PoqItem)
+                            {
+                                _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {wrapper.ReturnItemUid()}");
+
+                                magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
+                            }
                         }
+
                     }
                 }
 
@@ -305,6 +316,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 // Reset the timer
                 lastIntervalCheckTime = currentTime;
+
+                RecordCollection.CleanObsoleteItemRecords(idsToKeep);
             }
         }
 

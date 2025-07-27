@@ -35,8 +35,7 @@ namespace QM_PathOfQuasimorph.Core
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("WoundSlotRecords", woundSlotRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("MetadataWrapperRecords", metadataWrapperRecords);
 
-            Plugin.Logger.Log($"itemRecords: {itemRecords}");
-
+            //Plugin.Logger.Log($"itemRecords: {itemRecords}");
         }
 
         public static void DeserializeCollection(string itemRecords, string woundSlotRecords, string magnumProjectWrapperRecords)
@@ -149,6 +148,25 @@ namespace QM_PathOfQuasimorph.Core
                 return metaData.BoostedString;
             }
             return string.Empty;
+        }
+
+        internal static void CleanObsoleteItemRecords(List<string> idsToKeep)
+        {
+            foreach (var id in idsToKeep)
+            {
+                ItemRecords.Remove(id);
+                MetadataWrapperRecords.Remove(id);
+
+                // Also process WoundSlots as they slightly different
+                // Example: RecreationCyborgHead_recreationCyborg_head_custom_poq_1337_1580887887000002
+                foreach (var entry in WoundSlotRecords.Keys.ToList())
+                {
+                    if (entry.Contains(id))
+                    {
+                        WoundSlotRecords.Remove(entry);
+                    }
+                }
+            }
         }
     }
 

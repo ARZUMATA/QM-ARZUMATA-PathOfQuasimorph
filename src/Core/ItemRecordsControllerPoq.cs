@@ -369,6 +369,7 @@ namespace QM_PathOfQuasimorph.Core
                         //canProcess = false;
                         break;
                     default:
+                        _logger.Log($"canProcess = false : {recordType.Name}");
                         canProcess = false;
                         break;
                 }
@@ -377,23 +378,12 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     var weaponRecord = rec as WeaponRecord;
 
-
-
-
-
-
-
-
-
-
-
-
-
                     if (weaponRecord != null)
                     {
                         //_logger.Log($"\t\t\t IsImplicit {weaponRecord.IsImplicit}");
                         if (weaponRecord.IsImplicit)
                         {
+                            _logger.Log($"canProcess = false : {weaponRecord.Id} - weaponRecord.IsImplicit");
                             canProcess = false;
                             break;
                         }
@@ -402,6 +392,8 @@ namespace QM_PathOfQuasimorph.Core
                         {
                             if (blacklistedCategories.Contains(mod))
                             {
+                                _logger.Log($"canProcess = false : {weaponRecord.Id}, {mod} - blacklistedCategories");
+
                                 canProcess = false;
                                 break;
                             }
