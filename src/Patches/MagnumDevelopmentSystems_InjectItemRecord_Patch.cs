@@ -99,12 +99,13 @@ namespace QM_PathOfQuasimorph.Core
                     if (wrapper.PoqItem)
                     {
                         Plugin.Logger.Log($"MagnumDevelopmentSystems_InjectItemRecord_Patch");
-
-                        Plugin.Logger.Log($"itemId  {itemId}");
-                        Plugin.Logger.Log($"wrapper == null {wrapper == null}");
+                        Plugin.Logger.Log($"itemId GetPoqItemIdFromProject: {itemId}");
 
                         // Since record already injected
                         itemId = wrapper.ReturnItemUid();
+
+                        Plugin.Logger.Log($"itemId ReturnItemUid: {itemId}");
+
                         var record = Data.Items.GetRecord(itemId) as CompositeItemRecord;
                         RecordCollection.ItemRecords.Add(itemId, record);
                         RecordCollection.MetadataWrapperRecords.Add(itemId, wrapper);

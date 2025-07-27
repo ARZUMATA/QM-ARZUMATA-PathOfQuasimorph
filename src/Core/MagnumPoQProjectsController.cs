@@ -90,8 +90,11 @@ namespace QM_PathOfQuasimorph.Core
             var randomUidInjected = digits.ReturnUID();
             newProject.StartTime = DateTime.FromBinary(MAGNUM_PROJECT_START_TIME);
             newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected));
+            newProject.ModificationsCount = 3;
 
             _logger.Log($"randomUidInjected {randomUidInjected}");
+            _logger.Log($"newProject.StartTime {newProject.StartTime}");
+            _logger.Log($"newProject.FinishTime {newProject.FinishTime}");
             _logger.Log($"IsSerializedStorage {MetadataWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
 
             //MagnumDevelopmentSystem.InjectItemRecord(newProject);

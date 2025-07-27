@@ -17,13 +17,14 @@ namespace QM_PathOfQuasimorph.Core
         public static Dictionary<string, WoundSlotRecord> WoundSlotRecords { get; private set; } = new Dictionary<string, WoundSlotRecord>();
 
         public static Dictionary<string, MetadataWrapper> MetadataWrapperRecords { get; private set; } = new Dictionary<string, MetadataWrapper>();
+        private static Logger _logger = new Logger(null, typeof(RecordCollection));
 
         public void Init()
         {
         }
         public static void SerializeCollection()
         {
-            Plugin.Logger.Log($"SerializeCollection");
+            _logger.Log($"SerializeCollection");
 
             PathOfQuasimorph.magnumProjectsController.CreateDataHolderProject();
             var itemRecords = DataSerializerHelper.SerializeData<Dictionary<string, CompositeItemRecord>>(ItemRecords, DataSerializerHelper._jsonSettingsPoq);
@@ -35,7 +36,12 @@ namespace QM_PathOfQuasimorph.Core
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("WoundSlotRecords", woundSlotRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("MetadataWrapperRecords", metadataWrapperRecords);
 
-            //Plugin.Logger.Log($"itemRecords: {itemRecords}");
+            _logger.Log($"List_ItemRecords: {ItemRecords.Count}");
+            _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
+            _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
+            //_logger.Log($"itemRecords: {itemRecords}");
+            _logger.Log($"SerializeCollection Done");
+
         }
 
         public static void DeserializeCollection(string itemRecords, string woundSlotRecords, string magnumProjectWrapperRecords)
@@ -44,28 +50,28 @@ namespace QM_PathOfQuasimorph.Core
             WoundSlotRecords = DataSerializerHelper.DeserializeData<Dictionary<string, WoundSlotRecord>>(woundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
             MetadataWrapperRecords = DataSerializerHelper.DeserializeData<Dictionary<string, MetadataWrapper>>(magnumProjectWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
 
-            Plugin.Logger.Log($"List_ItemRecords: {ItemRecords.Count}");
-            Plugin.Logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
-            Plugin.Logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
+            _logger.Log($"List_ItemRecords: {ItemRecords.Count}");
+            _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
+            _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
 
-            Plugin.Logger.Log($"Verify records");
+            _logger.Log($"Verify records");
 
             // This may be time consuming as we need to get item descriptors as we don't serialize them (idk if we need it tho)
             // So we iterate all desciptors collections and find descriptor we need
 
             foreach (var itemRecord in ItemRecords)
             {
-                Plugin.Logger.Log($"\t itemRecord: {itemRecord}");
+                _logger.Log($"\t itemRecord: {itemRecord}");
 
                 var compositeRecord = itemRecord.Value;
                 var baseIdExist = MetadataWrapper.TryGetBaseId(compositeRecord.Id, out string baseId);
 
-                Plugin.Logger.Log($"\t baseId: {baseId}");
-                Plugin.Logger.Log($"\t baseIdExist: {baseIdExist}");
+                _logger.Log($"\t baseId: {baseId}");
+                _logger.Log($"\t baseIdExist: {baseIdExist}");
 
                 if (baseIdExist)
                 {
-                    Plugin.Logger.Log($"\t Data.Descriptors.Count: {Data.Descriptors.Count}");
+                    _logger.Log($"\t Data.Descriptors.Count: {Data.Descriptors.Count}");
 
                     // Iterate every record to get proper descriptor
                     foreach (var record in itemRecord.Value.Records)
@@ -79,12 +85,12 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (Data.Items._records.ContainsKey(itemRecord.Key))
                     {
-                        Plugin.Logger.Log($"\t Data.Items._records removing key {itemRecord.Key}");
+                        _logger.Log($"\t Data.Items._records removing key {itemRecord.Key}");
 
                         Data.Items._records.Remove(itemRecord.Key);
                     }
 
-                    Plugin.Logger.Log($"\t Data.Items._records adding key {itemRecord.Key} and compositeRecord {compositeRecord}");
+                    _logger.Log($"\t Data.Items._records adding key {itemRecord.Key} and compositeRecord {compositeRecord}");
 
                     Data.Items._records.Add(compositeRecord.Id, compositeRecord);
 
@@ -126,7 +132,7 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     if (value._ids[i] == baseId)
                     {
-                        Plugin.Logger.Log($"\t\t\t MATCH FOUND! ID: {baseId}");
+                        _logger.Log($"\t\t\t MATCH FOUND! ID: {baseId}");
 
                         return value._descriptors[i];
                     }
@@ -152,21 +158,49 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanObsoleteItemRecords(List<string> idsToKeep)
         {
-            foreach (var id in idsToKeep)
-            {
-                ItemRecords.Remove(id);
-                MetadataWrapperRecords.Remove(id);
+            _logger.Log($"CleanObsoleteItemRecords");
 
-                // Also process WoundSlots as they slightly different
-                // Example: RecreationCyborgHead_recreationCyborg_head_custom_poq_1337_1580887887000002
-                foreach (var entry in WoundSlotRecords.Keys.ToList())
+            foreach (var id in ItemRecords.Keys.ToList())
+            {
+                if (!idsToKeep.Contains(id))
                 {
-                    if (entry.Contains(id))
-                    {
-                        WoundSlotRecords.Remove(entry);
-                    }
+                    _logger.Log($"removing: {id} from ItemRecords");
+                    ItemRecords.Remove(id);
                 }
             }
+
+            foreach (var id in MetadataWrapperRecords.Keys.ToList())
+            {
+                if (!idsToKeep.Contains(id))
+                {
+                    _logger.Log($"removing: {id} from MetadataWrapperRecords");
+                    MetadataWrapperRecords.Remove(id);
+                }
+            }
+
+            // Also process WoundSlots as they slightly different
+            // Example: RecreationCyborgHead_recreationCyborg_head_custom_poq_1337_1580887887000002
+
+            foreach (var id in WoundSlotRecords.Keys.ToList())
+            {
+                int firstUnderscoreIndex = id.IndexOf('_');
+                if (firstUnderscoreIndex == -1)
+                {
+                    _logger.LogWarning($"not removing: {id} from WoundSlotRecords (no underscore)");
+                    //WoundSlotRecords.Remove(id);
+                    continue;
+                }
+
+                string suffix = id.Substring(firstUnderscoreIndex + 1); // everything after first '_'
+
+                if (!idsToKeep.Contains(suffix))
+                {
+                    _logger.Log($"removing: {id} from WoundSlotRecords");
+                    WoundSlotRecords.Remove(id);
+                }
+            }
+
+            SerializeCollection();
         }
     }
 

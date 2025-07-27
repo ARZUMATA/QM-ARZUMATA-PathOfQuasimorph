@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -54,6 +55,16 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         if (MetadataWrapper.IsPoqItemUid(_factory._lastShowedItem.Id))
                         {
+                            _logger.Log("HandlePoqTooltip: trying to get poq item but record is missing.");
+                            foreach (var rec in RecordCollection.MetadataWrapperRecords)
+                            {
+                                _logger.Log($"rec {rec.Key}");
+                                _logger.Log($"\t\t {rec.Value.ReturnItemUid()}");
+
+                            }
+
+                            _logger.Log("HandlePoqTooltip: trying to get poq item but record is missing.");
+
                             throw new Exception($"HandlePoqTooltip: trying to get poq item but record is missing.");
                         }
                     }

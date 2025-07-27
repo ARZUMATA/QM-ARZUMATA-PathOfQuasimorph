@@ -64,6 +64,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false, bool force = false)
         {
+            _logger.Log($"CleanObsoleteProjects");
             List<string> idsToKeep = new List<string>();
 
             var listMagnumCargo = CleanupMagnumCargo(context);
@@ -73,6 +74,14 @@ namespace QM_PathOfQuasimorph.Core
             var listCreatureData = CleanupCreatureData(context);
             var listMagnumDepartmentsData = CleanupItemsMagnumDepartments(context);
 
+            _logger.Log($"Lists count:");
+            _logger.Log($"\t listMagnumCargo {listMagnumCargo.Count}");
+            _logger.Log($"\t listMissionRewards {listMissionRewards.Count}");
+            _logger.Log($"\t listStationItems {listStationItems.Count}");
+            _logger.Log($"\t listMercenariesCargo {listMercenariesCargo.Count}");
+            _logger.Log($"\t listCreatureData {listCreatureData.Count}");
+            _logger.Log($"\t listMagnumDepartmentsData {listMagnumDepartmentsData.Count}");
+
             // Dedupe? There are not many entries anyway.
             idsToKeep.AddRange(listMagnumCargo);
             idsToKeep.AddRange(listMissionRewards);
@@ -80,6 +89,8 @@ namespace QM_PathOfQuasimorph.Core
             idsToKeep.AddRange(listCreatureData);
             idsToKeep.AddRange(listMagnumDepartmentsData);
             idsToKeep.AddRange(listStationItems);
+
+            _logger.Log($"\t idsToKeep {idsToKeep.Count}");
 
             // Cleanup magnum projects.
             if (cleanProjects)

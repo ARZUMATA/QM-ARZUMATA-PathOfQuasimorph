@@ -16,7 +16,6 @@ namespace QM_PathOfQuasimorph.Core
             public static bool Prefix(EscScreen __instance)
             {
                 // Save our metadata right bewoe gamesave
-                RecordCollection.SerializeCollection();
                 CleanupSystem.CleanObsoleteProjects(_context, true, true);
                 Plugin.Logger.Log($"EscScreen");
                 return true;

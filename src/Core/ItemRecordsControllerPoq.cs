@@ -108,7 +108,7 @@ namespace QM_PathOfQuasimorph.Core
             string boostedParamString = string.Empty;
             ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
-          
+
             foreach (var recordEntry in newObj.Records)
             {
                 // Replace Id since we have new one now
@@ -125,6 +125,8 @@ namespace QM_PathOfQuasimorph.Core
                 // for now we use in-game methodsm, and directly add _records during loading saved data before
                 Data.Items.AddRecord(newId, recordEntry);
             }
+
+            // newId = ParseHelper.ParseId(newId);
 
             foreach (var recordEntry in obj.Records)
             {
@@ -174,6 +176,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"weaponRecord processing");
 
                     WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
+                    // WeaponRecord weaponRecordNew = weaponRecord.Clone($"*{itemId}");
                     weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, itemId);
                     weaponRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(weaponRecordNew);
