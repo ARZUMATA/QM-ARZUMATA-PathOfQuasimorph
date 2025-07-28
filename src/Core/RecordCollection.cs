@@ -100,10 +100,6 @@ namespace QM_PathOfQuasimorph.Core
 
                     Data.Items._records.Add(compositeRecord.Id, compositeRecord);
 
-                    // Add localization
-                    Localization.DuplicateKey("item." + baseId + ".name", "item." + compositeRecord.Id + ".name");
-                    Localization.DuplicateKey("item." + baseId + ".shortdesc", "item." + compositeRecord.Id + ".shortdesc");
-
                     // Add item transformations
                     _logger.Log($"Checking ItemTransformationRecord");
 
@@ -122,6 +118,32 @@ namespace QM_PathOfQuasimorph.Core
                         _logger.Log($"ItemTransformationRecord - exists: result will be item count {itemTransformationRecord.OutputItems.Count}");
                         Data.ItemTransformation.AddRecord(compositeRecord.Id, itemTransformationRecord.Clone(compositeRecord.Id));
                     }
+
+                    if (GetBoostedString(itemRecord.Key) == null)
+                    {
+                        _logger.Log($"\t {itemRecord.Key} is missing BoostedString");
+
+                        if (MetadataWrapperRecords.TryGetValue(itemRecord.Key, out MetadataWrapper metaData))
+                        {
+                            _logger.Log($"\t metaData.SerializedStorage {metaData.SerializedStorage}");
+
+                            if (!metaData.SerializedStorage)
+                            {
+                                // Since we no longer use boostedParam in ticks metadata and relay on MetaData, we need to migrate this as well.
+                                var boostedParam = DigitInfo.GetBoostedParam(metaData.FinishTime.Ticks);
+                                if (boostedParam != 99)
+                                {
+                                    _logger.Log($"\t boostedParam: {boostedParam} for {itemRecord.Key}");
+                                    metaData.BoostedString = RaritySystem.ParamIdentifiers[boostedParam];
+                                }
+                            }
+                        }
+                    }
+
+                    // Add localization
+                    Localization.DuplicateKey("item." + baseId + ".name", "item." + compositeRecord.Id + ".name");
+                    Localization.DuplicateKey("item." + baseId + ".shortdesc", "item." + compositeRecord.Id + ".shortdesc");
+                    RaritySystem.AddAffixes(compositeRecord.Id);
 
                 }
                 //Data.Items.AddRecord(itemRecord.Id, itemRecord);

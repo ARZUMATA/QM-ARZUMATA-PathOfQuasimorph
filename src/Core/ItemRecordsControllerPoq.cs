@@ -85,10 +85,7 @@ namespace QM_PathOfQuasimorph.Core
             CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
 
-            Localization.DuplicateKey("item." + itemIdOrigin + ".name", "item." + newId + ".name");
-            Localization.DuplicateKey("item." + itemIdOrigin + ".shortdesc", "item." + newId + ".shortdesc");
-
-           _logger.Log($"Checking ItemTransformationRecord");
+            _logger.Log($"Checking ItemTransformationRecord");
 
             ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
 
@@ -144,6 +141,8 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(newId)}");
             _logger.Log($"oldId {Data.Items._records.Keys.Contains(itemIdOrigin)}");
 
+            Localization.DuplicateKey("item." + itemIdOrigin + ".name", "item." + newId + ".name");
+            Localization.DuplicateKey("item." + itemIdOrigin + ".shortdesc", "item." + newId + ".shortdesc");
             RaritySystem.AddAffixes(newId);
 
             return newId;

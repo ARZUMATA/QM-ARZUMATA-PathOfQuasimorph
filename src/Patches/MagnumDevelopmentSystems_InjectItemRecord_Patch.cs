@@ -1,8 +1,9 @@
 ﻿using HarmonyLib;
 using MGSC;
+using ModConfigMenu;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using System.Linq;
+using System.Reflection.Emit;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
@@ -105,6 +106,16 @@ namespace QM_PathOfQuasimorph.Core
                         itemId = wrapper.ReturnItemUid();
 
                         Plugin.Logger.Log($"itemId ReturnItemUid: {itemId}");
+                        if (!wrapper.SerializedStorage)
+                        {
+                            // Since we no longer use boostedParam in ticks metadata and relay on MetaData, we need to migrate this as well.
+                            var boostedParam = DigitInfo.GetBoostedParam(wrapper.FinishTime.Ticks);
+                            if (boostedParam != 99)
+                            {
+                                _logger.Log($"\t boostedParam: {boostedParam} for {itemId}");
+                                wrapper.BoostedString = RaritySystem.ParamIdentifiers[boostedParam];
+                            }
+                        }
 
                         var record = Data.Items.GetRecord(itemId) as CompositeItemRecord;
                         RecordCollection.ItemRecords.Add(itemId, record);
