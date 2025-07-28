@@ -91,14 +91,7 @@ namespace QM_PathOfQuasimorph.Core
                         _factory.AddCompareBlock(_factory._lastShowedItem);
                         //_factory.AddCompareBlock(_factory._lastShowedItem);
 
-                        if (_factory._lastShowedItem.Is<WeaponRecord>())
-                        {
-                            InitItemComparsionWeapon(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
-                        }
-                        else if (_factory._lastShowedItem.Is<BreakableItemRecord>())
-                        {
-                            InitItemComparsionArmor(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
-                        }
+                        InitItemComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
 
                         _factory._tooltip.IsAdditionalTooltip = true;
                     }
@@ -178,22 +171,36 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitItemComparsionWeapon(PickupItem item, string genericId)
+        private static void InitItemComparsion(PickupItem item, string genericId)
         {
-            InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
-            InitWeapon(item.Record<WeaponRecord>(), genericId, item);
-            InitTraits(item.Record<WeaponRecord>(), genericId, item);
-            InitWeight(item.Record<ItemRecord>(), genericId, item);
+            if (_factory._lastShowedItem.Is<BreakableItemRecord>())
+            {
+                InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<WeaponRecord>())
+            {
+                InitWeapon(item.Record<WeaponRecord>(), genericId, item);
+                InitTraits(item.Record<WeaponRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<ResistRecord>())
+            {
+                InitArmor(item.Record<ResistRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<AugmentationRecord>())
+            {
+
+            }
+            if (_factory._lastShowedItem.Is<ItemRecord>())
+            {
+                InitWeight(item.Record<ItemRecord>(), genericId, item);
+            }
         }
 
-        private static void InitItemComparsionArmor(PickupItem item, string genericId)
-        {
-            InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
-            InitArmor(item.Record<ResistRecord>(), genericId, item);
-            InitWeight(item.Record<ItemRecord>(), genericId, item);
-        }
-
-
+    
+        
         private static void InitArmor(ResistRecord recordPoq, string genericId, PickupItem item)
         {
             var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(genericId, true);
