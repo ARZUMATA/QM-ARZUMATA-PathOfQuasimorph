@@ -66,6 +66,11 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
         internal override void ProcessRecord(ref string boostedParamString)
         {
+            if (itemRarity == ItemRarity.Standard)
+            {
+                return;
+            }
+
             ApplyTraits();
             ApplyParameters(ref boostedParamString);
         }
@@ -151,6 +156,11 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
         internal void ApplyTraits()
         {
+            if (itemRarity == ItemRarity.Standard)
+            {
+                return;
+            }
+
             // Apply Traits
             var traitsForItemType = itemRecordsControllerPoq.GetAddeableTraits(ItemTraitType.WeaponTrait);
             Helpers.ShuffleList(traitsForItemType);

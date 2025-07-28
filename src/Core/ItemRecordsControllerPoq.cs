@@ -50,10 +50,18 @@ namespace QM_PathOfQuasimorph.Core
             var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
             _logger.Log($"\t itemRarity {itemRarity}");
 
-            if (itemRarity == ItemRarity.Standard)
-            {
-                return itemIdOrigin;
-            }
+            /* 
+             * We can't drop processing even if rarity standard and we do nothing.            
+             * Reason for it is simple: if we put non-rarity augment on the mercenary and remove augment back,
+             * it triggers item creation and we can't decide if we need to pass it as is or apply rarity as item is still non-rarity.
+             * Tracking such items in some controller class is weird and is prone to even more errors so it's better to just create a new item completely
+             * and apply Standard rarity and do nothing.
+            */
+
+            //if (itemRarity == ItemRarity.Standard)
+            //{
+            //    return itemIdOrigin;
+            //}
 
             if (!PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
             {
@@ -70,6 +78,12 @@ namespace QM_PathOfQuasimorph.Core
 
             _logger.Log($"\t randomUidInjected: {randomUidInjected}");
 
+
+            return CreateNew(itemIdOrigin, mobRarityBoost, itemRarity, randomUidInjected);
+        }
+
+        internal string CreateNew(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected)
+        {
             // Resulting UID
             var wrapper = new MetadataWrapper(
                  id: itemIdOrigin,

@@ -1283,6 +1283,11 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
+            if (wrapper.RarityClass == ItemRarity.Standard)
+            {
+                return;
+            }
+
             var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
 
             if (affix == null)

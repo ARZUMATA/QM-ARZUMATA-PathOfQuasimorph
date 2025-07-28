@@ -109,6 +109,11 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
         internal override void ProcessRecord(ref string boostedParamString)
         {
+            if (itemRarity == ItemRarity.Standard)
+            {
+                return;
+            }
+
             ApplyParameters();
         }
 
