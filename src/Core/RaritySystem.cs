@@ -1394,7 +1394,10 @@ namespace QM_PathOfQuasimorph.Core
 
             if (typeof(T) == typeof(int))
             {
-                tempValue = (float)Math.Ceiling(tempValue);
+                //tempValue = (float)Math.Ceiling(tempValue);
+                // While is most cases it'ok to have 1.01 become two but i need custom rounding
+                // Custom rounding: 1.3 or higher rounds up, below stays down
+                tempValue = Helpers.CustomRound(tempValue, 0.7f);
             }
 
             if (value is int intValue)

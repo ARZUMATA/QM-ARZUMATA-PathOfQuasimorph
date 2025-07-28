@@ -137,9 +137,43 @@ namespace QM_PathOfQuasimorph.Core.Processors
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
 
-                var value = keyValuePair.Value;
-                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                itemRecord.ImplicitBonusEffects[keyValuePair.Key] = value;
+                float valueFinal = 0;
+
+                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
+
+                switch (record.ValueFormat)
+                {
+                    case EffectViewShowValueFormat.Raw:
+                    case EffectViewShowValueFormat.MinusInt:
+                    case EffectViewShowValueFormat.MinusDamage:
+                    case EffectViewShowValueFormat.ReverseInt:
+                        var value = (int)keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value;
+                        break;
+                    case EffectViewShowValueFormat.Percent100:
+                    case EffectViewShowValueFormat.Percent100NoPlus:
+                    case EffectViewShowValueFormat.Percent100Abs:
+                        var value2 = keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value2;
+                        break;
+                }
+
+                //if (record.ValueFormat.ToString().Contains("int"))
+                //{
+                //    var value = (int)keyValuePair.Value;
+                //    PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                //    valueFinal = value;
+                //}
+                //else
+                //{
+                //    var value = keyValuePair.Value;
+                //    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                //    valueFinal = value;
+                //}
+
+                itemRecord.ImplicitBonusEffects[keyValuePair.Key] = (float)valueFinal;
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
@@ -149,9 +183,43 @@ namespace QM_PathOfQuasimorph.Core.Processors
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
 
-                var value = keyValuePair.Value;
-                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = value;
+                float valueFinal = 0;
+
+                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
+
+                switch (record.ValueFormat)
+                {
+                    case EffectViewShowValueFormat.Raw:
+                    case EffectViewShowValueFormat.MinusInt:
+                    case EffectViewShowValueFormat.MinusDamage:
+                    case EffectViewShowValueFormat.ReverseInt:
+                        var value = (int)keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value;
+                        break;
+                    case EffectViewShowValueFormat.Percent100:
+                    case EffectViewShowValueFormat.Percent100NoPlus:
+                    case EffectViewShowValueFormat.Percent100Abs:
+                        var value2 = keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value2;
+                        break;
+                }
+
+                //if (record.ValueFormat.ToString().Contains("int"))
+                //{
+                //    var value = (int)keyValuePair.Value;
+                //    PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                //    valueFinal = value;
+                //}
+                //else
+                //{
+                //    var value = keyValuePair.Value;
+                //    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                //    valueFinal = value;
+                //}
+
+                itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = (float)valueFinal;
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
@@ -161,9 +229,33 @@ namespace QM_PathOfQuasimorph.Core.Processors
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
 
-                var value = keyValuePair.Value;
-                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                itemRecord.CoreEffects[keyValuePair.Key] = value;
+                float valueFinal = 0;
+
+                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
+
+                switch (record.ValueFormat)
+                {
+                    case EffectViewShowValueFormat.Raw:
+                    case EffectViewShowValueFormat.MinusInt:
+                    case EffectViewShowValueFormat.MinusDamage:
+                    case EffectViewShowValueFormat.ReverseInt:
+                        var value = (int)keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value;
+                        break;
+                    case EffectViewShowValueFormat.Percent100:
+                    case EffectViewShowValueFormat.Percent100NoPlus:
+                    case EffectViewShowValueFormat.Percent100Abs:
+                        var value2 = keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value2;
+                        break;
+                }
+
+                //var value = keyValuePair.Value;
+                //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+
+                itemRecord.CoreEffects[keyValuePair.Key] = (float)valueFinal;
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");

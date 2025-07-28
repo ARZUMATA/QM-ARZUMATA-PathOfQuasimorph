@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Unity.Profiling;
 using UnityEngine;
 using Random = System.Random;
@@ -12,7 +13,22 @@ using Random = System.Random;
 internal static class Helpers
 {
     public static readonly Random _random = new Random();
+    public static float CustomRound(float value) => (float)Math.Floor(value + 0.7);
+    public static float CustomRound(float value, float threshold)
+    {
+        if (threshold < 0 || threshold >= 1)
+            throw new ArgumentOutOfRangeException(nameof(threshold), "Must be between 0 and 1");
 
+        float fractionalPart = value - (float)Math.Floor(value);
+        if (fractionalPart >= threshold)
+        {
+            return (float)Math.Ceiling(value);
+        }
+        else
+        {
+            return (float)Math.Floor(value);
+        }
+    }
     public static string FaceColorToHex(Color color) => $"#{color.r:F0}{color.g:F0}{color.b:F0}";
 
     public static string AlphaAwareColorToHex(Color color) =>
