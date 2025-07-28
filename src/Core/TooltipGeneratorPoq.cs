@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -74,9 +75,16 @@ namespace QM_PathOfQuasimorph.Core
                     if (wrappedItem.PoqItem)
                     {
                         _tooltip = _factory.BuildEmptyTooltip();
-                        _tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
-                        _tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
-                        _tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                        //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
+
+                        PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
+
+                        PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), RaritySystem.Colors[wrappedItem.RarityClass]);
+
+                        //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
+
+                        //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                        _factory.AddPanelToTooltip().SetValue(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
                         //_factory.AddPanelToTooltip().SetValue("Difference");
 
                         //_factory._tooltip.MakeRed();
@@ -166,7 +174,7 @@ namespace QM_PathOfQuasimorph.Core
             }
             else
             {
-                return $"<color=#{color}>{sign}{label}</color>";
+                return $"<color={color}>{sign}{label}</color>";
             }
         }
 
