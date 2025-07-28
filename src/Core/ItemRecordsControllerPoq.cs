@@ -45,10 +45,10 @@ namespace QM_PathOfQuasimorph.Core
 
         internal string CreateNew(string itemIdOrigin, bool mobRarityBoost)
         {
-            Plugin.Logger.Log($"CreateNew");
+            _logger.Log($"CreateNew");
 
             var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
-            Plugin.Logger.Log($"\t itemRarity {itemRarity}");
+            _logger.Log($"\t itemRarity {itemRarity}");
 
             if (itemRarity == ItemRarity.Standard)
             {
@@ -57,7 +57,7 @@ namespace QM_PathOfQuasimorph.Core
 
             if (!PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
             {
-                Plugin.Logger.Log($"\t CanProcessItemRecord FALSE, returning generic");
+                _logger.Log($"\t CanProcessItemRecord FALSE, returning generic");
                 return itemIdOrigin;
             }
 
@@ -68,7 +68,7 @@ namespace QM_PathOfQuasimorph.Core
             digits.Rarity = (int)itemRarity;
             var randomUidInjected = digits.ReturnUID();
 
-            Plugin.Logger.Log($"\t randomUidInjected: {randomUidInjected}");
+            _logger.Log($"\t randomUidInjected: {randomUidInjected}");
 
             // Resulting UID
             var wrapper = new MetadataWrapper(
@@ -80,7 +80,7 @@ namespace QM_PathOfQuasimorph.Core
 
             var newId = wrapper.ReturnItemUid();
 
-            Plugin.Logger.Log($"\t newId: {newId}");
+            _logger.Log($"\t newId: {newId}");
 
             CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
@@ -107,15 +107,18 @@ namespace QM_PathOfQuasimorph.Core
             ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
 
+            _logger.Log($"");
             foreach (var recordEntry in newObj.Records)
             {
                 // Replace Id since we have new one now
                 //recordEntry.Id = newId;
-                _logger.Log($"\t new recordEntry test {recordEntry.Id}");
                 //Data.Items.AddRecord(itemId, recordEntry);
-                Plugin.Logger.Log($"recordEntry.GetType().Name {recordEntry.GetType().Name}");
+                _logger.Log($"\t recordEntry newObject {recordEntry.Id}");
+                _logger.Log($"\t\t recordEntry Name {recordEntry.GetType().Name}");
+                _logger.Log($"\t\t recordEntry id {recordEntry.Id}");
 
-                Plugin.Logger.Log($"recordEntry.GetType().Name {newObj.PrimaryRecord.GetType().Name}");
+                _logger.Log($"\t\t recordEntry PrimaryRecord Name {newObj.PrimaryRecord.GetType().Name}");
+                _logger.Log($"\t\t recordEntry newObject id {newObj.PrimaryRecord.Id}");
 
                 // We can add records one by one which is OK if we one day start creating weaponized-augmentations
                 // or we can just do
@@ -125,14 +128,19 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             // newId = ParseHelper.ParseId(newId);
+            _logger.Log($"");
 
             foreach (var recordEntry in obj.Records)
             {
-                _logger.Log($"\t old recordEntry test {recordEntry.Id}");
-                Plugin.Logger.Log($"recordEntry.GetType().Name {recordEntry.GetType().Name}");
+                _logger.Log($"\t recordEntry oldObject {recordEntry.Id}");
+                _logger.Log($"\t\t recordEntry Name {recordEntry.GetType().Name}");
+                _logger.Log($"\t\t recordEntry id {recordEntry.Id}");
+
+                _logger.Log($"\t\t recordEntry PrimaryRecord Name {obj.PrimaryRecord.GetType().Name}");
+                _logger.Log($"\t\t recordEntry newObject id {obj.PrimaryRecord.Id}");
             }
 
-            Plugin.Logger.Log($"recordEntry.GetType().Name {obj.PrimaryRecord.GetType().Name}");
+            _logger.Log($"recordEntry.GetType().Name {obj.PrimaryRecord.GetType().Name}");
 
             //Data.Items.AddRecord(newId, newObj);
             RecordCollection.ItemRecords.Add(newId, newObj);
@@ -160,10 +168,9 @@ namespace QM_PathOfQuasimorph.Core
         {
             _logger.Log($"ApplyRarityStats");
 
-
             // Iterate over item records, apply parameters, return ready to go item itemTransformationRecord.
 
-            _logger.Log($"Iterating records list with count of {records.Count}");
+            _logger.Log($"Iterating records list with count of {oldRecords.Count}");
 
             foreach (BasePickupItemRecord basePickupItemRecord in oldRecords)
             {
@@ -175,7 +182,8 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     _logger.Log($"weaponRecord processing");
 
-                    WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
+                    WeaponRecord weaponRecordNew = ItemRecordHelpers.CloneWeaponRecord(weaponRecord, itemId);
+                    //WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
                     // WeaponRecord weaponRecordNew = weaponRecord.Clone($"*{itemId}");
                     weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, itemId);
                     weaponRecordProcessorPoq.ProcessRecord(ref boostedParamString);
