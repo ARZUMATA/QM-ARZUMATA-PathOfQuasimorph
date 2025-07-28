@@ -26,6 +26,9 @@ namespace QM_PathOfQuasimorph
         public bool EnableMobs { get; set; } = true;
 
         [JsonIgnore]
+        public bool ApplyRarityToMagnumItems { get; set; } = true;
+
+        [JsonIgnore]
         public Color RarityColor_Standard { get; set; } = Helpers.HexStringToUnityColor("#FFFFFF");
 
         [JsonIgnore]

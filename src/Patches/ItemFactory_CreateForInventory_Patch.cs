@@ -43,7 +43,10 @@ namespace QM_PathOfQuasimorph.Core
                 if (itemId.EndsWith("_custom"))
                 {
                     // It's item from production system. We don't apply rarity on crafted items.
-                    return true;
+                    if (Plugin.Config.ApplyRarityToMagnumItems == false)
+                    {
+                        return true;
+                    }
                 }
 
                 //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
