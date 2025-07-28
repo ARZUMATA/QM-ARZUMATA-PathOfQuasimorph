@@ -76,7 +76,7 @@ namespace QM_PathOfQuasimorph.Core
             //  "AttackWoundChanceMult",
         };
 
-        private Dictionary<MonsterMasteryTier, int> _masteryTierWeights = new Dictionary<MonsterMasteryTier, int>
+        public Dictionary<MonsterMasteryTier, int> _masteryTierWeights = new Dictionary<MonsterMasteryTier, int>
         {
             { MonsterMasteryTier.None,    1000 },     // Common folk
             { MonsterMasteryTier.Novice,    500 },     // Easier, common monsters

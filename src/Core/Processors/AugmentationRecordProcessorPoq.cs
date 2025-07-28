@@ -49,10 +49,15 @@ namespace QM_PathOfQuasimorph.Core.Processors
             Plugin.Logger.Log($"itemRecord.WoundSlotIds Count: {itemRecord.WoundSlotIds.Count}");
             List<string> newWoundSlotIds = new List<string>();
 
-            bool swapWoundslots = false;
+            bool addNewSlots = false; // I don't like how it works.
             bool randomizeSlotsStats = true;
 
-            if (swapWoundslots)
+            int howManySlotsToAdd = (int)itemRarity;
+            int howManySlotsAdded = 0;
+
+            // Add new wound slots with matched type based on rarity
+
+            if (addNewSlots)
             {
                 foreach (var woundSlot in itemRecord.WoundSlotIds)
                 {
@@ -74,6 +79,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
                     // Get all available slots with matching SlotType
                     var matchingSlots = Data.WoundSlots.Records
                     .Where(x => x.SlotType == slotType &&
+                                !itemRecord.WoundSlotIds.Contains(x.Id) &&
                                 x.ImplicitBonusEffects?.Count > 0 &&
                                 x.ImplicitPenaltyEffects?.Count > 0)
                     .ToList();
@@ -86,6 +92,8 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                     // Pick a random slot from the matching ones
                     var newSlot = matchingSlots[Helpers._random.Next(matchingSlots.Count)];
+
+                    _logger.Log($"newSlot {newSlot.Id}:");
 
                     _logger.Log($"ImplicitBonusEffects:");
                     foreach (var effect in newSlot.ImplicitBonusEffects)
@@ -100,16 +108,24 @@ namespace QM_PathOfQuasimorph.Core.Processors
                     }
 
                     newWoundSlotIds.Add(newSlot.Id);
+                    howManySlotsAdded++;
 
                     Plugin.Logger.Log($"Added new wound slot: {newSlot.Id} (type: {newSlot.SlotType})");
+
+                    if (howManySlotsToAdd == howManySlotsAdded)
+                    {
+                        Plugin.Logger.Log($"Added slots {howManySlotsToAdd}");
+
+                        break;
+                    }
                 }
 
                 Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");
 
-                if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
-                {
-                    itemRecord.WoundSlotIds = newWoundSlotIds;
-                }
+                //if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
+                //{
+                itemRecord.WoundSlotIds.AddRange(newWoundSlotIds);
+                //}
             }
 
 

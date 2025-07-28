@@ -26,6 +26,49 @@ namespace QM_PathOfQuasimorph
         public bool EnableMobs { get; set; } = true;
 
         [JsonIgnore]
+        public Color RarityColor_Standard { get; set; } = Helpers.HexStringToUnityColor("#FFFFFF");
+
+        [JsonIgnore]
+        public Color RarityColor_Enhanced { get; set; } = Helpers.HexStringToUnityColor("#8888FF");
+
+        [JsonIgnore]
+        public Color RarityColor_Advanced { get; set; } = Helpers.HexStringToUnityColor("#FFFF77");
+
+        [JsonIgnore]
+        public Color RarityColor_Premium { get; set; } = Helpers.HexStringToUnityColor("#AF6025");
+
+        [JsonIgnore]
+        public Color RarityColor_Prototype { get; set; } = Helpers.HexStringToUnityColor("#800080");
+
+        [JsonIgnore]
+        public Color RarityColor_Quantum { get; set; } = Helpers.HexStringToUnityColor("#FF0000");
+
+        [JsonIgnore]
+        public Color DifferenceColor_Positive { get; set; } = Helpers.HexStringToUnityColor("#2196F3");
+
+        [JsonIgnore]
+        public Color DifferenceColor_Negative { get; set; } = Helpers.HexStringToUnityColor("#F44336");
+
+        [JsonIgnore]
+        public Color DifferenceColor_Equal { get; set; } = Helpers.HexStringToUnityColor("#444444");
+
+        [JsonIgnore]
+        public Color MonsterMasteryColors_Novice { get; set; } = Helpers.HexStringToUnityColor("#8888FF");
+
+        [JsonIgnore]
+        public Color MonsterMasteryColors_Skilled { get; set; } = Helpers.HexStringToUnityColor("#FFFF77");
+
+        [JsonIgnore]
+        public Color MonsterMasteryColors_Expert { get; set; } = Helpers.HexStringToUnityColor("#800080");
+
+        [JsonIgnore]
+        public Color MonsterMasteryColors_Grandmaster { get; set; } = Helpers.HexStringToUnityColor("#FF0000");
+
+
+
+
+
+        [JsonIgnore]
         public bool CleanupMode { get; set; } = true;
 
         [JsonIgnore]
@@ -51,6 +94,7 @@ namespace QM_PathOfQuasimorph
 
         [JsonIgnore]
         public string About2 { get; set; }
+
 
 
         // MCM Related Start

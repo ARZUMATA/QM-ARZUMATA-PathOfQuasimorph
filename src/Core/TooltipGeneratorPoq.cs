@@ -29,9 +29,9 @@ namespace QM_PathOfQuasimorph.Core
             // #F44336  // Material Design red
             // #444444  // Gray
 
-            { "positive", "2196F3" },   // Positive or inverted positive
-            { "negative", "F44336" },    // Negative or inverted negative
-            { "equal", "444444" }
+            { "positive", "#2196F3" },   // Positive or inverted positive
+            { "negative", "#F44336" },    // Negative or inverted negative
+            { "equal", "#444444" }
         };
 
         public static void HandlePoqTooltip()
@@ -144,13 +144,13 @@ namespace QM_PathOfQuasimorph.Core
             string color = GetDifferenceColor(difference, invertColor);
             if (sign == "=")
             {
-                return $"<color=#{color}>{difference.ToString()}</color>";
+                return $"<color={color}>{difference.ToString()}</color>";
 
 
             }
             else
             {
-                return $"<color=#{color}>{sign}{difference.ToString()}</color>";
+                return $"<color={color}>{sign}{difference.ToString()}</color>";
             }
         }
 
@@ -160,7 +160,7 @@ namespace QM_PathOfQuasimorph.Core
             string color = GetDifferenceColor(difference, invertColor);
             if (sign == "=")
             {
-                return $"<color=#{color}>{label}</color>";
+                return $"<color={color}>{label}</color>";
 
 
             }

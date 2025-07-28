@@ -14,19 +14,15 @@ namespace QM_PathOfQuasimorph.PoqHelpers
         {
             string oldFilePath = weightPath;
             string backupFilePath = oldFilePath + ".backup";
-            string outputFilePath = oldFilePath; // Same as oldFilePath
             string newFilePath = embeddedFile;
-
-            // Backup the old file
-            if (File.Exists(oldFilePath))
-            {
-                File.Copy(oldFilePath, backupFilePath, true);
-            }
+            bool hasChanged = false;
 
             var oldLines = File.ReadAllLines(oldFilePath).ToList();
             var newLines = new List<string>();
+            var resultLines = new List<string>();
 
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(embeddedFile))
+            // Read embedded file
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(newFilePath))
             using (StreamReader reader = new StreamReader(stream))
             {
                 string line;
@@ -35,8 +31,6 @@ namespace QM_PathOfQuasimorph.PoqHelpers
                     newLines.Add(line);
                 }
             }
-
-            var resultLines = new List<string>();
 
             int oldIndex = 0;
             int newIndex = 0;
@@ -57,15 +51,15 @@ namespace QM_PathOfQuasimorph.PoqHelpers
                 // Check if both lines belong to the same section
                 if (oldLine.StartsWith("MonsterMasteries") && newLine.StartsWith("MonsterMasteries"))
                 {
-                    MergeSection(oldLines, newLines, resultLines, ref oldIndex, ref newIndex);
+                    hasChanged |= MergeSection(oldLines, newLines, resultLines, ref oldIndex, ref newIndex);
                 }
                 else if (oldLine.StartsWith("Arbitrary Values") && newLine.StartsWith("Arbitrary Values"))
                 {
-                    MergeArbitraryValues(oldLines, newLines, resultLines, ref oldIndex, ref newIndex);
+                    hasChanged |= MergeArbitraryValues(oldLines, newLines, resultLines, ref oldIndex, ref newIndex);
                 }
                 else if (!oldLine.Contains(",") || !newLine.Contains(","))
                 {
-                    // If not data lines, just copy and continue
+                    // If not data lines, just copy new line and continue
                     resultLines.Add(newLine);
                     oldIndex++;
                     newIndex++;
@@ -77,41 +71,63 @@ namespace QM_PathOfQuasimorph.PoqHelpers
 
                     if (oldKey == newKey)
                     {
-                        resultLines.Add(MergeRows(oldLine, newLine));
+                        string mergedRow = MergeRows(oldLine, newLine);
+                        resultLines.Add(mergedRow);
+
+                        // Check if the merged row is different from the old one
+                        if (mergedRow != oldLine)
+                            hasChanged = true;
+
                         oldIndex++;
                         newIndex++;
                     }
                     else
                     {
-                        // Key exists only in new file
+                        // Add new line as-is
                         resultLines.Add(newLine);
                         newIndex++;
+                        hasChanged = true; // New key introduced
                     }
                 }
             }
 
-            // Append any remaining lines from new file
+            // Append remaining new lines (if any)
             while (newIndex < newLines.Count)
             {
                 resultLines.Add(newLines[newIndex]);
+                hasChanged = true; // New lines added
                 newIndex++;
             }
 
-            // Overwrite the old file with migrated data
-            File.WriteAllLines(outputFilePath, resultLines);
-            Console.WriteLine("Migration completed successfully.");
+            // If changes were made, do backup and write
+            if (hasChanged)
+            {
+                string oldFileBackupPath = oldFilePath + ".backup";
+                if (File.Exists(oldFileBackupPath))
+                    File.Delete(oldFileBackupPath);
+
+                File.Copy(oldFilePath, oldFileBackupPath);
+                File.WriteAllLines(oldFilePath, resultLines);
+                Console.WriteLine("Migration completed with changes. Backup created.");
+            }
+            else
+            {
+                Console.WriteLine("No changes detected. Migration skipped.");
+            }
         }
 
-        private static void MergeSection(List<string> oldLines, List<string> newLines, List<string> resultLines, ref int oldIndex, ref int newIndex)
+        private static bool MergeSection(List<string> oldLines, List<string> newLines, List<string> resultLines, ref int oldIndex, ref int newIndex)
         {
+            bool sectionChanged = false;
+
             // Add the section header from new file
             resultLines.Add(newLines[newIndex]);
-            oldIndex++;
             newIndex++;
+            oldIndex++;
 
-            Dictionary<string, string> oldData = new Dictionary<string, string>();
+            var oldData = new Dictionary<string, string>();
 
-            // Read the current section from old file
+            // Read old section data
             while (oldIndex < oldLines.Count && !oldLines[oldIndex].StartsWith("Arbitrary Values"))
             {
                 string oldLine = oldLines[oldIndex];
@@ -124,54 +140,71 @@ namespace QM_PathOfQuasimorph.PoqHelpers
                 oldIndex++;
             }
 
-            // Read the current section from new file
+            // Read new section data
             while (newIndex < newLines.Count && !newLines[newIndex].StartsWith("Arbitrary Values"))
             {
                 string newLine = newLines[newIndex];
-                if (!string.IsNullOrWhiteSpace(newLine) && newLine.Contains(","))
+                string[] newSplit = newLine.Split(',');
+
+                if (!string.IsNullOrWhiteSpace(newLine) && newSplit.Length > 0 && !string.IsNullOrEmpty(newSplit[0]))
                 {
-                    string[] newSplit = newLine.Split(',');
-                    if (!string.IsNullOrEmpty(newSplit[0]))
+                    if (oldData.TryGetValue(newSplit[0], out string oldEntry))
                     {
-                        if (oldData.TryGetValue(newSplit[0], out string oldEntry))
-                            resultLines.Add(MergeRows(oldEntry, newLine));
-                        else
-                            resultLines.Add(newLine);
+                        string mergedRow = MergeRows(oldEntry, newLine);
+                        resultLines.Add(mergedRow);
+                        if (mergedRow != oldEntry)
+                            sectionChanged = true;
+                    }
+                    else
+                    {
+                        resultLines.Add(newLine);
+                        sectionChanged = true;
                     }
                 }
                 newIndex++;
             }
+
+            return sectionChanged;
         }
 
-        private static void MergeArbitraryValues(List<string> oldLines, List<string> newLines, List<string> resultLines, ref int oldIndex, ref int newIndex)
+        private static bool MergeArbitraryValues(List<string> oldLines, List<string> newLines, List<string> resultLines, ref int oldIndex, ref int newIndex)
         {
-            // Add the Arbitrary Values header from new file
+            bool changed = false;
+
+            // Add header
             resultLines.Add(newLines[newIndex]);
             newIndex++;
             oldIndex++;
 
-            Dictionary<string, string> oldKeyValuePairs = new Dictionary<string, string>();
+            var oldKvp = new Dictionary<string, string>();
 
-            // Read key-value pairs from old Arbitrary Values section
+            // Read old arbitrary values
             while (oldIndex < oldLines.Count && oldLines[oldIndex].Contains(","))
             {
                 string[] parts = oldLines[oldIndex].Split(',');
-                if (!string.IsNullOrEmpty(parts[0]))
-                    oldKeyValuePairs[parts[0]] = parts[1];
+                if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
+                    oldKvp[parts[0]] = parts.Length > 1 ? parts[1] : "";
                 oldIndex++;
             }
 
-            // Merge with new Arbitrary Values section
+            // Merge with new arbitrary values
             while (newIndex < newLines.Count && newLines[newIndex].Contains(","))
             {
                 string[] parts = newLines[newIndex].Split(',');
                 if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
                 {
-                    string value = oldKeyValuePairs.TryGetValue(parts[0], out string v) ? v : (parts.Length > 1 ? parts[1] : "");
-                    resultLines.Add($"{parts[0]},{value}");
+                    string newValue = oldKvp.TryGetValue(parts[0], out string v) ? v : (parts.Length > 1 ? parts[1] : "");
+
+                    string mergedLine = $"{parts[0]},{newValue}";
+                    resultLines.Add(mergedLine);
+
+                    if (!oldKvp.ContainsKey(parts[0]) || (parts.Length > 1 && oldKvp[parts[0]] != parts[1]))
+                        changed = true;
                 }
                 newIndex++;
             }
+
+            return changed;
         }
 
         private static string MergeRows(string oldRow, string newRow)

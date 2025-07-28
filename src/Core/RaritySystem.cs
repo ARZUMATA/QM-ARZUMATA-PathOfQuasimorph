@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,6 +15,7 @@ using System.Web;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Windows;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
 using Random = System.Random;
 
@@ -189,7 +191,6 @@ namespace QM_PathOfQuasimorph.Core
             Console.WriteLine($"Total Improved (out of 800): {totalImproved}");
 
         }
-
         private void LoadCustomWeights()
         {
             string weightPath = Path.Combine(Plugin.ConfigDirectories.ModPersistenceFolder, "Rarities.csv");
@@ -213,6 +214,11 @@ namespace QM_PathOfQuasimorph.Core
                     File.WriteAllText(weightPath, reader.ReadToEnd());
                 }
             }
+            else
+            {
+                // If file exists, try migrate settings
+                CompareRaritiesFiles(weightPath, "QM_PathOfQuasimorph.Files.Rarities.csv");
+            }
 
             if (Plugin.Config.CustomWeights)
             {
@@ -221,12 +227,20 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        private void CompareRaritiesFiles(string weightPath, string embeddedFile)
+        {
+            RaritySystemCSVHelper.DoMerge(weightPath, embeddedFile);
+        }
+
         private void LoadRaritiesFromCSV(string filePath)
         {
+
             _logger.Log($"Loading rarity data from CSV {filePath}");
 
             string line;
             bool inArbitrarySection = false;
+            bool inRaritySection = false;
+            bool inMonsterMasteriesSection = false;
             string[] headers = null;
 
             Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
@@ -244,6 +258,14 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (line.StartsWith("Rarity"))
                     {
+                        inRaritySection = true;
+                        headers = line.Split(',');
+                        continue;
+                    }
+
+                    if (line.StartsWith("MonsterMasteries"))
+                    {
+                        inMonsterMasteriesSection = true;
                         headers = line.Split(',');
                         continue;
                     }
@@ -255,16 +277,7 @@ namespace QM_PathOfQuasimorph.Core
                         continue;
                     }
 
-                    if (inArbitrarySection)
-                    {
-                        string[] parts = line.Split(',');
-                        string key = parts[0].Trim();
-                        float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
-                        _logger.Log($"Writing arbitrary data {key} {value}");
-
-                        arbitraryValues[key] = value;
-                    }
-                    else
+                    if (inRaritySection)
                     {
                         string[] parts = line.Split(',');
                         string rarityName = parts[0].Trim();
@@ -279,8 +292,34 @@ namespace QM_PathOfQuasimorph.Core
                                                             float.Parse(parts[5], CultureInfo.InvariantCulture) / 100f);
                             rarityTraitRanges[rarity] = (float.Parse(parts[6], CultureInfo.InvariantCulture) / 100f,
                                                        float.Parse(parts[7], CultureInfo.InvariantCulture) / 100f);
-                            unbreakableTraitPercent[rarity] = float.Parse(parts[7], CultureInfo.InvariantCulture);
+                            unbreakableTraitPercent[rarity] = float.Parse(parts[8], CultureInfo.InvariantCulture);
                         }
+                    }
+
+                    if (inMonsterMasteriesSection)
+                    {
+                        string[] parts = line.Split(',');
+                        string rarityName = parts[0].Trim();
+
+                        if (Enum.TryParse(rarityName, out MonsterMasteryTier mastery))
+                        {
+                            // Assign values to dictionaries.
+                            PathOfQuasimorph.creaturesControllerPoq._masteryModifiers[mastery] =
+                                (float.Parse(parts[1], CultureInfo.InvariantCulture),
+                                float.Parse(parts[2], CultureInfo.InvariantCulture));
+
+                            PathOfQuasimorph.creaturesControllerPoq._masteryTierWeights[mastery] = int.Parse(parts[3], CultureInfo.InvariantCulture);
+                        }
+                    }
+
+                    if (inArbitrarySection)
+                    {
+                        string[] parts = line.Split(',');
+                        string key = parts[0].Trim();
+                        float value = float.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
+                        _logger.Log($"Writing arbitrary data {key} {value}");
+
+                        arbitraryValues[key] = value;
                     }
                 }
             }
@@ -289,7 +328,8 @@ namespace QM_PathOfQuasimorph.Core
             PARAMETER_BOOST_MAX = arbitraryValues["PARAMETER_BOOST_MAX"];
             AVERAGE_RESIST_APPLY_CHANCE = arbitraryValues["AVERAGE_RESIST_APPLY_CHANCE"];
             UNBREAKABLE_ENTRY_CHANCE = arbitraryValues["UNBREAKABLE_ENTRY_CHANCE"];
-
+            PARAMETER_HINDER_CHANCE = arbitraryValues["PARAMETER_HINDER_CHANCE"];
+            PARAMETER_HINDER_PERCENT = arbitraryValues["PARAMETER_HINDER_PERCENT"];
         }
 
         private void SimulateDrops()
