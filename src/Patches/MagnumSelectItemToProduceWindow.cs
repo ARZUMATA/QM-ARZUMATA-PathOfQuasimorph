@@ -9,16 +9,12 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
-        [HarmonyPatch(typeof(MagnumProjectsWindow), nameof(MagnumProjectsWindow.Configure))]
-        public static class MagnumProjectsWindow_Configure_Patch
+        [HarmonyPatch(typeof(MagnumSelectItemToProduceWindow), nameof(MagnumSelectItemToProduceWindow.InitPanels))]
+        public static class MagnumSelectItemToProduceWindow_Configure_Patch
         {
             static List<MagnumProject> tempProjects = new List<MagnumProject>();
-
-            public static bool Prefix(MagnumProjectType projectType, int maxProjects, MagnumProjectsWindow __instance)
+            public static bool Prefix(MagnumSelectItemToProduceWindow __instance)
             {
-                Plugin.Logger.Log($"MagnumProjectsWindow_Configure_Patch");
-
-                // Temporarily remove projects that are not PoQ projects so they are not shown in craft.
                 foreach (var project in magnumProjects.Values.ToList())
                 {
                     var wrapper = MetadataWrapper.SplitItemUid(MetadataWrapper.GetPoqItemIdFromProject(project));
@@ -32,8 +28,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 return true;
             }
-
-            public static void Postfix(MagnumProjectType projectType, int maxProjects, MagnumProjectsWindow __instance)
+            public static void Postfix(MagnumSelectItemToProduceWindow __instance)
             {
                 magnumProjects.Values.AddRange(tempProjects);
                 tempProjects.Clear();
