@@ -16,7 +16,17 @@ namespace QM_PathOfQuasimorph.Core
             public static bool Prefix(EscScreen __instance)
             {
                 // Save our metadata right bewoe gamesave
-                CleanupSystem.CleanObsoleteProjects(_context, true, true);
+                if (__instance._mode == EscScreen.Mode.Spacemode)
+                {
+                    Plugin.Logger.Log($"EscScreen.Mode.Spacemode : Can clean obsolete projects.");
+                    CleanupSystem.CleanObsoleteProjects(_context, true, true);
+                }
+                else
+                {
+                    Plugin.Logger.Log($"EscScreen.Mode.Ingame : Holding on cleaning projects.");
+
+                }
+
                 Plugin.Logger.Log($"EscScreen");
                 return true;
             }

@@ -193,6 +193,14 @@ namespace QM_PathOfQuasimorph.Core
             return !string.IsNullOrEmpty(baseId);
         }
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetBaseId(string uid)
+        {
+            string baseId = uid.Contains("_custom_poq") ? uid.Substring(0, uid.IndexOf("_custom_poq")) : uid.Replace("_custom", "");
+            Plugin.Logger.Log($"GetBaseId: baseId {baseId}");
+            return baseId;
+        }
+
         // Reuse existing logic safely, only instantiate when necessary
         public static MetadataWrapper SplitItemUid(string uid)
         {

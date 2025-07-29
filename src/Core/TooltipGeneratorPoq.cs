@@ -54,7 +54,7 @@ namespace QM_PathOfQuasimorph.Core
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
                     var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
-
+                    
                     if (!RecordCollection.MetadataWrapperRecords.TryGetValue(_factory._lastShowedItem.Id, out MetadataWrapper wrapper))
                     {
                         if (MetadataWrapper.IsPoqItemUid(_factory._lastShowedItem.Id))
@@ -83,7 +83,7 @@ namespace QM_PathOfQuasimorph.Core
 
                             PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
 
-                            PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), RaritySystem.Colors[wrappedItem.RarityClass]);
+                            PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"), RaritySystem.Colors[wrappedItem.RarityClass]);
 
                             //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
 
@@ -198,9 +198,71 @@ namespace QM_PathOfQuasimorph.Core
             {
                 InitAugmentation(item.Record<AugmentationRecord>(), genericId, item);
             }
+
+            if (_factory._lastShowedItem.Is<ImplantRecord>())
+            {
+                InitImplant(item.Record<ImplantRecord>(), genericId, item);
+            }
+
             if (_factory._lastShowedItem.Is<ItemRecord>())
             {
                 InitWeight(item.Record<ItemRecord>(), genericId, item);
+            }
+        }
+
+        private static void InitImplant(ImplantRecord implantRecord, string genericId, PickupItem item)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(genericId, true);
+
+            _logger.Log($"genericRecord ImplantRecord is null {genericRecord == null}");
+
+            foreach (var effect in implantRecord.ImplicitBonusEffects)
+            {
+                var hasGeneric = genericRecord.ImplicitBonusEffects.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                if (effectDifference != 0)
+                {
+                    _logger.Log($"bonus effect {effect.Key}");
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.AltGreen);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_resist") : $"{record.TooltipIconTag}_green";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                    LocalizeName($"woundeffect.{effect.Key}.desc")
+                    .SetValue(value, true)
+                    .SetTextColor(Colors.Green)
+                    .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                }
+            }
+
+            foreach (var effect in implantRecord.ImplicitPenaltyEffects)
+            {
+                var hasGeneric = genericRecord.ImplicitPenaltyEffects.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                if (effectDifference != 0)
+                {
+                    _logger.Log($"penalty effect {effect.Key}");
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.LightRed);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_red") : $"{record.TooltipIconTag}_red";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                     LocalizeName($"woundeffect.{effect.Key}.desc")
+                     .SetValue(value, true)
+                     .SetTextColor(Colors.LightRed)
+                     .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                }
+
             }
         }
 
@@ -294,7 +356,6 @@ namespace QM_PathOfQuasimorph.Core
                      .SetTextColor(Colors.LightRed)
                      .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
                 }
-
             }
         }
 

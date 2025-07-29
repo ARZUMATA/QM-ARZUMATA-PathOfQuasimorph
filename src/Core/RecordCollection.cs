@@ -12,12 +12,23 @@ namespace QM_PathOfQuasimorph.Core
 {
     public class RecordCollection
     {
+        public const int MAGNUM_PROJECT_UPCOMING_UPCOMINGMODIFICATIONS = 4;
         public static Dictionary<string, CompositeItemRecord> ItemRecords { get; private set; } = new Dictionary<string, CompositeItemRecord>();
 
         public static Dictionary<string, WoundSlotRecord> WoundSlotRecords { get; private set; } = new Dictionary<string, WoundSlotRecord>();
+        public static Dictionary<string, PerkRecord> PerkRecords { get; private set; } = new Dictionary<string, PerkRecord>();
 
         public static Dictionary<string, MetadataWrapper> MetadataWrapperRecords { get; private set; } = new Dictionary<string, MetadataWrapper>();
+
         private static Logger _logger = new Logger(null, typeof(RecordCollection));
+
+        private static List<string> dictKeys = new List<string>
+        {
+            "ItemRecords",
+            "WoundSlotRecords",
+            "MetadataWrapperRecords",
+            "PerkRecords",
+        };
 
         public void Init()
         {
@@ -30,15 +41,18 @@ namespace QM_PathOfQuasimorph.Core
             var itemRecords = DataSerializerHelper.SerializeData<Dictionary<string, CompositeItemRecord>>(ItemRecords, DataSerializerHelper._jsonSettingsPoq);
             var woundSlotRecords = DataSerializerHelper.SerializeData<Dictionary<string, WoundSlotRecord>>(WoundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
             var metadataWrapperRecords = DataSerializerHelper.SerializeData<Dictionary<string, MetadataWrapper>>(MetadataWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
+            var perkRecords = DataSerializerHelper.SerializeData<Dictionary<string, PerkRecord>>(PerkRecords, DataSerializerHelper._jsonSettingsPoq);
 
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Clear();
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("ItemRecords", itemRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("WoundSlotRecords", woundSlotRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("MetadataWrapperRecords", metadataWrapperRecords);
+            PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("PerkRecords", perkRecords);
 
             _logger.Log($"List_ItemRecords: {ItemRecords.Count}");
             _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
             _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
+            _logger.Log($"List_PerkRecords: {PerkRecords.Count}");
             //_logger.Log($"itemRecords: {itemRecords}");
 
             foreach (var id in ItemRecords.Keys.ToList())
@@ -50,15 +64,50 @@ namespace QM_PathOfQuasimorph.Core
 
         }
 
-        public static void DeserializeCollection(string itemRecords, string woundSlotRecords, string magnumProjectWrapperRecords)
+        public static void DeserializeCollection(MagnumProject dataPlaceholderProject)
         {
-            ItemRecords = DataSerializerHelper.DeserializeData<Dictionary<string, CompositeItemRecord>>(itemRecords, DataSerializerHelper._jsonSettingsPoq);
-            WoundSlotRecords = DataSerializerHelper.DeserializeData<Dictionary<string, WoundSlotRecord>>(woundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
-            MetadataWrapperRecords = DataSerializerHelper.DeserializeData<Dictionary<string, MetadataWrapper>>(magnumProjectWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
+            foreach (var key in dictKeys)
+            {
+                switch (key)
+                {
+                    case "ItemRecords":
+                        if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
+                        {
+                            ItemRecords = DataSerializerHelper.DeserializeData<Dictionary<string, CompositeItemRecord>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
+                        }
+
+                        break;
+
+                    case "WoundSlotRecords":
+                        if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
+                        {
+                            WoundSlotRecords = DataSerializerHelper.DeserializeData<Dictionary<string, WoundSlotRecord>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
+                        }
+
+                        break;
+
+                    case "MetadataWrapperRecords":
+                        if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
+                        {
+                            MetadataWrapperRecords = DataSerializerHelper.DeserializeData<Dictionary<string, MetadataWrapper>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
+                        }
+
+                        break;
+
+                    case "PerkRecords":
+                        if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
+                        {
+                            PerkRecords = DataSerializerHelper.DeserializeData<Dictionary<string, PerkRecord>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
+                        }
+
+                        break;
+                }
+            }
 
             _logger.Log($"List_ItemRecords: {ItemRecords.Count}");
             _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
             _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
+            _logger.Log($"List_PerkRecords: {PerkRecords.Count}");
 
             _logger.Log($"Verify records");
 
@@ -232,6 +281,15 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     _logger.Log($"removing: {id} from WoundSlotRecords");
                     WoundSlotRecords.Remove(id);
+                }
+            }
+
+            foreach (var id in PerkRecords.Keys.ToList())
+            {
+                if (!idsToKeep.Contains(id))
+                {
+                    _logger.Log($"removing: {id} from PerkRecords");
+                    PerkRecords.Remove(id);
                 }
             }
 

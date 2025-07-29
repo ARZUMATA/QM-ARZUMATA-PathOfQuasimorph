@@ -28,6 +28,7 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.LogWarning($"WARNING: PickupItem: reverting id to the baseline.");
                     var magnumProjectWrapper = MetadataWrapper.SplitItemUid(__instance.Id);
                     __instance.Id = magnumProjectWrapper.Id; // This effectively makes item default.
+                    Plugin.Logger.LogWarning($"{magnumProjectWrapper.Id}_magnumProjectWrapper.Id_FIXME");
                 }
 
                 return true;

@@ -37,15 +37,12 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"dataPlaceholderProject.UpcomingModifications.Count {dataPlaceholderProject.UpcomingModifications.Count}");
 
             // We store 3 strings
-            if (dataPlaceholderProject.UpcomingModifications.Count == 3)
-            {
-                // ElementAt is slow but for three entries it's ok.
-                var entry0 = dataPlaceholderProject.UpcomingModifications.ElementAt(0);
-                var entry1 = dataPlaceholderProject.UpcomingModifications.ElementAt(1);
-                var entry2 = dataPlaceholderProject.UpcomingModifications.ElementAt(2);
+            // ElementAt is slow but for three entries it's ok.
+            // var entry0 = dataPlaceholderProject.UpcomingModifications.ElementAt(0);
+            //var entry1 = dataPlaceholderProject.UpcomingModifications.ElementAt(1);
+            //var entry2 = dataPlaceholderProject.UpcomingModifications.ElementAt(2);
 
-                RecordCollection.DeserializeCollection(entry0.Value, entry1.Value, entry2.Value);
-            }
+            RecordCollection.DeserializeCollection(dataPlaceholderProject);
 
             //Data.Items.AddRecord(keyValuePair.Key, deserializedData);
         }
@@ -68,7 +65,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 _logger.Log($"CreateDataHolderProject: checking project {project.DevelopId} {project.FinishTime}");
 
-                if (MetadataWrapper.IsSerializedStorage(project.FinishTime.Ticks) && project.UpcomingModifications.Count == 3)
+                if (MetadataWrapper.IsPoqProject(project) && MetadataWrapper.IsSerializedStorage(project.FinishTime.Ticks))
                 {
                     _logger.Log($"CreateDataHolderProject: IsSerializedStorage");
 

@@ -28,7 +28,6 @@ public static class DataSerializerHelper
         };
 
         string json = JsonConvert.SerializeObject(value, settings);
-        Console.WriteLine(json);
 
         return JsonConvert.DeserializeObject<T>(json, settings);
     }

@@ -69,7 +69,6 @@ namespace QM_PathOfQuasimorph.PoQHelpers
 
             return clone;
         }
-
         internal static ImplantRecord CloneImplantRecord(ImplantRecord original, string newId)
         {
             Plugin.Logger.Log($"ImplantRecord: CloneImplantRecord");
@@ -84,5 +83,22 @@ namespace QM_PathOfQuasimorph.PoQHelpers
 
             return clone;
         }
+
+        internal static PerkRecord ClonePerkRecord(PerkRecord original, string newId)
+        {
+            Plugin.Logger.Log($"PerkRecord: ClonePerkRecord");
+
+            PerkRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
+
+            clone.ActiveWeaponClassLimit = DataSerializerHelper.MakeDeepCopy(original.ActiveWeaponClassLimit);
+            clone.ActiveWeaponSubClassLimit = DataSerializerHelper.MakeDeepCopy(original.ActiveWeaponSubClassLimit);
+            clone.Parameters = DataSerializerHelper.MakeDeepCopy(original.Parameters);
+
+
+            return clone;
+        }
+
+
     }
 }

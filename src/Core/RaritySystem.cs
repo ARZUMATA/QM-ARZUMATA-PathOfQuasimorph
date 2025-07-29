@@ -1279,11 +1279,13 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (MetadataWrapper.IsPoqItemUid(itemId))
                 {
-                    throw new Exception($"AddAffixes: trying to get poq item but record is missing.");
+                    Plugin.Logger.LogWarning($"AddAffixes: trying to get poq item but record is missing.");
                 }
             }
             else
             {
+                wrapper = MetadataWrapper.SplitItemUid(itemId);
+
                 if (wrapper.RarityClass == ItemRarity.Standard)
                 {
                     return;

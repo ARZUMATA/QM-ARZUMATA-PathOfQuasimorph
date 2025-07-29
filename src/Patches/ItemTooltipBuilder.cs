@@ -19,5 +19,16 @@ namespace QM_PathOfQuasimorph.Core
                 __instance._tooltip.ShowAdditionalBlock();
             }
         }
+
+        [HarmonyPatch(typeof(ItemTooltipBuilder), "InitImplant")]
+
+        public static class ItemTooltipBuilder_InitImplant_Patch
+        {
+            public static void Postfix(ItemTooltipBuilder __instance, ImplantRecord record, Mercenary mercenary)
+            {
+                // So we can add our comparions to the aug tooltip
+                __instance._tooltip.ShowAdditionalBlock();
+            }
+        }
     }
 }

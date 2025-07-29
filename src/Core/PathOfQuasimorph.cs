@@ -97,7 +97,6 @@ namespace QM_PathOfQuasimorph.Core
         public static void CleanupModeAfterSpaceLoaded(IModContext context)
         {
             _logger.Log($"AfterSpaceLoaded");
-            CleanupSystem.CleanObsoleteProjects(context, true);
         }
 
         [Hook(ModHookType.MainMenuStarted)]
@@ -127,7 +126,7 @@ namespace QM_PathOfQuasimorph.Core
         public static void DungeonFinished(IModContext context)
         {
             _logger.Log($"DungeonFinished");
-            CleanupSystem.CleanObsoleteProjects(context, true);
+            //CleanupSystem.CleanObsoleteProjects(context, true); // Can't clean here as it triggers on every floor change
             isInitialized = false;
             dungeonGameMode = null;
             gameCamera = null;
