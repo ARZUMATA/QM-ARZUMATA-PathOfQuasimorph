@@ -1282,26 +1282,28 @@ namespace QM_PathOfQuasimorph.Core
                     throw new Exception($"AddAffixes: trying to get poq item but record is missing.");
                 }
             }
-
-            if (wrapper.RarityClass == ItemRarity.Standard)
+            else
             {
-                return;
+                if (wrapper.RarityClass == ItemRarity.Standard)
+                {
+                    return;
+                }
+
+                var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
+
+                if (affix == null)
+                {
+                    return;
+                }
+
+                UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
+                    affix[0].Text, "",
+                    wrapper.ReturnItemUid(true));
+
+                UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
+                    "", affix[1].Text,
+                    wrapper.ReturnItemUid(true));
             }
-
-            var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
-
-            if (affix == null)
-            {
-                return;
-            }
-
-            UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
-                affix[0].Text, "",
-                wrapper.ReturnItemUid(true));
-
-            UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
-                "", affix[1].Text,
-                wrapper.ReturnItemUid(true));
         }
 
         [Obsolete]

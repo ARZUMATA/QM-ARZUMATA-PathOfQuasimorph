@@ -72,31 +72,33 @@ namespace QM_PathOfQuasimorph.Core
                             throw new Exception($"HandlePoqTooltip: trying to get poq item but record is missing.");
                         }
                     }
-
-                    _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
-
-                    if (wrappedItem.PoqItem)
+                    else
                     {
-                        _tooltip = _factory.BuildEmptyTooltip();
-                        //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
+                        _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
 
-                        PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
+                        if (wrappedItem.PoqItem)
+                        {
+                            _tooltip = _factory.BuildEmptyTooltip();
+                            //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
 
-                        PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), RaritySystem.Colors[wrappedItem.RarityClass]);
+                            PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
 
-                        //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
+                            PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), RaritySystem.Colors[wrappedItem.RarityClass]);
 
-                        //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
-                        _factory.AddPanelToTooltip().SetValue(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
-                        //_factory.AddPanelToTooltip().SetValue("Difference");
+                            //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
 
-                        //_factory._tooltip.MakeRed();
-                        _factory.AddCompareBlock(_factory._lastShowedItem);
-                        //_factory.AddCompareBlock(_factory._lastShowedItem);
+                            //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                            _factory.AddPanelToTooltip().SetValue(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                            //_factory.AddPanelToTooltip().SetValue("Difference");
 
-                        InitItemComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+                            //_factory._tooltip.MakeRed();
+                            _factory.AddCompareBlock(_factory._lastShowedItem);
+                            //_factory.AddCompareBlock(_factory._lastShowedItem);
 
-                        _factory._tooltip.IsAdditionalTooltip = true;
+                            InitItemComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+
+                            _factory._tooltip.IsAdditionalTooltip = true;
+                        }
                     }
                 }
 
@@ -242,7 +244,7 @@ namespace QM_PathOfQuasimorph.Core
                     .SetValue(value, true)
                     .SetTextColor(Colors.Green)
                     .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
-                    
+
                 }
             }
 
@@ -262,11 +264,11 @@ namespace QM_PathOfQuasimorph.Core
                     var isResist = record.TooltipIconTag.Contains("resist");
                     var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_resist") : $"{record.TooltipIconTag}_green";
 
-                     _factory.AddPanelToTooltip().SetIcon(iconName).
-                     LocalizeName($"woundeffect.{effect.Key}.desc")
-                     .SetValue(value, true)
-                     .SetTextColor(Colors.Green)
-                     .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                    LocalizeName($"woundeffect.{effect.Key}.desc")
+                    .SetValue(value, true)
+                    .SetTextColor(Colors.Green)
+                    .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
                 }
             }
 
@@ -285,7 +287,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     var isResist = record.TooltipIconTag.Contains("resist");
                     var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_red") : $"{record.TooltipIconTag}_red";
-                    
+
                     _factory.AddPanelToTooltip().SetIcon(iconName).
                      LocalizeName($"woundeffect.{effect.Key}.desc")
                      .SetValue(value, true)

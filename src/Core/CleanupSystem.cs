@@ -223,27 +223,31 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanupItem(PickupItem item)
         {
-            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out MetadataWrapper wrapper))
+            if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out MetadataWrapper wrapper))
+            {
+                item.Id = wrapper.Id;
+                foreach (var component in item.Components)
+                {
+                    var weaponComponent = component as WeaponComponent;
+
+                    if (weaponComponent != null)
+                    {
+                        weaponComponent._weaponId = item.Id;
+                    }
+
+                    var breakableItemComponent = component as BreakableItemComponent;
+
+                    if (breakableItemComponent != null)
+                    {
+                        breakableItemComponent.Unbreakable = false;
+                    }
+                }
+            }
+            else
             {
                 if (MetadataWrapper.IsPoqItemUid(item.Id))
                 {
                     throw new Exception($"CleanupItem: trying to cleanup poq item but record is missing.");
-                }
-            }
-
-            item.Id = wrapper.Id;
-            foreach (var component in item.Components)
-            {
-                var weaponComponent = component as WeaponComponent;
-                if (weaponComponent != null)
-                {
-                    weaponComponent._weaponId = item.Id;
-                }
-
-                var breakableItemComponent = component as BreakableItemComponent;
-                if (breakableItemComponent != null)
-                {
-                    breakableItemComponent.Unbreakable = false;
                 }
             }
         }

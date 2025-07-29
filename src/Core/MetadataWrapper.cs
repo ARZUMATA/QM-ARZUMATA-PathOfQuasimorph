@@ -79,6 +79,7 @@ namespace QM_PathOfQuasimorph.Core
 
         // Avoid object creation — fast path
         [Obsolete]
+        // While it's obsolete, we still use it for workaround for our dummy data placeholder project.
         public static string GetPoqItemIdFromProject(MagnumProject project)
         {
             var id = project.DevelopId;
