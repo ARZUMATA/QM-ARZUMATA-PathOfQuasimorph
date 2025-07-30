@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
+using UnityEngine.Rendering;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -18,6 +19,10 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.LogWarning("MagnumPoQProjectsController missing. Creating one.");
                     magnumProjectsController = new MagnumPoQProjectsController(magnumProjects);
                     Plugin.Logger.Log($"\t\t magnumProjects Count: {MagnumPoQProjectsController.magnumProjects.Values.Count}"); // What projects we made in-game.
+                }
+                else
+                {
+                    magnumProjectsController.dataPlaceholderProject = null;
                 }
 
                 MagnumPoQProjectsController.magnumProjects = magnumProjects;

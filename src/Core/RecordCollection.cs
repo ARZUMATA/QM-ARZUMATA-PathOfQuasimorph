@@ -73,7 +73,9 @@ namespace QM_PathOfQuasimorph.Core
                     case "ItemRecords":
                         if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
                         {
+                            _logger.Log($"Deserialize ItemRecords");
                             ItemRecords = DataSerializerHelper.DeserializeData<Dictionary<string, CompositeItemRecord>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
+
                         }
 
                         break;
@@ -81,6 +83,7 @@ namespace QM_PathOfQuasimorph.Core
                     case "WoundSlotRecords":
                         if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
                         {
+                            _logger.Log($"Deserialize WoundSlotRecord");
                             WoundSlotRecords = DataSerializerHelper.DeserializeData<Dictionary<string, WoundSlotRecord>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
                         }
 
@@ -89,12 +92,14 @@ namespace QM_PathOfQuasimorph.Core
                     case "MetadataWrapperRecords":
                         if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
                         {
+                            _logger.Log($"Deserialize MetadataWrapper");
                             MetadataWrapperRecords = DataSerializerHelper.DeserializeData<Dictionary<string, MetadataWrapper>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
                         }
 
                         break;
 
                     case "PerkRecords":
+                        _logger.Log($"Deserialize PerkRecord");
                         if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
                         {
                             PerkRecords = DataSerializerHelper.DeserializeData<Dictionary<string, PerkRecord>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
@@ -116,7 +121,8 @@ namespace QM_PathOfQuasimorph.Core
 
             foreach (var itemRecord in ItemRecords)
             {
-                _logger.Log($"\t itemRecord: {itemRecord}");
+                _logger.Log($"\t itemRecord.Key: {itemRecord.Key}");
+                _logger.Log($"\t itemRecord itemRecord.Value.Id: {itemRecord.Value.Id}");
 
                 var compositeRecord = itemRecord.Value;
                 var baseIdExist = MetadataWrapper.TryGetBaseId(compositeRecord.Id, out string baseId);
@@ -151,21 +157,26 @@ namespace QM_PathOfQuasimorph.Core
 
                     // Add item transformations
                     _logger.Log($"Checking ItemTransformationRecord");
+                    _logger.Log($"\t\t baseId: {baseId}");
 
                     ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(baseId);
 
-                    if (itemTransformationRecord == null || itemTransformationRecord.Id == string.Empty)
+                    if (itemTransformationRecord == null)
                     {
                         _logger.Log($"ItemTransformationRecord - missing. Adding record.");
+                        _logger.Log($"\t\t itemTransformationRecord == null {itemTransformationRecord == null}");
 
                         // Item breaks into this, unless it has it's own itemTransformationRecord.
                         itemTransformationRecord = Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
+
+                        var haskey = Data.ItemTransformation._records.ContainsKey(compositeRecord.Id);
+                        _logger.Log($"\t\t haskey {haskey} for compositeRecord.Id {compositeRecord.Id}");
+
                         Data.ItemTransformation.AddRecord(compositeRecord.Id, itemTransformationRecord.Clone(compositeRecord.Id));
                     }
                     else
                     {
                         _logger.Log($"ItemTransformationRecord - exists: result will be item count {itemTransformationRecord.OutputItems.Count}");
-                        Data.ItemTransformation.AddRecord(compositeRecord.Id, itemTransformationRecord.Clone(compositeRecord.Id));
                     }
 
                     if (GetBoostedString(itemRecord.Key) == null)
@@ -222,6 +233,7 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
             }
+            _logger.Log($"\t\t\t ERROR: MATCH NOT FOUND! FOR ID: {baseId}");
 
             return null;
         }
