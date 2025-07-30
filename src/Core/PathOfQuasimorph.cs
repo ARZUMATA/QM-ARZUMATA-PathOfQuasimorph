@@ -51,27 +51,24 @@ namespace QM_PathOfQuasimorph.Core
         static PathOfQuasimorph()
         {
             // Predefined types to exclude
-            Logger._excludedTypes.Add(typeof(CleanupSystem));
+            //Logger._excludedTypes.Add(typeof(CleanupSystem));
             //Logger._excludedTypes.Add(typeof(TooltipGeneratorPoq));
             //Logger._excludedTypes.Add(typeof(MagnumPoQProjectsController));
-            Logger._excludedTypes.Add(typeof(AffixManager));
-            Logger._excludedTypes.Add(typeof(RaritySystem));
+            //Logger._excludedTypes.Add(typeof(AffixManager));
+            //Logger._excludedTypes.Add(typeof(RaritySystem));
             //Logger._excludedTypes.Add(typeof(ItemRecordsControllerPoq));
             //Logger._excludedTypes.Add(typeof(CreaturesControllerPoq));
-            //Logger._excludedTypes.Add(typeof(AugmentationRecordControllerPoq));
-            //Logger._excludedTypes.Add(typeof(AugmentationRecordControllerPoq));
-            //Logger._excludedTypes.Add(typeof(ArmorRecordProcessorPoq));
             //Logger._excludedTypes.Add(typeof(RecordCollection));
 
             // Record processors
-            Logger._excludedTypes.Add(typeof(ArmorRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(AugmentationRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(BootsRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(HelmetRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(ImplantRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(LeggingsRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(WeaponRecordProcessorPoq));
-            Logger._excludedTypes.Add(typeof(WoundSlotRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(ArmorRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(AugmentationRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(BootsRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(HelmetRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(ImplantRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(LeggingsRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(WeaponRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(WoundSlotRecordProcessorPoq));
 
         }
 
@@ -113,7 +110,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"DungeonStarted");
             Initialize();
         }
-        
+
         [Hook(ModHookType.SpaceStarted)]
         public static void SpaceStarted(IModContext context)
         {

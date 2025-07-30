@@ -215,3 +215,14 @@ Thanks community for feedback.
 
 ### Bug Fixes
 - Fixed unbreakable entry display in tooltips
+
+## 1.8 (81864aa)
+- Augmentation and implants support
+- Fix: magnum project upgrade limits were broken for vanilla items
+- Added perk support for active implants
+- Added tooltips for augmentations and implants
+- Fixed localization issues
+- Added translations for color names
+- Added color settings to mod configuration
+- Expanded rarity.csv with more editable data
+- Various tooltip cosmetic fixes
