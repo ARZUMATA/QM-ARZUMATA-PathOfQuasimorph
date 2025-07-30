@@ -19,9 +19,9 @@ namespace QM_PathOfQuasimorph.Core.Processors
     {
         private new Logger _logger = new Logger(null, typeof(AugmentationRecordProcessorPoq));
 
-        public override List<string> parameters => _parameters;
+        public override Dictionary<string, bool> parameters => _parameters;
 
-        internal List<string> _parameters = new List<string>()
+        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>
         {
         };
 
@@ -145,7 +145,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{woundSlot}_{itemId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{woundSlot}_{itemId}");
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{woundSlot}_{itemId}", oldId);
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     //records.Add(augmentationRecordNew);
                     // TODO

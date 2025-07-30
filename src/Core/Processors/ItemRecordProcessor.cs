@@ -19,44 +19,45 @@ namespace QM_PathOfQuasimorph.Core.Processors
         protected ItemRecordsControllerPoq itemRecordsControllerPoq;
         protected Logger _logger = new Logger(null, typeof(ItemRecordProcessor<T>));
 
-        public abstract List<string> parameters { get; }
+        public abstract Dictionary<string, bool> parameters { get; }
         protected ItemRarity itemRarity;
         protected bool mobRarityBoost;
         protected string itemId;
+        protected string oldId;
 
         internal ItemRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq)
         {
             this.itemRecordsControllerPoq = itemRecordsControllerPoq;
         }
 
-        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, string itemId)
+        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, string itemId, string oldId)
         {
             this.itemRecord = itemRecord;
             this.itemRarity = itemRarity;
             this.mobRarityBoost = mobRarityBoost;
             this.itemId = itemId;
+            this.oldId = oldId;
         }
 
         internal abstract void ProcessRecord(ref string boostedParamString);
 
-        internal float GetFinalModifier(float baseModifier, int numToHinder, int numToImprove, ref int improvedCount, ref int hinderedCount, string boostedParamString, ref bool increase, string stat, Logger _logger)
+        internal float GetFinalModifier(float baseModifier, int numToHinder, int numToImprove, ref int improvedCount, ref int hinderedCount, string boostedParamString, ref bool increase, string statStr, bool statBool, Logger _logger)
         {
             float finalModifier;
 
-            if (new[] { "_weight", "_reload_duration", "_scatter_angle" }.Any(stat.Equals))
+            if (statBool == false)
             {
                 increase = false;
             }
-            else if (new[] { "_resist", "_damage", "_crit_damage", "_max_durability", "_accuracy", "_magazine_capacity" }
-                     .Any(stat.Equals))
+            else if (statBool == true)
             {
                 increase = true;
             }
 
-            _logger.Log($"Updating {stat}");
+            _logger.Log($"Updating {statStr}");
 
             // Apply boost
-            if (stat == boostedParamString)
+            if (statStr == boostedParamString)
             {
                 finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
 
@@ -105,7 +106,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             numToImprove = numToAdjust - numToHinder;
 
             // Shuffle the list
-            Helpers.ShuffleList(parameters);
+            Helpers.ShuffleDictionary(parameters);
 
             // Select one parameter to boost more.
             // This parameter will be boosted more than the others.
@@ -113,8 +114,8 @@ namespace QM_PathOfQuasimorph.Core.Processors
             var boostedParam = parameters.Count == 0 ? 99 : Helpers._random.Next(parameters.Count);
 
             _logger.Log($"\t\t boostedParam: {boostedParam}, parameters.Count: {parameters.Count}");
-            
-            boostedParamString = boostedParam == 99 ? string.Empty : parameters[boostedParam];
+
+            boostedParamString = boostedParam == 99 ? string.Empty : parameters.Keys.ToList()[boostedParam];
 
             // Counters to track how many parameters we've improved or hindered
             improvedCount = 0;
@@ -123,7 +124,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             // Determine if we need increase or decrease
             increase = true;
         }
-        
+
         //protected abstract List<DmgResist> GetResistSheet();
         //protected abstract float GetResist(string resistName);
         //protected abstract void SetResist(string resistName, float value);

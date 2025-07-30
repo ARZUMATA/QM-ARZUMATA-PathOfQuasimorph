@@ -11,20 +11,21 @@ namespace QM_PathOfQuasimorph.Core.Processors
     {
         private new Logger _logger = new Logger(null, typeof(ResistItemProcessor<T>));
 
-        public override List<string> parameters => _parameters;
+        public override Dictionary<string, bool> parameters => _parameters;
 
-        internal List<string> _parameters = new List<string>()
+
+        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
         {
-            "resist_blunt",
-            "resist_pierce",
-            "resist_lacer",
-            "resist_fire",
-            "resist_beam",
-            "resist_shock",
-            "resist_poison",
-            "resist_cold",
-            "weight",
-            "max_durability",
+            { "resist_blunt", true },
+            { "resist_pierce", true },
+            { "resist_lacer", true },
+            { "resist_fire", true },
+            { "resist_beam", true },
+            { "resist_shock", true },
+            { "resist_poison", true },
+            { "resist_cold", true },
+            { "weight", false },
+            { "max_durability", true },
             //"none"
         };
 
@@ -76,15 +77,15 @@ namespace QM_PathOfQuasimorph.Core.Processors
             // Apply modifiers
             foreach (var stat in parameters)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
 
                 // Simply for logging
                 float outOldValue = -1;
                 float outNewValue = -1;
 
-                if (stat.Contains("resist"))
+                if (stat.Key.Contains("resist"))
                 {
-                    var resistName = stat.Split('_')[1];
+                    var resistName = stat.Key.Split('_')[1];
                     var resistValue = itemRecord.GetResist(resistName);
 
                     if (resistValue == 0)
@@ -111,7 +112,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 }
                 else
                 {
-                    switch (stat)
+                    switch (stat.Key)
                     {
                         case "weight":
                             PathOfQuasimorph.raritySystem.Apply<float>(

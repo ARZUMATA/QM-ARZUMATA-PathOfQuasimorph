@@ -17,7 +17,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
     {
         private new Logger _logger = new Logger(null, typeof(WeaponRecordProcessorPoq));
 
-        public override List<string> parameters => _parameters;
+        public override Dictionary<string, bool> parameters => _parameters;
 
         private List<string> rangedTraitsBlacklist = new List<string> {
             "perfect_throw",
@@ -38,16 +38,17 @@ namespace QM_PathOfQuasimorph.Core.Processors
             "suppressive_fire",
         };
 
-        internal List<string> _parameters = new List<string>()
+        // bool = should we increase the stat or decrease for benefits
+        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
         {
-            "weight",
-            "max_durability",
-            "damage",
-            "crit_damage",
-            "accuracy",
-            "scatter_angle",
-            "reload_duration",
-            "magazine_capacity",
+           { "weight", false },
+           { "max_durability", true },
+           { "damage", true },
+           { "crit_damage", true },
+           { "accuracy", true },
+           { "scatter_angle", false },
+           { "reload_duration", false },
+           { "magazine_capacity", true },
             //"special_ability",
             //"none",
 
@@ -85,13 +86,13 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
             foreach (var stat in parameters)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
 
                 // Simply for logging
                 float outOldValue = -1;
                 float outNewValue = -1;
 
-                switch (stat)
+                switch (stat.Key)
                 {
 
                     case "weight":

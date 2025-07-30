@@ -118,7 +118,7 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             string boostedParamString = string.Empty;
-            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, ref boostedParamString);
+            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, itemIdOrigin, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
 
             _logger.Log($"");
@@ -178,7 +178,7 @@ namespace QM_PathOfQuasimorph.Core
         private void ApplyRarityStats(
             List<BasePickupItemRecord> oldRecords,
             List<BasePickupItemRecord> records,
-            ItemRarity itemRarity, bool mobRarityBoost, string itemId, ref string boostedParamString)
+            ItemRarity itemRarity, bool mobRarityBoost, string itemId, string oldId, ref string boostedParamString)
         {
             _logger.Log($"ApplyRarityStats");
 
@@ -199,7 +199,7 @@ namespace QM_PathOfQuasimorph.Core
                     WeaponRecord weaponRecordNew = ItemRecordHelpers.CloneWeaponRecord(weaponRecord, itemId);
                     //WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
                     // WeaponRecord weaponRecordNew = weaponRecord.Clone($"*{itemId}");
-                    weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, itemId);
+                    weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
                     weaponRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(weaponRecordNew);
                 }
@@ -211,7 +211,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"helmetRecord processing");
 
                     HelmetRecord helmetRecordNew = helmetRecord.Clone(itemId);
-                    helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost, itemId);
+                    helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
                     helmetRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(helmetRecordNew);
                 }
@@ -223,7 +223,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"armorRecord processing");
 
                     ArmorRecord armorRecordNew = armorRecord.Clone(itemId);
-                    armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost, itemId);
+                    armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
                     armorRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(armorRecordNew);
                 }
@@ -235,7 +235,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"leggingsRecord processing");
 
                     LeggingsRecord leggingsRecordNew = leggingsRecord.Clone(itemId);
-                    leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost, itemId);
+                    leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
                     leggingsRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(leggingsRecordNew);
                 }
@@ -247,7 +247,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"bootsRecord processing");
 
                     BootsRecord bootsRecordNew = bootsRecord.Clone(itemId);
-                    bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost, itemId);
+                    bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
                     bootsRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(bootsRecordNew);
                 }
@@ -263,15 +263,12 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (implantRecord != null)
                 {
-                    if (implantRecord.IsActive == false)
-                    {
-                        _logger.Log($"implantRecord processing");
+                    _logger.Log($"implantRecord processing");
 
-                        ImplantRecord implantRecordNew = ItemRecordHelpers.CloneImplantRecord(implantRecord, itemId);
-                        implantRecordProcessorPoq.Init(implantRecordNew, itemRarity, mobRarityBoost, itemId);
-                        implantRecordProcessorPoq.ProcessRecord(ref boostedParamString);
-                        records.Add(implantRecordNew);
-                    }
+                    ImplantRecord implantRecordNew = ItemRecordHelpers.CloneImplantRecord(implantRecord, itemId);
+                    implantRecordProcessorPoq.Init(implantRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    implantRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    records.Add(implantRecordNew);
                 }
 
                 AugmentationRecord augmentationRecord = basePickupItemRecord as AugmentationRecord;
@@ -281,7 +278,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"augmentationRecord processing");
 
                     AugmentationRecord augmentationRecordNew = ItemRecordHelpers.CloneAugmentationRecord(augmentationRecord, itemId);
-                    augmentationRecordProcessorPoq.Init(augmentationRecordNew, itemRarity, mobRarityBoost, itemId);
+                    augmentationRecordProcessorPoq.Init(augmentationRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
                     augmentationRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(augmentationRecordNew);
                 }
@@ -389,6 +386,7 @@ namespace QM_PathOfQuasimorph.Core
                 Type recordType = rec.GetType();
                 bool checkWeaponRecord = false;
                 bool checkAugmentationRecord = false;
+                bool checkImplantRecord = false;
 
                 switch (recordType.Name)
                 {
@@ -402,6 +400,10 @@ namespace QM_PathOfQuasimorph.Core
                         break;
                     case nameof(AugmentationRecord):
                         checkAugmentationRecord = true;
+                        //canProcess = false;
+                        break;
+                    case nameof(ImplantRecord):
+                        checkImplantRecord = true;
                         //canProcess = false;
                         break;
                     default:

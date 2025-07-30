@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using static HarmonyLib.Code;
 using static MGSC.SpawnSystem;
 using Random = System.Random;
 
@@ -19,9 +20,9 @@ namespace QM_PathOfQuasimorph.Core.Processors
     {
         private new Logger _logger = new Logger(null, typeof(WoundSlotRecordProcessorPoq));
 
-        public override List<string> parameters => _parameters;
+        public override Dictionary<string, bool> parameters => _parameters;
 
-        internal List<string> _parameters = new List<string>()
+        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
         {
         };
 
@@ -138,9 +139,12 @@ namespace QM_PathOfQuasimorph.Core.Processors
             var entriesImplicitPenaltyEffects = itemRecord.ImplicitPenaltyEffects.ToList();
             var entriesCoreEffects = itemRecord.CoreEffects.ToList();
 
+            itemRecord.BareHandWeapon = CreateBareHandWeapon();
+            _logger.Log($"itemRecord.BareHandWeapon now {itemRecord.BareHandWeapon}");
+
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
 
                 float valueFinal = 0;
 
@@ -180,13 +184,13 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                 itemRecord.ImplicitBonusEffects[keyValuePair.Key] = (float)valueFinal;
 
-                Plugin.Logger.Log($"\t\t old value {outOldValue}");
-                Plugin.Logger.Log($"\t\t new value {outNewValue}");
+                _logger.Log($"\t\t old value {outOldValue}");
+                _logger.Log($"\t\t new value {outNewValue}");
             }
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
 
                 float valueFinal = 0;
 
@@ -226,13 +230,13 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                 itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = (float)valueFinal;
 
-                Plugin.Logger.Log($"\t\t old value {outOldValue}");
-                Plugin.Logger.Log($"\t\t new value {outNewValue}");
+                _logger.Log($"\t\t old value {outOldValue}");
+                _logger.Log($"\t\t new value {outNewValue}");
             }
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesCoreEffects)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
 
                 float valueFinal = 0;
 
@@ -262,9 +266,39 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                 itemRecord.CoreEffects[keyValuePair.Key] = (float)valueFinal;
 
-                Plugin.Logger.Log($"\t\t old value {outOldValue}");
-                Plugin.Logger.Log($"\t\t new value {outNewValue}");
+                _logger.Log($"\t\t old value {outOldValue}");
+                _logger.Log($"\t\t new value {outNewValue}");
             }
         }
+
+        private string CreateBareHandWeapon()
+        {
+            if (itemRecord.BareHandWeapon == string.Empty)
+            {
+                _logger.Log($"itemRecord.BareHandWeapon == str empty {itemRecord.BareHandWeapon == string.Empty}. Quitting.");
+                return string.Empty;
+            }
+
+            _logger.Log($"CreateBareHandWeapon using {itemRecord.BareHandWeapon}");
+
+            // We create new item record
+            //recreationCyborg_hand_custom_poq_1337_1289432890000001_nature_cyborgrecreation_fist
+
+            //var newBareHandId = $"{itemId}_{itemRecord.BareHandWeapon}";
+            //_logger.Log($"newBareHandId {newBareHandId}");
+
+            if (MetadataWrapper.TryGetFinishTime(itemId, out DateTime finishTime))
+            {
+                //_logger.Log($"newBareHandId {newBareHandId}");
+                _logger.Log($"mobRarityBoost {mobRarityBoost}");
+                _logger.Log($"itemRarity {itemRarity}");
+                _logger.Log($"finishTime.Ticks.ToString() {finishTime.Ticks.ToString()}");
+
+                return PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemRecord.BareHandWeapon, mobRarityBoost, itemRarity, finishTime.Ticks.ToString());
+            }
+
+            return string.Empty;
+        }
+
     }
 }

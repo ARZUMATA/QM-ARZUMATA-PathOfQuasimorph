@@ -1,5 +1,6 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -17,9 +18,9 @@ namespace QM_PathOfQuasimorph.Core.Processors
     {
         private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessorPoq));
 
-        public override List<string> parameters => _parameters;
+        public override Dictionary<string, bool> parameters => _parameters;
 
-        internal List<string> _parameters = new List<string>()
+        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
         {
         };
 
@@ -81,10 +82,16 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
         internal override void ProcessRecord(ref string boostedParamString)
         {
-            if (itemRarity == ItemRarity.Standard)
-            {
-                return;
-            }
+            //if (itemRarity == ItemRarity.Standard)
+            //{
+            //    return;
+            //}
+
+            // We got perk records now
+            //if (itemRecord.IsActive == true)
+            //{
+            //    return;
+            //}
 
             ApplyParameters();
         }
@@ -101,29 +108,121 @@ namespace QM_PathOfQuasimorph.Core.Processors
             float outOldValue = -1;
             float outNewValue = -1;
 
-            foreach (KeyValuePair<string, float> keyValuePair in itemRecord.ImplicitBonusEffects)
-            {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
+            var entriesImplicitBonusEffects = itemRecord.ImplicitBonusEffects.ToList();
+            var entriesImplicitPenaltyEffects = itemRecord.ImplicitPenaltyEffects.ToList();
 
-                var value = keyValuePair.Value;
-                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                itemRecord.ImplicitBonusEffects[keyValuePair.Key] = value;
+            foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
+            {
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
+
+                float valueFinal = 0;
+
+                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
+
+                switch (record.ValueFormat)
+                {
+                    case EffectViewShowValueFormat.Raw:
+                    case EffectViewShowValueFormat.MinusInt:
+                    case EffectViewShowValueFormat.MinusDamage:
+                    case EffectViewShowValueFormat.ReverseInt:
+                        var value = (int)keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value;
+                        break;
+                    case EffectViewShowValueFormat.Percent100:
+                    case EffectViewShowValueFormat.Percent100NoPlus:
+                    case EffectViewShowValueFormat.Percent100Abs:
+                        var value2 = keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value2;
+                        break;
+                }
+
+                itemRecord.ImplicitBonusEffects[keyValuePair.Key] = (float)valueFinal;
+
+                //var value = keyValuePair.Value;
+                //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                //itemRecord.ImplicitBonusEffects[keyValuePair.Key] = value;
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
 
-            foreach (KeyValuePair<string, float> keyValuePair in itemRecord.ImplicitPenaltyEffects)
+            foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
 
-                var value = keyValuePair.Value;
-                PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = value;
+                float valueFinal = 0;
+
+                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
+
+                switch (record.ValueFormat)
+                {
+                    case EffectViewShowValueFormat.Raw:
+                    case EffectViewShowValueFormat.MinusInt:
+                    case EffectViewShowValueFormat.MinusDamage:
+                    case EffectViewShowValueFormat.ReverseInt:
+                        var value = (int)keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value;
+                        break;
+                    case EffectViewShowValueFormat.Percent100:
+                    case EffectViewShowValueFormat.Percent100NoPlus:
+                    case EffectViewShowValueFormat.Percent100Abs:
+                        var value2 = keyValuePair.Value;
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
+                        valueFinal = value2;
+                        break;
+                }
+
+                itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = (float)valueFinal;
+
+                //var value = keyValuePair.Value;
+                //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                //itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = value;
 
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
+
+
+
+            if (itemRecord.IsActive == true)
+            {
+                // Add new perk copying same perk under new id (yeah that's how game works)
+                Plugin.Logger.Log($"\t\t perkRecord oldId {oldId}");
+                Plugin.Logger.Log($"\t\t perkRecord itemId {itemId}");
+
+                PerkRecord perkRecord = Data.Perks.GetRecord(oldId, true);
+
+                Plugin.Logger.Log($"\t\t perkRecord null {perkRecord == null}");
+
+                PerkRecord newPerkRecord = ItemRecordHelpers.ClonePerkRecord(perkRecord, itemId);
+
+                foreach (var perkParameter in perkRecord.Parameters)
+                {
+                    switch (perkParameter.ValType)
+                    {
+                        case PerkParameter.ValueType.Int:
+                            PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref perkParameter.IntVal, finalModifier, increase, out outOldValue, out outNewValue);
+                            break;
+                        case PerkParameter.ValueType.Float:
+                            PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref perkParameter.FloatVal, finalModifier, increase, out outOldValue, out outNewValue);
+                            break;
+                    }
+                }
+
+                Data.Perks.AddRecord(itemId, newPerkRecord);
+                RecordCollection.PerkRecords.Add(itemId, newPerkRecord);
+                MetadataWrapper.TryGetBaseId(itemId, out string baseId);
+                Plugin.Logger.Log($"perkRecord baseId: {baseId}");
+                Plugin.Logger.Log($"perkRecord itemId: {itemId}");
+
+                Localization.DuplicateKey("perk." + baseId + ".desc", "perk." + itemId + ".desc");
+                RaritySystem.AddAffixes(itemId);
+            }
+
+
         }
     }
 }
