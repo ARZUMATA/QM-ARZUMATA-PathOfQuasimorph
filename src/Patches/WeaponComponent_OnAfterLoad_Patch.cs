@@ -30,8 +30,9 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.LogWarning($"WARNING: WeaponComponent: Error on get GetSimpleRecord");
                     Plugin.Logger.LogWarning($"WARNING: WeaponComponent: reverting id to the baseline.");
 
-                    var magnumProjectWrapper = MagnumProjectWrapper.SplitItemUid(__instance._weaponId);
+                    var magnumProjectWrapper = MetadataWrapper.SplitItemUid(__instance._weaponId);
                     __instance._weaponId = magnumProjectWrapper.Id; // This effectively makes item default.
+                    Plugin.Logger.LogWarning($"{magnumProjectWrapper.Id}_magnumProjectWrapper.Id_FIXME");
                 }
 
                 return true;

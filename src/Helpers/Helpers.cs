@@ -1,15 +1,34 @@
 ﻿using QM_PathOfQuasimorph;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Unity.Profiling;
 using UnityEngine;
 using Random = System.Random;
 
 internal static class Helpers
 {
+    public static readonly Random _random = new Random();
+    public static float CustomRound(float value) => (float)Math.Floor(value + 0.7);
+    public static float CustomRound(float value, float threshold)
+    {
+        if (threshold < 0 || threshold >= 1)
+            throw new ArgumentOutOfRangeException(nameof(threshold), "Must be between 0 and 1");
+
+        float fractionalPart = value - (float)Math.Floor(value);
+        if (fractionalPart >= threshold)
+        {
+            return (float)Math.Ceiling(value);
+        }
+        else
+        {
+            return (float)Math.Floor(value);
+        }
+    }
     public static string FaceColorToHex(Color color) => $"#{color.r:F0}{color.g:F0}{color.b:F0}";
 
     public static string AlphaAwareColorToHex(Color color) =>
@@ -168,5 +187,41 @@ internal static class Helpers
     {
         return Resources.FindObjectsOfTypeAll<Sprite>()
             .FirstOrDefault(s => s.name == spriteName);
+    }
+
+    public static Dictionary<TKey, TValue> ShuffleDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary, bool shuffleInPlace = false)
+    {
+        Dictionary<TKey, TValue> original = new Dictionary<TKey, TValue>(dictionary);
+        List<TKey> keys = original.Keys.ToList();
+        ShuffleList(keys);
+
+        Dictionary<TKey, TValue> result = new Dictionary<TKey, TValue>();
+        foreach (TKey key in keys)
+        {
+            result[key] = original[key];
+        }
+
+        if (shuffleInPlace)
+        {
+            dictionary.Clear();
+            foreach (TKey key in keys)
+            {
+                dictionary[key] = original[key];
+            }
+        }
+
+        return result;
+    }
+
+    public static void ShuffleList<T>(IList<T> list)
+    {
+        // Fisher-Yates shuffle
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = _random.Next(i + 1);
+            T temp = list[i];
+            list[i] = list[j];
+            list[j] = temp;
+        }
     }
 }

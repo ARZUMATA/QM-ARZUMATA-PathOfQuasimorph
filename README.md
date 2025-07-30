@@ -206,3 +206,23 @@ Thanks community for feedback.
 - Enabled an option to toggle mob generation.
 - Updated helper functions and logger for better performance.
 - Updated Unity assets.
+
+## 1.6-pre (7935d11)
+### Enhancements
+- Major refactor of item serialization architecture (Magnum Projects removed)
+- Added `MobModifier` rarity, items get boosted stats from mob rarity as well
+- Added support for **augmentations**, **implants**
+
+### Bug Fixes
+- Fixed unbreakable entry display in tooltips
+
+## 1.8 (81864aa)
+- Augmentation and implants support
+- Fix: magnum project upgrade limits were broken for vanilla items
+- Added perk support for active implants
+- Added tooltips for augmentations and implants
+- Fixed localization issues
+- Added translations for color names
+- Added color settings to mod configuration
+- Expanded rarity.csv with more editable data
+- Various tooltip cosmetic fixes

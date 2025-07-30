@@ -12,10 +12,11 @@ namespace QM_PathOfQuasimorph.Core
     {
         private static bool localizationDataLoaded = false;
 
-        public static void LocadlocalizationData(string resourceName = "QM_PathOfQuasimorph.Files.Localization.csv")
+        public static void LoadLocalizationData(string resourceName = "QM_PathOfQuasimorph.Files.Localization.csv")
         {
             if (localizationDataLoaded)
             {
+                Plugin.Logger.Log($"localizationDataLoaded: exiting.");
                 return;
             }
 
@@ -67,7 +68,7 @@ namespace QM_PathOfQuasimorph.Core
                             else
                             {
                                 // Ignore unknown languages like Id
-                                Console.WriteLine($"Unknown language '{langName}' in Localization.csv");
+                                Plugin.Logger.Log($"Unknown language '{langName}' in Localization.csv");
                             }
                         }
                     }

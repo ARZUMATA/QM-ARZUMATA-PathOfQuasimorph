@@ -1,9 +1,11 @@
 ﻿using MGSC;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngineInternal;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static UnityEngine.Rendering.CoreUtils;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -61,8 +63,9 @@ namespace QM_PathOfQuasimorph.Core
             return items;
         }
 
-        internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false)
+        internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false, bool force = false)
         {
+            _logger.Log($"CleanObsoleteProjects");
             List<string> idsToKeep = new List<string>();
 
             var listMagnumCargo = CleanupMagnumCargo(context);
@@ -71,20 +74,113 @@ namespace QM_PathOfQuasimorph.Core
             var listMercenariesCargo = CleanupMercenariesCargo(context);
             var listCreatureData = CleanupCreatureData(context);
             var listMagnumDepartmentsData = CleanupItemsMagnumDepartments(context);
+            var listMapObstacles = CleanupItemsMapObstacles(context); // This is valid only for in-dungeon per floor... bad
+            var listItemsOnFloor = CleanupItemsItemsOnFloor(context); // This is valid only for in-dungeon per floor... bad
+            var listBarehandweapons = CleanupItemsBarehandWeapons();
+
+            _logger.Log($"Lists count:");
+            _logger.Log($"\t listMagnumCargo {listMagnumCargo.Count}");
+            _logger.Log($"\t listMissionRewards {listMissionRewards.Count}");
+            _logger.Log($"\t listStationItems {listStationItems.Count}");
+            _logger.Log($"\t listMercenariesCargo {listMercenariesCargo.Count}");
+            _logger.Log($"\t listCreatureData {listCreatureData.Count}");
+            _logger.Log($"\t listMagnumDepartmentsData {listMagnumDepartmentsData.Count}");
+            _logger.Log($"\t listMapObstacles {listMapObstacles.Count}");
+            _logger.Log($"\t listItemsOnFloor {listItemsOnFloor.Count}");
+            _logger.Log($"\t listBarehandweapons {listBarehandweapons.Count}");
 
             // Dedupe? There are not many entries anyway.
             idsToKeep.AddRange(listMagnumCargo);
             idsToKeep.AddRange(listMissionRewards);
+            idsToKeep.AddRange(listStationItems);
             idsToKeep.AddRange(listMercenariesCargo);
             idsToKeep.AddRange(listCreatureData);
             idsToKeep.AddRange(listMagnumDepartmentsData);
-            idsToKeep.AddRange(listStationItems);
+            idsToKeep.AddRange(listMapObstacles);
+            idsToKeep.AddRange(listItemsOnFloor);
+            idsToKeep.AddRange(listBarehandweapons);
+
+            _logger.Log($"\t idsToKeep {idsToKeep.Count}");
 
             // Cleanup magnum projects.
             if (cleanProjects)
             {
-                CleanupMagnumProjects(context, idsToKeep);
+                CleanupMagnumProjects(context, idsToKeep, force);
             }
+        }
+
+        private static List<string> CleanupItemsBarehandWeapons()
+        {
+            List<string> items = new List<string>();
+
+            foreach (var rec in RecordCollection.WoundSlotRecords)
+            {
+                if (rec.Value.BareHandWeapon != string.Empty)
+                {
+                    items.Add(rec.Value.BareHandWeapon);
+                }
+            }
+
+            return items;
+        }
+
+        private static List<string> CleanupItemsItemsOnFloor(IModContext context)
+        {
+            ItemsOnFloor itemsOnFloor = context.State.Get<ItemsOnFloor>();
+            List<string> items = new List<string>();
+
+            _logger.Log($"[CleanupItemsItemsOnFloor]");
+            _logger.Log($"[CleanupItemsItemsOnFloor] itemsOnFloor null {itemsOnFloor == null}");
+
+            if (itemsOnFloor != null)
+            {
+                foreach (var value in itemsOnFloor.Values)
+                {
+                    if (value.Storage != null)
+                    {
+                        items.AddRange(CleanupPickupItem(value.Storage.Items));
+                    }
+
+                }
+            }
+
+            return items;
+        }
+
+        private static List<string> CleanupItemsMapObstacles(IModContext context)
+        {
+            MapObstacles obstacles = context.State.Get<MapObstacles>();
+            List<string> items = new List<string>();
+
+            _logger.Log($"[CleanupItemsMapObstacles]");
+            _logger.Log($"[CleanupItemsMapObstacles] obstacles null {obstacles == null}");
+
+            if (obstacles != null)
+            {
+                foreach (var obstacle in obstacles.Obstacles)
+                {
+                    foreach (var comp in obstacle._comps)
+                    {
+                        var corpseStorage = comp as CorpseStorage;
+                        if (corpseStorage != null && corpseStorage._creatureData != null && corpseStorage._creatureData.Inventory != null)
+                        {
+                            foreach (ItemStorage storage in corpseStorage._creatureData.Inventory.AllContainers)
+                            {
+                                items.AddRange(CleanupPickupItem(storage.Items));
+                            }
+
+                            var store = comp as Store;
+
+                            if (store != null && store.storage != null && store.storage.Items != null)
+                            {
+                                items.AddRange(CleanupPickupItem(store.storage.Items));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return items;
         }
 
         internal static List<string> CleanupCreatureData(IModContext context)
@@ -92,7 +188,8 @@ namespace QM_PathOfQuasimorph.Core
             Creatures creatures = context.State.Get<Creatures>();
             List<string> items = new List<string>();
 
-            _logger.Log("CleanupCreatureData");
+            _logger.Log($"[CleanupCreatureData]");
+            _logger.Log($"[CleanupCreatureData] creatures null {creatures == null}");
 
             if (creatures != null)
             {
@@ -148,26 +245,34 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void CleanupItem(PickupItem item)
         {
-            var wrapper = MagnumProjectWrapper.SplitItemUid(item.Id);
-
-            if (!wrapper.PoqItem)
+            if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out MetadataWrapper wrapper))
             {
-                return;
-            }
+                item.Id = wrapper.Id;
+                _logger.Log($"CleanupItem");
+                _logger.Log($"Reverting item to baseline: {item.Id} to {wrapper.Id}");
 
-            item.Id = wrapper.Id;
-            foreach (var component in item.Components)
-            {
-                var weaponComponent = component as WeaponComponent;
-                if (weaponComponent != null)
+                foreach (var component in item.Components)
                 {
-                    weaponComponent._weaponId = item.Id;
+                    var weaponComponent = component as WeaponComponent;
+
+                    if (weaponComponent != null)
+                    {
+                        weaponComponent._weaponId = item.Id;
+                    }
+
+                    var breakableItemComponent = component as BreakableItemComponent;
+
+                    if (breakableItemComponent != null)
+                    {
+                        breakableItemComponent.Unbreakable = false;
+                    }
                 }
-
-                var breakableItemComponent = component as BreakableItemComponent;
-                if (breakableItemComponent != null)
+            }
+            else
+            {
+                if (MetadataWrapper.IsPoqItemUid(item.Id))
                 {
-                    breakableItemComponent.Unbreakable = false;
+                    throw new Exception($"CleanupItem: trying to cleanup poq item but record is missing.");
                 }
             }
         }
@@ -178,7 +283,8 @@ namespace QM_PathOfQuasimorph.Core
 
             MagnumProgression magnumSpaceship = context.State.Get<MagnumProgression>();
 
-            _logger.Log("CleanupItemsMagnumDepartments");
+            _logger.Log($"[CleanupItemsMagnumDepartments]");
+            _logger.Log($"[CleanupItemsMagnumDepartments] magnumSpaceship null {magnumSpaceship == null}");
 
             foreach (var department in magnumSpaceship.Departments)
             {
@@ -204,6 +310,9 @@ namespace QM_PathOfQuasimorph.Core
             Stations stations = context.State.Get<Stations>();
             List<string> items = new List<string>();
 
+            _logger.Log($"[CleanStationInternalStorage]");
+            _logger.Log($"[CleanStationInternalStorage] stations null {stations == null}");
+
             if (stations != null)
             {
                 foreach (var station in stations.Values)
@@ -211,6 +320,11 @@ namespace QM_PathOfQuasimorph.Core
                     if (station.InternalStorage != null)
                     {
                         items.AddRange(CleanupPickupItem(station.InternalStorage.Items));
+                    }
+
+                    if (station.Stash != null)
+                    {
+                        items.AddRange(CleanupPickupItem(station.Stash.Items));
                     }
 
                 }
@@ -223,6 +337,9 @@ namespace QM_PathOfQuasimorph.Core
         {
             ItemsOnFloor itemsOnFloor = context.State.Get<ItemsOnFloor>();
             List<string> items = new List<string>();
+
+            _logger.Log($"[CleanupItemsOnFloor]");
+            _logger.Log($"[CleanupItemsOnFloor] itemsOnFloor null {itemsOnFloor == null}");
 
             if (itemsOnFloor != null)
             {
@@ -243,7 +360,8 @@ namespace QM_PathOfQuasimorph.Core
             MagnumCargo magnumCargo = context.State.Get<MagnumCargo>();
             List<string> items = new List<string>();
 
-            _logger.Log("CleanupMercenariesCargo");
+            _logger.Log($"[CleanupMercenariesCargo]");
+            _logger.Log($"[CleanupMercenariesCargo] magnumCargo null {magnumCargo == null}");
 
             if (magnumCargo != null)
             {
@@ -251,17 +369,20 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     items.AddRange(CleanupPickupItem(cargo.Items));
                 }
+
+                items.AddRange(CleanupPickupItem(magnumCargo.RecyclingStorage.Items));
             }
+
 
             return items;
         }
 
-        internal static void CleanupMagnumProjects(IModContext context, List<string> idsToKeep)
+        internal static void CleanupMagnumProjects(IModContext context, List<string> idsToKeep, bool force = false)
         {
             // Get the current game time (you can also use Time.time or Time.unscaledTime depending on your need)
             float currentTime = Time.time;
 
-            if (currentTime - lastIntervalCheckTime >= interval)
+            if (currentTime - lastIntervalCheckTime >= interval || force)
             {
                 // We need to quick cleanup magnum projects that are no longer in use by anything.
                 // Mercs, mission rewards, station cargo.
@@ -269,30 +390,50 @@ namespace QM_PathOfQuasimorph.Core
                 // LINQ maybe?
 
                 MagnumProjects magnumProjects = context.State.Get<MagnumProjects>();
-                _logger.Log("CleanupMagnumProjects");
+
+                _logger.Log($"[CleanupMagnumProjects]");
+                _logger.Log($"[CleanupMagnumProjects] magnumProjects null {magnumProjects == null}");
 
                 if (magnumProjects != null)
                 {
                     _logger.Log($"magnumProjects != null");
-                    foreach (var project in magnumProjects.Values.ToList()) // Use ToList() to avoid modification during iteration
+                    foreach (var project in magnumProjects.Values.ToList()) // Using ToList() to avoid modification during iteration
                     {
-                        var projectWrapper = MagnumProjectWrapper.SplitItemUid(MagnumProjectWrapper.GetPoqItemId(project));
-                        _logger.Log($"magnumProjects != null");
+                        _logger.Log($"\t checking project {project.DevelopId}");
 
-                        if (projectWrapper.PoqItem && !idsToKeep.Contains(projectWrapper.ReturnItemUid()))
+                        var itemId = MetadataWrapper.GetPoqItemIdFromProject(project);
+
+                        if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
                         {
-                            _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {projectWrapper.ReturnItemUid()}");
-
-                            magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
+                            if (MetadataWrapper.IsPoqItemUid(itemId) && !MetadataWrapper.IsSerializedStorage(itemId))
+                            {
+                                // Handle our dataholder project
+                                throw new Exception($"CleanupMagnumProjects: trying to cleanup poq item but record is missing.");
+                            }
                         }
+                        else
+                        {
+                            // Here we assume record exist in records collection already so we remove any project that is POQ but not dataholder.
+
+                            _logger.Log($"PoqItem {wrapper.PoqItem}, SerializedStorage {wrapper.SerializedStorage}");
+
+                            if (!wrapper.SerializedStorage && wrapper.PoqItem)
+                            {
+                                _logger.Log($"WARNING: Removing {project.FinishTime.Ticks} {project.DevelopId}  -- {wrapper.ReturnItemUid()}");
+
+                                magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
+                            }
+                        }
+
                     }
                 }
 
-                // Perform your time-based action here
                 _logger.Log("Time interval reached, doing something... CleanObsoleteProjects");
 
                 // Reset the timer
                 lastIntervalCheckTime = currentTime;
+
+                RecordCollection.CleanObsoleteItemRecords(idsToKeep);
             }
         }
 
@@ -301,7 +442,8 @@ namespace QM_PathOfQuasimorph.Core
             Mercenaries mercenaries = context.State.Get<Mercenaries>();
             List<string> items = new List<string>();
 
-            _logger.Log("CleanupMercenariesCargo");
+            _logger.Log($"[CleanupMercenariesCargo]");
+            _logger.Log($"[CleanupMercenariesCargo] mercenaries null {mercenaries == null}");
 
             if (mercenaries != null)
             {
@@ -318,17 +460,6 @@ namespace QM_PathOfQuasimorph.Core
                         items.AddRange(CleanupPickupItem(storage.Items));
                     }
 
-                    // Part of all containers
-                    //foreach (ItemStorage storage in merc.CreatureData.Inventory.Storages)
-                    //{
-                    //    items.AddRange(CleanupPickupItem(storage.Items));
-                    //}
-
-                    //foreach (ItemStorage storage in merc.CreatureData.Inventory.Slots)
-                    //{
-                    //    items.AddRange(CleanupPickupItem(storage.Items));
-                    //}
-
                     foreach (ItemStorage storage in merc.CreatureData.Inventory.WeaponSlots)
                     {
                         items.AddRange(CleanupPickupItem(storage.Items));
@@ -344,7 +475,8 @@ namespace QM_PathOfQuasimorph.Core
             Missions missions = context.State.Get<Missions>();
             List<string> items = new List<string>();
 
-            _logger.Log("CleanupMissionRewards");
+            _logger.Log($"[CleanupMissionRewards]");
+            _logger.Log($"[CleanupMissionRewards] missions null {missions == null}");
 
             if (missions != null)
             {
@@ -375,7 +507,7 @@ namespace QM_PathOfQuasimorph.Core
                 if (item.Id.Contains("_poq"))
                 {
                     itemsToReturn.Add(item.Id);
-                    _logger.Log($"CleanupPickupItem: item.Id {item.Id}");
+                    _logger.Log($"CleanupPickupItem Keeping item: item.Id {item.Id}");
 
                     if (Plugin.Config.CleanupMode)
                     {
