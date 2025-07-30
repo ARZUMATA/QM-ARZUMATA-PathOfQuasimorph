@@ -19,8 +19,6 @@ namespace QM_PathOfQuasimorph.Core
     /* This class is for controlling created creatures that have extra */
     internal partial class CreaturesControllerPoq
     {
-        private readonly Random _random = new Random();
-
         private static bool initColors = false;
 
         // Number of times to increaseAlphaColor/decrease brightness before reversing direction.
@@ -427,12 +425,12 @@ namespace QM_PathOfQuasimorph.Core
             var perkSuffix = perksMasteries[(int)rarity - 1];
 
             // Add talent perk
-            string talentSelected = talentsList[_random.Next(0, talentsList.Count)];
+            string talentSelected = talentsList[Helpers._random.Next(0, talentsList.Count)];
             monster.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(Data.Perks.GetRecord(talentSelected)));
 
             // Add rank perk
             var (Min, Max) = perkRanksRange[rarity];
-            string selectedWord = _random.Next(0, 100 + 1) < 50 ? Min : Max;
+            string selectedWord = Helpers._random.Next(0, 100 + 1) < 50 ? Min : Max;
             monster.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(Data.Perks.GetRecord(selectedWord)));
 
             // Add ultimate perk
@@ -467,7 +465,7 @@ namespace QM_PathOfQuasimorph.Core
             int numToHinder = (int)Math.Floor(numToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
             int numToImprove = numToAdjust - numToHinder;
             PathOfQuasimorph.raritySystem.ShuffleList(resistsToModify);
-            int boostedParam = _random.Next(resistsToModify.Count);
+            int boostedParam = Helpers._random.Next(resistsToModify.Count);
 
             var resistSheet = monster.CreatureData.ResistSheet._currentResist;
             float averageResist = 0;
@@ -498,7 +496,7 @@ namespace QM_PathOfQuasimorph.Core
                     // Apply boost
                     if (resistType == resistsToModify.ElementAt(boostedParam))
                     {
-                        finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                        finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
                         Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : TRUE");
                     }
                     else
@@ -545,7 +543,7 @@ namespace QM_PathOfQuasimorph.Core
             int numToHinder = (int)Math.Floor(numToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
             int numToImprove = numToAdjust - numToHinder;
             PathOfQuasimorph.raritySystem.ShuffleList(statsToModify);
-            var boostedParam = _random.Next(statsToModify.Count);
+            var boostedParam = Helpers._random.Next(statsToModify.Count);
 
             // Reflection based approach went good but sadly switch case is better in this scenario.
 
@@ -559,7 +557,7 @@ namespace QM_PathOfQuasimorph.Core
                 // Apply boost
                 if (prop == statsToModify.ElementAt(boostedParam))
                 {
-                    finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                    finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
                     Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier}");
 
                 }

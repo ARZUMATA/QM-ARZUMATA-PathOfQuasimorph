@@ -60,7 +60,6 @@ namespace QM_PathOfQuasimorph.Core
 
     internal class RaritySystem
     {
-        private readonly Random _random = new Random();
         internal AffixManager affixManager = new AffixManager();
         private MagnumPoQProjectsController magnumPoQProjectsController;
         public const int AMOUNT_PREFIXES = 10; // csv has 10 prefixes per rarity
@@ -506,7 +505,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 for (int i = 0; i < NUM_ROLLS; i++)
                 {
-                    int roll = _random.Next(1, DICE_SIDES + 1); // Simulate a d20 roll (1 to 20 inclusive)
+                    int roll = Helpers._random.Next(1, DICE_SIDES + 1); // Simulate a d20 roll (1 to 20 inclusive)
                     if (roll < weight)
                     {
                         allRollsPass = false;
@@ -524,13 +523,13 @@ namespace QM_PathOfQuasimorph.Core
             return ItemRarity.Standard;
         }
 
-        public T SelectRarityWeighted<T>(Dictionary<T, int> weights) where T : Enum
+        public T SelectRarityWeighted<T>(Dictionary<T, int> weights)// where T : Enum
         {
             // Calculate the total weight
             int totalWeight = weights.Values.Sum();
 
             // Generate a random number within the total weight range
-            int randomNumber = _random.Next(0, totalWeight + 1);
+            int randomNumber = Helpers._random.Next(0, totalWeight + 1);
 
             // Iterate through the rarities and determine which one the random number falls into
             int cumulativeWeight = 0;
@@ -610,7 +609,7 @@ namespace QM_PathOfQuasimorph.Core
                     baseScore = 0;
                 }
 
-                int d20Roll = _random.Next(1, DICE_SIDES + 1); // Roll a D20 (1 to 20 inclusive)
+                int d20Roll = Helpers._random.Next(1, DICE_SIDES + 1); // Roll a D20 (1 to 20 inclusive)
 
                 int currentTotalScore = baseScore + d20Roll;
 
@@ -652,7 +651,7 @@ namespace QM_PathOfQuasimorph.Core
                 totalWeight += weight;
             }
 
-            int randomValue = _random.Next(totalWeight + 1);
+            int randomValue = Helpers._random.Next(totalWeight + 1);
             int cumulativeWeight = 0;
 
             foreach (var rarity in Enum.GetValues(typeof(ItemRarity)))
@@ -798,7 +797,7 @@ namespace QM_PathOfQuasimorph.Core
                 if (averageResistApplied == false)
                 {
                     // Roll random
-                    var canApply = _random.Next(0, 100 + 1) < AVERAGE_RESIST_APPLY_CHANCE;
+                    var canApply = Helpers._random.Next(0, 100 + 1) < AVERAGE_RESIST_APPLY_CHANCE;
                     if (canApply)
                     {
                         averageResistAppliedResult = true;
@@ -819,8 +818,8 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             float result = 0;
-            // float boostAmount = (float)Math.Round(_random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
-            float boostAmount = boost == true ? (float)Math.Round(_random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
+            // float boostAmount = (float)Math.Round(Helpers._random.Next((int)(PARAMETER_BOOST_MIN * 100), (int)(PARAMETER_BOOST_MAX * 100) + 1) / 100f, 2);
+            float boostAmount = boost == true ? (float)Math.Round(Helpers._random.NextDouble() * (PARAMETER_BOOST_MAX - PARAMETER_BOOST_MIN) + PARAMETER_BOOST_MIN, 2) : 1;
 
             _logger.Log($"\t\t Modifier: {modifier}, modifierExtraBoost: {modifierExtraBoost}, boosting: {boost}, boostAmount: {boostAmount}, hinder: {hinder}");
 
@@ -846,7 +845,7 @@ namespace QM_PathOfQuasimorph.Core
         internal float GetRarityModifier<T>(T rarity, Dictionary<T, (float, float)> modifiers) where T : Enum
         {
             var (Min, Max) = modifiers[rarity];
-            float modifier = (float)Math.Round(_random.NextDouble() * (Max - Min) + Min, 2);
+            float modifier = (float)Math.Round(Helpers._random.NextDouble() * (Max - Min) + Min, 2);
             return modifier;
         }
 
@@ -860,13 +859,13 @@ namespace QM_PathOfQuasimorph.Core
             int maxParams = (int)Math.Ceiling(Max * editableParameters.Count);
 
             // Calculate the number of parameters to adjust based on the percentage
-            int numParamsToAdjust = _random.Next(minParams, maxParams + 1);
+            int numParamsToAdjust = Helpers._random.Next(minParams, maxParams + 1);
 
             int numParamsToHinder = (int)Math.Floor(numParamsToAdjust * PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
             int numParamsToImprove = numParamsToAdjust - numParamsToHinder;
 
             //// Get _defaultValue for randomized Prefix
-            //var randomPrefix = _random.Next(0, AMOUNT_PREFIXES);
+            //var randomPrefix = Helpers._random.Next(0, AMOUNT_PREFIXES);
 
             // Shuffle the dictionary
             var editableParamsShuffled = ShuffleDictionary(editableParameters);
@@ -918,7 +917,7 @@ namespace QM_PathOfQuasimorph.Core
 
             // Select one parameter to boost more.
             // This parameter will be boosted more than the others.
-            var boostedParam = editableParamsShuffled.Values.ToArray()[_random.Next(editableParamsShuffled.Count)];
+            var boostedParam = editableParamsShuffled.Values.ToArray()[Helpers._random.Next(editableParamsShuffled.Count)];
 
             string[] boostedParamParts = boostedParam.Id.Split('_');
             string boostedParamResult = string.Join("_", boostedParamParts.Skip(1));
@@ -971,7 +970,7 @@ namespace QM_PathOfQuasimorph.Core
         public bool ShouldHinderParameter(ref int hinderedCount, ref int improvedCount, int numParamsToHinder, int numParamsToImprove)
         {
             // 20% chance to hinder first, regardless of improvement status
-            if (_random.Next(0, 100 + 1) < 20)
+            if (Helpers._random.Next(0, 100 + 1) < 20)
             {
                 if (hinderedCount < numParamsToHinder)
                 {
@@ -990,7 +989,7 @@ namespace QM_PathOfQuasimorph.Core
             if (hinderedCount < numParamsToHinder && improvedCount >= numParamsToImprove)
             {
                 // 50/50 chance to hinder a parameter (after improvement threshold is met)
-                if (_random.Next(0, 100 + 1) < PARAMETER_HINDER_CHANCE)
+                if (Helpers._random.Next(0, 100 + 1) < PARAMETER_HINDER_CHANCE)
                 {
                     hinderedCount++;
                     return true;
@@ -1074,7 +1073,7 @@ namespace QM_PathOfQuasimorph.Core
             var canAddUnbreakableTrait = false;
 
             // Only 20% of all items are eligible for unbreakable trait
-            if (new Random().NextDouble() <= UNBREAKABLE_ENTRY_CHANCE &&
+            if (Helpers._random.NextDouble() <= UNBREAKABLE_ENTRY_CHANCE &&
                 unbreakableTraitPercent.TryGetValue(itemRarity, out float weight) &&
                 weight > 0)
             {
@@ -1087,7 +1086,7 @@ namespace QM_PathOfQuasimorph.Core
                 float totalWeight = eligibleRarities.Values.Sum();
 
                 // Check if this specific item wins based on its weight
-                if (new Random().NextDouble() * totalWeight <= weight)
+                if (Helpers._random.NextDouble() * totalWeight <= weight)
                 {
                     canAddUnbreakableTrait = true;
                 }
@@ -1251,7 +1250,7 @@ namespace QM_PathOfQuasimorph.Core
             // Fisher-Yates shuffle
             for (int i = list.Count - 1; i > 0; i--)
             {
-                int j = _random.Next(i + 1);
+                int j = Helpers._random.Next(i + 1);
                 T temp = list[i];
                 list[i] = list[j];
                 list[j] = temp;
