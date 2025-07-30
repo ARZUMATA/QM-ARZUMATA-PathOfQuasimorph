@@ -226,3 +226,7 @@ Thanks community for feedback.
 - Added color settings to mod configuration
 - Expanded rarity.csv with more editable data
 - Various tooltip cosmetic fixes
+
+## 1.8.1 (6202d68)
+- Fix: some items were reset to default if you switch saves without restarting the game
+
