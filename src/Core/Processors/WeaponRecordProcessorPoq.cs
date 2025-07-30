@@ -1,4 +1,5 @@
-﻿using MGSC;
+﻿using JetBrains.Annotations;
+using MGSC;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,50 @@ namespace QM_PathOfQuasimorph.Core.Processors
             "laser_sight",
             "suppressive_fire",
         };
+
+        internal struct TraitWeights
+        {
+            public string name;
+            public bool increase;
+            public int weight;
+        }
+
+        internal Dictionary<string, int> positiveTraits = new Dictionary<string, int>()
+        {
+            { "perfect_throw", 5 },
+            { "piercing_throw", 5 },
+            { "mutiliating", 5 },
+            { "cleave", 5 },
+            { "offhand", 5 },
+            { "extra_knockback", 5 },
+            { "painful_crits", 5 },
+            { "suppressor", 5 },
+            { "wounding_pierce", 5 },
+            { "piercing", 5 },
+            { "full_piercing", 5 },
+            { "ramp_up", 5 },
+            { "selfcharging", 5 },
+            { "critical_throw", 5 },
+            { "overclock", 5 },
+            { "bipod", 5 },
+            { "optic_sight", 5 },
+            { "collimator", 5 },
+            { "laser_sight", 5 },
+            { "backstab", 5 },
+            { "suppressive_fire", 5 },
+        };
+
+        internal Dictionary<string, int> negativeTraits = new Dictionary<string, int>()
+        {
+            { "single_load", 5 },
+            { "unthrowable", 5 },
+            { "fragile", 5 },
+            { "unwieldy", 5 },
+            { "heavy_weapon", 5 },
+            { "overheat", 5 },
+        };
+
+
 
         // bool = should we increase the stat or decrease for benefits
         internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
@@ -162,41 +207,85 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 return;
             }
 
-            // Apply Traits
-            var traitsForItemType = itemRecordsControllerPoq.GetAddeableTraits(ItemTraitType.WeaponTrait);
-            Helpers.ShuffleList(traitsForItemType);
+            AddUnbreakableTrait();
 
             // Determine if the item is a melee weapon
-            bool isMelee = itemRecord.IsMelee;
+            _logger.Log($"\t\t  isMelee: {itemRecord.IsMelee}");
 
-            _logger.Log($"\t\t  isMelee: {isMelee}");
+            // Allowed traits for item type
+            var allowedTraits = itemRecordsControllerPoq.GetAddeableTraits(ItemTraitType.WeaponTrait);
 
-            // Apply traits blacklist
-            for (int i = traitsForItemType.Count - 1; i >= 0; i--)
+            // Combined dict of positive and negative traits
+            Dictionary<string, int> allTraitsCombined = positiveTraits.Concat(negativeTraits).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            // Log traits in allowedTraits not present in allTraitsCombined
+            foreach (var trait in allowedTraits)
             {
-                var key = traitsForItemType.ElementAt(i);
-                if (isMelee && meleeTraitsBlacklist.Contains(key))
+                if (!allTraitsCombined.ContainsKey(trait))
                 {
-                    _logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the meleeTraitsBlacklist.");
-                    traitsForItemType.Remove(key);
-                }
-
-                if (!isMelee && rangedTraitsBlacklist.Contains(key))
-                {
-                    _logger.Log($"[RaritySystem] Removing key '{key}' from traitsForItemTypeShuffled as it's in the rangedTraitsBlacklist.");
-                    traitsForItemType.Remove(key);
+                    _logger.LogWarning($"[WARNING] Allowed trait '{trait}' is not present in allTraitsCombined.");
                 }
             }
 
-            var traitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, traitsForItemType.Count);
+            // Determine total number of traits to add based on rarity
+            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count);
 
-            // Calculate the number of traits to adjust based on the percentage
-            int numParamsToAdjust = Mathf.Max(1, traitCount); // Ensure at least 1 parameter is adjusted
+            // Select traits based on weights
+            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount);
 
+            // Apply blacklists
+            selectedTraits.RemoveAll(t =>
+                (itemRecord.IsMelee && meleeTraitsBlacklist.Contains(t)) ||
+                (!itemRecord.IsMelee && rangedTraitsBlacklist.Contains(t)));
+
+            // Remove already present traits
+            selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
+
+            // Filter all traits if they are not in allowed list (just in case)
+            selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
+
+            // Should we remove existing traits?
+            // Randomly decide whether to remove existing traits (20% chance)
+            if (Helpers._random.NextDouble() < 0.2)
+            {
+                itemRecord.Traits.Clear();
+            }
+            
+            // Add traits
+            for (int i = 0; i < selectedTraits.Count; i++)
+            {
+                itemRecord.Traits.Add(selectedTraits[i]);
+            }
+        }
+
+        private List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count)
+        {
+            var availableTraits = traitWeights
+                .Where(t => t.Value > 0) // Skip traits with 0 or negative weight
+                .ToDictionary(t => t.Key, t => t.Value);
+
+            var selected = new List<string>();
+
+            for (int i = 0; i < count && availableTraits.Count > 0; i++)
+            {
+                string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
+                selected.Add(selectedTrait);
+
+                // Remove already selected trait to prevent duplicates
+                availableTraits = availableTraits
+                    .Where(t => t.Key != selectedTrait)
+                    .ToDictionary(t => t.Key, t => t.Value);
+            }
+
+            return selected;
+        }
+
+        private void AddUnbreakableTrait()
+        {
             var canAddUnbreakableTrait = false;
 
             // Only 20% of all items are eligible for unbreakable trait
-            if (new Random().NextDouble() <= PathOfQuasimorph.raritySystem.UNBREAKABLE_ENTRY_CHANCE &&
+            if (Helpers._random.NextDouble() <= PathOfQuasimorph.raritySystem.UNBREAKABLE_ENTRY_CHANCE &&
                 PathOfQuasimorph.raritySystem.unbreakableTraitPercent.TryGetValue(itemRarity, out float weight) &&
                 weight > 0)
             {
@@ -209,7 +298,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 float totalWeight = eligibleRarities.Values.Sum();
 
                 // Check if this specific item wins based on its weight
-                if (new Random().NextDouble() * totalWeight <= weight)
+                if (Helpers._random.NextDouble() * totalWeight <= weight)
                 {
                     canAddUnbreakableTrait = true;
                 }
@@ -220,28 +309,6 @@ namespace QM_PathOfQuasimorph.Core.Processors
             if (canAddUnbreakableTrait)
             {
                 itemRecord.Unbreakable = true;
-            }
-
-            // Add traits in the end
-
-            // Note, here we can only apply existing traits in game, we can't change any parameters here.
-            // Parameters can we changes either by adding new trait record (bad), or modifying resulting pickupitem traits parameters (good).
-
-            // In case the dictionary is smaller now.
-            if (numParamsToAdjust > traitsForItemType.Count)
-            {
-                numParamsToAdjust = traitsForItemType.Count;
-            }
-
-            for (int i = 0; i < numParamsToAdjust; i++)
-            {
-                // If trait already there, don't touch it.
-                if (itemRecord.Traits.Contains(traitsForItemType[i]))
-                {
-                    continue;
-                }
-
-                itemRecord.Traits.Add(traitsForItemType[i]);
             }
         }
     }
