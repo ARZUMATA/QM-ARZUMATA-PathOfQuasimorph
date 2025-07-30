@@ -157,20 +157,27 @@ namespace QM_PathOfQuasimorph.Core
 
                     // Add item transformations
                     _logger.Log($"Checking ItemTransformationRecord");
-                    _logger.Log($"\t\t baseId: {baseId}");
 
-                    ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(baseId);
+                    // Check PoQ item transformation record
+                    ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(compositeRecord.Id);
 
                     if (itemTransformationRecord == null)
                     {
-                        _logger.Log($"ItemTransformationRecord - missing. Adding record.");
-                        _logger.Log($"\t\t itemTransformationRecord == null {itemTransformationRecord == null}");
+                        _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {compositeRecord.Id}.");
 
-                        // Item breaks into this, unless it has it's own itemTransformationRecord.
-                        itemTransformationRecord = Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
+                        _logger.Log($"\t Getting baseId first: {baseId}");
 
-                        var haskey = Data.ItemTransformation._records.ContainsKey(compositeRecord.Id);
-                        _logger.Log($"\t\t haskey {haskey} for compositeRecord.Id {compositeRecord.Id}");
+                        itemTransformationRecord = Data.ItemTransformation.GetRecord(baseId, true);
+
+                        if (itemTransformationRecord == null)
+                        {
+                            _logger.Log($"Base is null. Need a placeholder");
+
+                            // Item breaks into this, unless it has it's own itemTransformationRecord.
+                            itemTransformationRecord = Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
+                        }
+
+                        _logger.Log($" Cloning and adding record record.");
 
                         Data.ItemTransformation.AddRecord(compositeRecord.Id, itemTransformationRecord.Clone(compositeRecord.Id));
                     }

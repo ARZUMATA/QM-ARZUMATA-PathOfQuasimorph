@@ -103,19 +103,19 @@ namespace QM_PathOfQuasimorph.Core
 
             ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
 
-            if (itemTransformationRecord == null || itemTransformationRecord.Id == string.Empty)
+            if (itemTransformationRecord == null)
             {
-                _logger.Log($"ItemTransformationRecord - missing. Adding record.");
+                _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {itemIdOrigin}.");
+                _logger.Log($"Need a placeholder");
 
                 // Item breaks into this, unless it has it's own itemTransformationRecord.
                 itemTransformationRecord = Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
-                Data.ItemTransformation.AddRecord(newId, itemTransformationRecord.Clone(newId));
             }
-            else
-            {
-                Data.ItemTransformation.AddRecord(newId, itemTransformationRecord.Clone(newId));
-                _logger.Log($"ItemTransformationRecord - exists: result will be item count {itemTransformationRecord.OutputItems.Count}");
-            }
+            
+            _logger.Log($" Cloning and adding record record.");
+            Data.ItemTransformation.AddRecord(newId, itemTransformationRecord.Clone(newId));
+
+            _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");
 
             string boostedParamString = string.Empty;
             ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, itemIdOrigin, ref boostedParamString);
