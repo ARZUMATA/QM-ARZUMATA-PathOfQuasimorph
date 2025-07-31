@@ -1423,5 +1423,15 @@ namespace QM_PathOfQuasimorph.Core
 
             outNewValue = tempValue;
         }
+
+        internal void ApplyColors()
+        {
+            Colors[ItemRarity.Standard] = Helpers.AlphaAwareColorToHex(Plugin.Config.RarityColor_Standard);
+            Colors[ItemRarity.Enhanced] = Helpers.AlphaAwareColorToHex(Plugin.Config.RarityColor_Enhanced);
+            Colors[ItemRarity.Advanced] = Helpers.AlphaAwareColorToHex(Plugin.Config.RarityColor_Advanced);
+            Colors[ItemRarity.Premium] = Helpers.AlphaAwareColorToHex(Plugin.Config.RarityColor_Premium);
+            Colors[ItemRarity.Prototype] = Helpers.AlphaAwareColorToHex(Plugin.Config.RarityColor_Prototype);
+            Colors[ItemRarity.Quantum] = Helpers.AlphaAwareColorToHex(Plugin.Config.RarityColor_Quantum);
+        }
     }
 }

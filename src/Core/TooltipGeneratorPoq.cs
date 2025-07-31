@@ -54,7 +54,7 @@ namespace QM_PathOfQuasimorph.Core
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
                     var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
-                    
+
                     if (!RecordCollection.MetadataWrapperRecords.TryGetValue(_factory._lastShowedItem.Id, out MetadataWrapper wrapper))
                     {
                         if (MetadataWrapper.IsPoqItemUid(_factory._lastShowedItem.Id))
@@ -849,5 +849,11 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        internal void ApplyColors()
+        {
+            DifferenceColorMap["positive"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Positive);
+            DifferenceColorMap["negative"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Negative);
+            DifferenceColorMap["equal"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Equal);
+        }
     }
 }

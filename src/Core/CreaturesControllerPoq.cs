@@ -643,10 +643,12 @@ namespace QM_PathOfQuasimorph.Core
             return PathOfQuasimorph.raritySystem.SelectRarityWeighted(_masteryTierWeights);
         }
 
-
-
-
-
-
+        internal void ApplyColors()
+        {
+            MonsterMasteryColors[MonsterMasteryTier.Novice] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Novice);
+            MonsterMasteryColors[MonsterMasteryTier.Skilled] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Skilled);
+            MonsterMasteryColors[MonsterMasteryTier.Expert] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Expert);
+            MonsterMasteryColors[MonsterMasteryTier.Grandmaster] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Grandmaster);
+        }
     }
 }

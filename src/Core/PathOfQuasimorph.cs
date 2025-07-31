@@ -104,6 +104,19 @@ namespace QM_PathOfQuasimorph.Core
             perkFactoryState = context.State.Get<PerkFactory>();
         }
 
+        [Hook(ModHookType.MainMenuDestroyed)]
+        public static void MainMenuDestroyed(IModContext context)
+        {
+            _logger.Log($"MainMenuDestroyed");
+            ApplyModConfigs();
+        }
+        private static void ApplyModConfigs()
+        {
+            raritySystem.ApplyColors();
+            creaturesControllerPoq.ApplyColors();
+            tooltipGeneratorPoq.ApplyColors();
+        }
+
         [Hook(ModHookType.DungeonStarted)]
         public static void DungeonStarted(IModContext context)
         {
