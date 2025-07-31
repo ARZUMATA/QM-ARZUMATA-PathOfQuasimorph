@@ -16,7 +16,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix()
             {
-                LocalizationHelpers.LocadlocalizationData();
+                LocalizationHelpers.LoadLocalizationData();
             }
         }
     }

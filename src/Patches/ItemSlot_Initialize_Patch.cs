@@ -52,7 +52,7 @@ namespace QM_PathOfQuasimorph.Core
                 */
 
                 // Update or create imageComponent on the GameObject
-                var rarity = MagnumProjectWrapper.SplitItemUid(item.Id).RarityClass;
+                var rarity = MetadataWrapper.SplitItemUid(item.Id).RarityClass;
 
                 if (rarity != ItemRarity.Standard)
                 {

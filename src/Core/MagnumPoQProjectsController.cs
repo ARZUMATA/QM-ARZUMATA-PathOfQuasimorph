@@ -1,12 +1,15 @@
-﻿using System;
+﻿using MGSC;
+using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Core;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
-using MGSC;
-using QM_PathOfQuasimorph.Core;
-using UnityEngine;
 using System.Security.Policy;
+using UnityEngine;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -15,28 +18,89 @@ namespace QM_PathOfQuasimorph.Core
         public const long MAGNUM_PROJECT_START_TIME = 1337L;
 
         public static MagnumProjects magnumProjects;
-        public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
         public List<string> traitsTracker = new List<string>();
         private Logger _logger = new Logger(null, typeof(MagnumPoQProjectsController));
+        internal MagnumProject dataPlaceholderProject;
 
         public MagnumPoQProjectsController(MagnumProjects _magnumProjects)
         {
             magnumProjects = _magnumProjects;
-            //AffixManager.LocadlocalizationData();
+            //AffixManager.LoadLocalizationData();
         }
 
-        public static bool IsPoqProject(MagnumProject magnumProject)
+        public void AddItemRecords(JsonSerializerSettings jsonSettings)
         {
-            if (magnumProject.StartTime.Ticks == MAGNUM_PROJECT_START_TIME && magnumProject.FinishTime.Ticks > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            _logger.Log($"AddItemRecords");
+
+            CreateDataHolderProject();
+
+            _logger.Log($"dataPlaceholderProject.UpcomingModifications.Count {dataPlaceholderProject.UpcomingModifications.Count}");
+
+            // We store 3 strings
+            // ElementAt is slow but for three entries it's ok.
+            // var entry0 = dataPlaceholderProject.UpcomingModifications.ElementAt(0);
+            //var entry1 = dataPlaceholderProject.UpcomingModifications.ElementAt(1);
+            //var entry2 = dataPlaceholderProject.UpcomingModifications.ElementAt(2);
+
+            RecordCollection.DeserializeCollection(dataPlaceholderProject);
+
+            //Data.Items.AddRecord(keyValuePair.Key, deserializedData);
         }
 
+        public void CreateDataHolderProject()
+        {
+            // Find and create if required our dataPlaceholderProject
+
+            if (magnumProjects == null)
+            {
+                throw new Exception("Magnum project instance missing");
+            }
+
+            if (dataPlaceholderProject != null)
+            {
+                return;
+            }
+
+            foreach (var project in magnumProjects.Values)
+            {
+                _logger.Log($"CreateDataHolderProject: checking project {project.DevelopId} {project.FinishTime}");
+
+                if (MetadataWrapper.IsPoqProject(project) && MetadataWrapper.IsSerializedStorage(project.FinishTime.Ticks))
+                {
+                    _logger.Log($"CreateDataHolderProject: IsSerializedStorage");
+
+                    dataPlaceholderProject = project;
+                    return;
+                }
+            }
+
+            _logger.Log($"creating new project");
+
+            MagnumProject newProject = new MagnumProject(MagnumProjectType.MeleeWeapon, "common_knife_1");
+            var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();
+            DigitInfo digits = DigitInfo.GetDigits(randomUid);
+            digits.FillZeroes();
+            digits.Rarity = (int)ItemRarity.Standard;
+            // boostedParamIndex, randomPrefix
+            digits.BoostedParam = 99;
+            digits.IsSerialized = true;
+            var randomUidInjected = digits.ReturnUID();
+            newProject.StartTime = DateTime.FromBinary(MAGNUM_PROJECT_START_TIME);
+            newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected));
+            newProject.ModificationsCount = 3;
+
+            _logger.Log($"randomUidInjected {randomUidInjected}");
+            _logger.Log($"newProject.StartTime {newProject.StartTime}");
+            _logger.Log($"newProject.FinishTime {newProject.FinishTime}");
+            _logger.Log($"IsSerializedStorage {MetadataWrapper.IsSerializedStorage(newProject.FinishTime.Ticks)}");
+
+            //MagnumDevelopmentSystem.InjectItemRecord(newProject);
+            magnumProjects.Values.Add(newProject);
+
+            dataPlaceholderProject = newProject;
+        }
+
+        [Obsolete]
         public bool CanProcessItemRecord(string id)
         {
             bool canProcess = true;
@@ -108,6 +172,7 @@ namespace QM_PathOfQuasimorph.Core
             return canProcess;
         }
 
+        [Obsolete]
         public string CreateMagnumProjectWithMods(MagnumProjectType projectType, string projectId, bool rarityExtraBoost)
         {
             // Check for some items that can't be easily added like augmentations that can be used as melee weapons.
@@ -151,7 +216,7 @@ namespace QM_PathOfQuasimorph.Core
             newProject.FinishTime = DateTime.FromBinary(long.Parse(randomUidInjected)); // Convert uint64 to DateTime and this is our unique ID for item
 
             // Resulting Uid
-            var magnumProjectWrapper = new MagnumProjectWrapper(newProject);
+            var magnumProjectWrapper = new MetadataWrapper(newProject);
             var newId = magnumProjectWrapper.ReturnItemUid();
 
             // Add our new Id to traits tracker as traits can't be added during project in game.
@@ -170,11 +235,12 @@ namespace QM_PathOfQuasimorph.Core
             return newId;
         }
 
+        [Obsolete]
         internal static MagnumProject GetProjectById(string itemId)
         {
             if (itemId.Contains("_poq_"))
             {
-                var wrapped = MagnumProjectWrapper.SplitItemUid(itemId);
+                var wrapped = MetadataWrapper.SplitItemUid(itemId);
 
                 foreach (MagnumProject magnumProject in magnumProjects.Values)
                 {
@@ -202,6 +268,7 @@ namespace QM_PathOfQuasimorph.Core
             return null; // Return null if no project is found
         }
 
+        [Obsolete]
         public static ItemRarity GetItemRarity(long finishTime)
         {
             DigitInfo digits = DigitInfo.GetDigits(finishTime);
@@ -209,10 +276,13 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         // Yes I dont know to get it right in IL opcodes.
+        [Obsolete]
         public static ItemTransformationRecord GetItemTransformationRecord(ItemTransformationRecord record, MagnumProject project)
         {
             if (record == null || record.Id == string.Empty)
             {
+                Plugin.Logger.Log($"GetItemTransformationRecord adding placeholder");
+
                 // Item breaks into this, unless it has it's own record.
                 return Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
@@ -222,28 +292,6 @@ namespace QM_PathOfQuasimorph.Core
             RaritySystem.AddAffixes(project);
 
             return record;
-        }
-
-        public ItemProduceReceipt GetPlaceHolderItemProduceReceipt()
-        {
-            // If we already found it, reuse it as iteration and calls are very intensive for the hook.
-            if (itemProduceReceiptPlaceHolder != null && itemProduceReceiptPlaceHolder.Id != string.Empty)
-            {
-                return itemProduceReceiptPlaceHolder;
-            }
-
-            // Iterate whole receipts do find our placeholder.
-            for (int i = 0; i < Data.ProduceReceipts.Count; i++)
-            {
-                // Item has no recipe, let's add placeholder as we won't see it in recipe's list anyway.
-                if (Data.ProduceReceipts[i].OutputItem == "pills_sorbent")
-                {
-                    itemProduceReceiptPlaceHolder = Data.ProduceReceipts[i];
-                    return itemProduceReceiptPlaceHolder;
-                }
-            }
-
-            return itemProduceReceiptPlaceHolder;
         }
     }
 }

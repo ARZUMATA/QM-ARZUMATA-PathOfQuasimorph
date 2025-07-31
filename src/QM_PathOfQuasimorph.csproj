@@ -166,4 +166,7 @@
 	    <Private>False</Private>
 	  </Reference>
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Core\Records\" />
+	</ItemGroup>
 </Project>

@@ -22,14 +22,15 @@ namespace QM_PathOfQuasimorph.Core
             // Base64 and load only if if available
             // UltimateSkullItemId used only for Mercenaries so it's null for mobs
             // We can use this as our unique id placeholder
-            Plugin.Logger.Log($"CreatureData_OnAfterLoad_Patch");
-            Plugin.Logger.Log($"\t\t UltimateSkullItemId: {__instance.UltimateSkullItemId}");
 
             // We have string entry we use for our embedded data
             if (__instance.UltimateSkullItemId != null)// && __instance.UltimateSkullItemId.EndsWith("=="))
             {
+                Plugin.Logger.Log($"CreatureData_OnAfterLoad_Patch");
+                Plugin.Logger.Log($"\t\t UltimateSkullItemId: {__instance.UltimateSkullItemId}");
+
                 // Try deserialize first
-                var creatureDataPoq = CreatureDataPoq.DeserializeData(__instance.UltimateSkullItemId);
+                var creatureDataPoq = CreatureDataPoq.DeserializeDataBase64(__instance.UltimateSkullItemId);
                 if (creatureDataPoq != null)
                 {
                     if (PathOfQuasimorph.creaturesControllerPoq.creatureDataPoq.ContainsKey(__instance.UniqueId) == false)

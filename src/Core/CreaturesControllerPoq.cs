@@ -19,8 +19,6 @@ namespace QM_PathOfQuasimorph.Core
     /* This class is for controlling created creatures that have extra */
     internal partial class CreaturesControllerPoq
     {
-        private readonly Random _random = new Random();
-
         private static bool initColors = false;
 
         // Number of times to increaseAlphaColor/decrease brightness before reversing direction.
@@ -76,7 +74,7 @@ namespace QM_PathOfQuasimorph.Core
             //  "AttackWoundChanceMult",
         };
 
-        private Dictionary<MonsterMasteryTier, int> _masteryTierWeights = new Dictionary<MonsterMasteryTier, int>
+        public Dictionary<MonsterMasteryTier, int> _masteryTierWeights = new Dictionary<MonsterMasteryTier, int>
         {
             { MonsterMasteryTier.None,    1000 },     // Common folk
             { MonsterMasteryTier.Novice,    500 },     // Easier, common monsters
@@ -85,7 +83,7 @@ namespace QM_PathOfQuasimorph.Core
             { MonsterMasteryTier.Grandmaster, 5 }      // Very rare and difficult
         };
 
-        private Dictionary<MonsterMasteryTier, (float Min, float Max)> _masteryModifiers = new Dictionary<MonsterMasteryTier, (float Min, float Max)>
+        public Dictionary<MonsterMasteryTier, (float Min, float Max)> _masteryModifiers = new Dictionary<MonsterMasteryTier, (float Min, float Max)>
         {
             { MonsterMasteryTier.None,     ( 1.0f,   1.0f  ) },  // No change for None
             { MonsterMasteryTier.Novice,   ( 1.15f,  1.25f ) },  // Novice = Basic / Easy to handle
@@ -199,39 +197,22 @@ namespace QM_PathOfQuasimorph.Core
 
             public string SerializeData()
             {
-                var _dataString = Convert.ToBase64String(
-                        Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(this, _jsonSettings)));
-                return _dataString;
+                return DataSerializerHelper.SerializeData(this);
+            }
+
+            public string SerializeDataBase64()
+            {
+                return DataSerializerHelper.SerializeDataBase64(this);
             }
 
             public static CreatureDataPoq DeserializeData(string _dataString)
             {
-                try
-                {
-                    var base64 = _dataString.Trim();
-                    if (base64.Length % 4 != 0)
-                    {
-                        return null;
-                    }
+                return DataSerializerHelper.DeserializeData<CreatureDataPoq>(_dataString);
+            }
 
-                    try
-                    {
-                        var jsonBytes = Convert.FromBase64String(base64);
-                        var deserializedData = JsonConvert.DeserializeObject<CreatureDataPoq>(
-                            Encoding.UTF8.GetString(jsonBytes), _jsonSettings);
-                        return deserializedData;
-                    }
-                    catch (FormatException)
-                    {
-                        // Invalid Base64 string
-                        return null;
-                    }
-                }
-                catch (Exception)
-                {
-                    // Any other decoding or deserialization error
-                    return null;
-                }
+            public static CreatureDataPoq DeserializeDataBase64(string _dataString)
+            {
+                return DataSerializerHelper.DeserializeDataBase64<CreatureDataPoq>(_dataString);
             }
         }
 
@@ -381,7 +362,7 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             // Save new stats to mob
-            monster.CreatureData.UltimateSkullItemId = creatureData.SerializeData();
+            monster.CreatureData.UltimateSkullItemId = creatureData.SerializeDataBase64();
         }
 
         private void FillCreatureDataDifference(Dictionary<string, float> statsPanelOriginal, Dictionary<string, float> statsPanelNew, Dictionary<string, float> statsPanelDiff)
@@ -444,12 +425,12 @@ namespace QM_PathOfQuasimorph.Core
             var perkSuffix = perksMasteries[(int)rarity - 1];
 
             // Add talent perk
-            string talentSelected = talentsList[_random.Next(0, talentsList.Count)];
+            string talentSelected = talentsList[Helpers._random.Next(0, talentsList.Count)];
             monster.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(Data.Perks.GetRecord(talentSelected)));
 
             // Add rank perk
             var (Min, Max) = perkRanksRange[rarity];
-            string selectedWord = _random.Next(0, 100 + 1) < 50 ? Min : Max;
+            string selectedWord = Helpers._random.Next(0, 100 + 1) < 50 ? Min : Max;
             monster.CreatureData.Perks.Add(PathOfQuasimorph.perkFactoryState.CreatePerk(Data.Perks.GetRecord(selectedWord)));
 
             // Add ultimate perk
@@ -484,7 +465,7 @@ namespace QM_PathOfQuasimorph.Core
             int numToHinder = (int)Math.Floor(numToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
             int numToImprove = numToAdjust - numToHinder;
             PathOfQuasimorph.raritySystem.ShuffleList(resistsToModify);
-            int boostedParam = _random.Next(resistsToModify.Count);
+            int boostedParam = Helpers._random.Next(resistsToModify.Count);
 
             var resistSheet = monster.CreatureData.ResistSheet._currentResist;
             float averageResist = 0;
@@ -515,7 +496,7 @@ namespace QM_PathOfQuasimorph.Core
                     // Apply boost
                     if (resistType == resistsToModify.ElementAt(boostedParam))
                     {
-                        finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                        finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
                         Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : TRUE");
                     }
                     else
@@ -525,7 +506,7 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}");
-                    
+
                     Plugin.Logger.Log($"Updating {resistType} with {value} and finalModifier {finalModifier}, hinder: {hinder}");
 
                     // If resist zero
@@ -562,7 +543,7 @@ namespace QM_PathOfQuasimorph.Core
             int numToHinder = (int)Math.Floor(numToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f); // 20% of adjusted parameters to hinder
             int numToImprove = numToAdjust - numToHinder;
             PathOfQuasimorph.raritySystem.ShuffleList(statsToModify);
-            var boostedParam = _random.Next(statsToModify.Count);
+            var boostedParam = Helpers._random.Next(statsToModify.Count);
 
             // Reflection based approach went good but sadly switch case is better in this scenario.
 
@@ -576,7 +557,7 @@ namespace QM_PathOfQuasimorph.Core
                 // Apply boost
                 if (prop == statsToModify.ElementAt(boostedParam))
                 {
-                    finalModifier = baseModifier * (float)Math.Round(_random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                    finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
                     Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier}");
 
                 }
@@ -594,7 +575,7 @@ namespace QM_PathOfQuasimorph.Core
                 switch (prop)
                 {
                     case "Health":
-                        ApplyModifier<int>(ref monster.CreatureData.BaseHealth, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.BaseHealth, finalModifier, hinder, out outOldValue, out outNewValue);
                         outOldValue = monster.CreatureData.Health.MaxValue;
 
                         // Get health bonus from perks
@@ -606,44 +587,44 @@ namespace QM_PathOfQuasimorph.Core
                         break;
 
                     case "ActionPoints":
-                        ApplyModifier<int>(ref monster.CreatureData.BaseActionPoints, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.BaseActionPoints, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "RangeAccuracy":
-                        ApplyModifier<float>(ref monster.CreatureData.BaseRangeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.BaseRangeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "LosLevel":
-                        ApplyModifier<int>(ref monster.CreatureData.BaseLosLevel, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.BaseLosLevel, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
 
 
                     case "MeleeAccuracy":
-                        ApplyModifier<float>(ref monster.CreatureData.BaseMeleeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.BaseMeleeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_MinMax":
-                        ApplyModifier<int>(ref monster.CreatureData.MeleeDamage.minDmg, finalModifier, hinder, out outOldValue, out outNewValue);
-                        ApplyModifier<int>(ref monster.CreatureData.MeleeDamage.maxDmg, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.MeleeDamage.minDmg, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.MeleeDamage.maxDmg, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_CritChance":
-                        ApplyModifier<float>(ref monster.CreatureData.MeleeDamage.critChance, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.MeleeDamage.critChance, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_CritDmg":
-                        ApplyModifier<float>(ref monster.CreatureData.MeleeDamage.critDmg, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.MeleeDamage.critDmg, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeThrowbackChance":
-                        ApplyModifier<float>(ref monster.CreatureData.MeleeThrowbackChance, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.MeleeThrowbackChance, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
 
 
 
                     case "Dodge":
-                        ApplyModifier<float>(ref monster.CreatureData.BaseDodge, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.BaseDodge, finalModifier, hinder, out outOldValue, out outNewValue);
                         break;
                 }
 
@@ -661,37 +642,13 @@ namespace QM_PathOfQuasimorph.Core
         {
             return PathOfQuasimorph.raritySystem.SelectRarityWeighted(_masteryTierWeights);
         }
-        
-        
-        public static void ApplyModifier<T>(ref T value, float finalModifier, bool hinder, out float outOldValue, out float outNewValue) where T : struct
+
+        internal void ApplyColors()
         {
-            outOldValue = (float)Convert.ChangeType(value,typeof(float));
-
-            float tempValue = outOldValue;
-            tempValue = hinder ? tempValue / finalModifier : tempValue * finalModifier;
-
-            if (typeof(T) == typeof(int))
-            {
-                tempValue = (float)Math.Ceiling(tempValue);
-            }
-
-            if (value is int intValue)
-            {
-                value = (T)Convert.ChangeType((int)tempValue, typeof(T));
-            }
-            else if (value is float)
-            {
-                value = (T)Convert.ChangeType(tempValue, typeof(T));
-            }
-            else
-            {
-                Plugin.Logger.Log($"Unsupported type: {typeof(T)}, {nameof(value)}");
-            }
-
-            outNewValue = tempValue;
+            MonsterMasteryColors[MonsterMasteryTier.Novice] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Novice);
+            MonsterMasteryColors[MonsterMasteryTier.Skilled] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Skilled);
+            MonsterMasteryColors[MonsterMasteryTier.Expert] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Expert);
+            MonsterMasteryColors[MonsterMasteryTier.Grandmaster] = Helpers.AlphaAwareColorToHex(Plugin.Config.MonsterMasteryColors_Grandmaster);
         }
-
-      
-        
     }
 }

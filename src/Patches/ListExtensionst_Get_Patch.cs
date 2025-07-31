@@ -21,9 +21,9 @@ namespace QM_PathOfQuasimorph.Core
 
             public static void Postfix(string outputId, ref ItemProduceReceipt __result)
             {
-                if (__result == null || __result.Id == string.Empty)
+                if (__result == null)
                 {
-                    ItemProduceReceipt itemProduceReceiptPlaceHolder = magnumProjectsController.GetPlaceHolderItemProduceReceipt();
+                    ItemProduceReceipt itemProduceReceiptPlaceHolder = itemRecordsControllerPoq.GetPlaceHolderItemProduceReceipt();
                     __result = itemProduceReceiptPlaceHolder;
                 }
             }

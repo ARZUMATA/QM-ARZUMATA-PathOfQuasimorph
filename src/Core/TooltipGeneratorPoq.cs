@@ -1,12 +1,17 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.UI;
 using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq.CreatureDataPoq;
@@ -28,9 +33,9 @@ namespace QM_PathOfQuasimorph.Core
             // #F44336  // Material Design red
             // #444444  // Gray
 
-            { "positive", "2196F3" },   // Positive or inverted positive
-            { "negative", "F44336" },    // Negative or inverted negative
-            { "equal", "444444" }
+            { "positive", "#2196F3" },   // Positive or inverted positive
+            { "negative", "#F44336" },    // Negative or inverted negative
+            { "equal", "#444444" }
         };
 
         public static void HandlePoqTooltip()
@@ -48,31 +53,52 @@ namespace QM_PathOfQuasimorph.Core
                     _factory._state.Resolve(_factory._itemTooltipBuilder);
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
-                    var wrappedItem = MagnumProjectWrapper.SplitItemUid(_factory._lastShowedItem.Id);
-                    _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
+                    var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
 
-                    if (wrappedItem.PoqItem)
+                    if (!RecordCollection.MetadataWrapperRecords.TryGetValue(_factory._lastShowedItem.Id, out MetadataWrapper wrapper))
                     {
-                        _tooltip = _factory.BuildEmptyTooltip();
-                        _tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
-                        _tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
-                        _tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
-                        //_factory.AddPanelToTooltip().SetValue("Difference");
-
-                        //_factory._tooltip.MakeRed();
-                        _factory.AddCompareBlock(_factory._lastShowedItem);
-                        //_factory.AddCompareBlock(_factory._lastShowedItem);
-
-                        if (_factory._lastShowedItem.Is<WeaponRecord>())
+                        if (MetadataWrapper.IsPoqItemUid(_factory._lastShowedItem.Id))
                         {
-                            InitItemComparsionWeapon(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
-                        }
-                        else if (_factory._lastShowedItem.Is<BreakableItemRecord>())
-                        {
-                            InitItemComparsionArmor(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
-                        }
+                            _logger.Log("HandlePoqTooltip: trying to get poq item but record is missing.");
+                            foreach (var rec in RecordCollection.MetadataWrapperRecords)
+                            {
+                                _logger.Log($"rec {rec.Key}");
+                                _logger.Log($"\t\t {rec.Value.ReturnItemUid()}");
 
-                        _factory._tooltip.IsAdditionalTooltip = true;
+                            }
+
+                            _logger.Log("HandlePoqTooltip: trying to get poq item but record is missing.");
+
+                            throw new Exception($"HandlePoqTooltip: trying to get poq item but record is missing.");
+                        }
+                    }
+                    else
+                    {
+                        _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
+
+                        if (wrappedItem.PoqItem)
+                        {
+                            _tooltip = _factory.BuildEmptyTooltip();
+                            //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
+
+                            PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
+
+                            PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"), RaritySystem.Colors[wrappedItem.RarityClass]);
+
+                            //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
+
+                            //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                            _factory.AddPanelToTooltip().SetValue(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                            //_factory.AddPanelToTooltip().SetValue("Difference");
+
+                            //_factory._tooltip.MakeRed();
+                            _factory.AddCompareBlock(_factory._lastShowedItem);
+                            //_factory.AddCompareBlock(_factory._lastShowedItem);
+
+                            InitItemComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+
+                            _factory._tooltip.IsAdditionalTooltip = true;
+                        }
                     }
                 }
 
@@ -118,53 +144,220 @@ namespace QM_PathOfQuasimorph.Core
             return isPositive ? "+" : "-";
         }
 
-        static string FormatDifference(float difference, bool invertColor = false, bool invertSign = false)
+        static string FormatDifference(float difference, bool invertColor = false, bool invertSign = false, bool addsign = true)
         {
             string sign = GetDifferenceSign(difference, invertSign);
             string color = GetDifferenceColor(difference, invertColor);
             if (sign == "=")
             {
-                return $"<color=#{color}>{difference.ToString()}</color>";
+                return $"<color={color}>{difference.ToString()}</color>";
 
 
             }
             else
             {
-                return $"<color=#{color}>{sign}{difference.ToString()}</color>";
+                return $"<color={color}>{(addsign ? sign : string.Empty)}{difference.ToString()}</color>";
             }
         }
 
-        static string FormatDifference(string label, float difference, bool invertColor = false, bool invertSign = false)
+        static string FormatDifference(string label, float difference, bool invertColor = false, bool invertSign = false, bool addsign = true)
         {
             string sign = GetDifferenceSign(difference, invertSign);
             string color = GetDifferenceColor(difference, invertColor);
             if (sign == "=")
             {
-                return $"<color=#{color}>{label}</color>";
+                return $"<color={color}>{label}</color>";
 
 
             }
             else
             {
-                return $"<color=#{color}>{sign}{label}</color>";
+                return $"<color={color}>{(addsign ? sign : string.Empty)}{label}</color>";
             }
         }
 
-        private static void InitItemComparsionWeapon(PickupItem item, string genericId)
+        private static void InitItemComparsion(PickupItem item, string genericId)
         {
-            InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
-            InitWeapon(item.Record<WeaponRecord>(), genericId, item);
-            InitTraits(item.Record<WeaponRecord>(), genericId, item);
-            InitWeight(item.Record<ItemRecord>(), genericId, item);
+            if (_factory._lastShowedItem.Is<BreakableItemRecord>())
+            {
+                InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<WeaponRecord>())
+            {
+                InitWeapon(item.Record<WeaponRecord>(), genericId, item);
+                InitTraits(item.Record<WeaponRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<ResistRecord>())
+            {
+                InitArmor(item.Record<ResistRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<AugmentationRecord>())
+            {
+                InitAugmentation(item.Record<AugmentationRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<ImplantRecord>())
+            {
+                InitImplant(item.Record<ImplantRecord>(), genericId, item);
+            }
+
+            if (_factory._lastShowedItem.Is<ItemRecord>())
+            {
+                InitWeight(item.Record<ItemRecord>(), genericId, item);
+            }
         }
 
-        private static void InitItemComparsionArmor(PickupItem item, string genericId)
+        private static void InitImplant(ImplantRecord implantRecord, string genericId, PickupItem item)
         {
-            InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
-            InitArmor(item.Record<ResistRecord>(), genericId, item);
-            InitWeight(item.Record<ItemRecord>(), genericId, item);
+            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(genericId, true);
+
+            _logger.Log($"genericRecord ImplantRecord is null {genericRecord == null}");
+
+            foreach (var effect in implantRecord.ImplicitBonusEffects)
+            {
+                var hasGeneric = genericRecord.ImplicitBonusEffects.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                if (effectDifference != 0)
+                {
+                    _logger.Log($"bonus effect {effect.Key}");
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.AltGreen);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_resist") : $"{record.TooltipIconTag}_green";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                    LocalizeName($"woundeffect.{effect.Key}.desc")
+                    .SetValue(value, true)
+                    .SetTextColor(Colors.Green)
+                    .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                }
+            }
+
+            foreach (var effect in implantRecord.ImplicitPenaltyEffects)
+            {
+                var hasGeneric = genericRecord.ImplicitPenaltyEffects.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                if (effectDifference != 0)
+                {
+                    _logger.Log($"penalty effect {effect.Key}");
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.LightRed);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_red") : $"{record.TooltipIconTag}_red";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                     LocalizeName($"woundeffect.{effect.Key}.desc")
+                     .SetValue(value, true)
+                     .SetTextColor(Colors.LightRed)
+                     .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                }
+
+            }
         }
 
+        private static void InitAugmentation(AugmentationRecord augmentationRecord, string genericId, PickupItem item)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(genericId, true);
+
+            _logger.Log($"genericRecord AugmentationRecord is {genericRecord == null}");
+
+            WoundSlotRecord[] records = (from id in augmentationRecord.WoundSlotIds select Data.WoundSlots.GetRecord(id, true)).ToArray<WoundSlotRecord>();
+            WoundSlotRecord[] recordsGeneric = (from id in genericRecord.WoundSlotIds select Data.WoundSlots.GetRecord(id, true)).ToArray<WoundSlotRecord>();
+
+            Dictionary<string, float> bonusEffects = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(records, (WoundSlotRecord r) => r.ImplicitBonusEffects);
+            Dictionary<string, float> penaltyEffects = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(records, (WoundSlotRecord r) => r.ImplicitPenaltyEffects);
+            Dictionary<string, float> coreEffects = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(records, (WoundSlotRecord r) => r.CoreEffects);
+
+            Dictionary<string, float> bonusEffectsGeneric = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(recordsGeneric, (WoundSlotRecord r) => r.ImplicitBonusEffects);
+            Dictionary<string, float> penaltyEffectsGeneric = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(recordsGeneric, (WoundSlotRecord r) => r.ImplicitPenaltyEffects);
+            Dictionary<string, float> coreEffectsGeneric = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(records, (WoundSlotRecord r) => r.CoreEffects);
+
+            foreach (var effect in coreEffects)
+            {
+                var hasGeneric = coreEffectsGeneric.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                _logger.Log($"core effect {effect.Key}");
+                _logger.Log($"core effectDifference {effectDifference}");
+
+                if (effectDifference != 0)
+                {
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.AltGreen);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_resist") : $"{record.TooltipIconTag}_green";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                    LocalizeName($"woundeffect.{effect.Key}.desc")
+                    .SetValue(value, true)
+                    .SetTextColor(Colors.Green)
+                    .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+
+                }
+            }
+
+            foreach (var effect in bonusEffects)
+            {
+                var hasGeneric = bonusEffectsGeneric.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                if (effectDifference != 0)
+                {
+                    _logger.Log($"bonus effect {effect.Key}");
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.AltGreen);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_resist") : $"{record.TooltipIconTag}_green";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                    LocalizeName($"woundeffect.{effect.Key}.desc")
+                    .SetValue(value, true)
+                    .SetTextColor(Colors.Green)
+                    .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                }
+            }
+
+            foreach (var effect in penaltyEffects)
+            {
+                var hasGeneric = penaltyEffectsGeneric.TryGetValue(effect.Key, out float effectGeneric);
+                var effectDifference = (float)Math.Round(effect.Value - (hasGeneric ? effectGeneric : 0), 2);
+
+                if (effectDifference != 0)
+                {
+                    _logger.Log($"penalty effect {effect.Key}");
+                    WoundEffectRecord record = Data.WoundEffects.GetRecord(effect.Key, true);
+                    _logger.Log($"TooltipIconTag {record.TooltipIconTag}");
+
+                    var value = $"{FormatHelper.FormatValue((float)Math.Round(effect.Value, 2), record.ValueFormat)} ({FormatDifference(FormatHelper.FormatValue((float)Math.Round(effectDifference, 2), record.ValueFormat), effectDifference, addsign: false)})".WrapInColor(Colors.LightRed);
+
+                    var isResist = record.TooltipIconTag.Contains("resist");
+                    var iconName = isResist ? ($"damage_{effect.Key.Replace("resist_", string.Empty)}_red") : $"{record.TooltipIconTag}_red";
+
+                    _factory.AddPanelToTooltip().SetIcon(iconName).
+                     LocalizeName($"woundeffect.{effect.Key}.desc")
+                     .SetValue(value, true)
+                     .SetTextColor(Colors.LightRed)
+                     .SetComparsionValue((hasGeneric ? FormatHelper.FormatValue(effectGeneric, record.ValueFormat) : "0"));
+                }
+            }
+        }
 
         private static void InitArmor(ResistRecord recordPoq, string genericId, PickupItem item)
         {
@@ -181,7 +374,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (resistDifference != 0)
                 {
-                    var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(resistDifference.ToString(), resistDifference)})".WrapInColor(Colors.Green);
+                    var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(Math.Abs(resistDifference).ToString(), resistDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
@@ -230,9 +423,6 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitWeapon(WeaponRecord recordPoq, string genericId, PickupItem item)
         {
-            var component = item.Comp<WeaponComponent>();
-
-            _logger.Log($"component {component == null}");
             _logger.Log($"genericId {genericId}");
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
             bool grenadeLauncher = recordPoq.WeaponClass == WeaponClass.GrenadeLauncher;
@@ -258,7 +448,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (dmgDifferenceMin != 0 || dmgDifferenceMax != 0)
                 {
-                    value = $"{string.Format("{0}-{1}", damagePoq.Item1, damagePoq.Item2).ToString()} ({FormatDifference(string.Format("{0}-{1}", dmgDifferenceMin, dmgDifferenceMax).ToString(), dmgDifferenceMax)})".WrapInColor(Colors.Green);
+                    value = $"{string.Format("{0}-{1}", damagePoq.Item1, damagePoq.Item2).ToString()} ({FormatDifference(string.Format("{0}-{1}", Math.Abs(dmgDifferenceMin), Math.Abs(dmgDifferenceMax)).ToString(), dmgDifferenceMax)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon(icon).LocalizeName(tag)
                     .SetValue(value, true)
@@ -270,7 +460,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (critDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(damagePoq.Item3, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(critDifference, false).ToString(), critDifference)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(damagePoq.Item3, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(Math.Abs(critDifference), false).ToString(), critDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon("common_critdamage").LocalizeName("tooltip.CritDamage")
                     .SetValue(value, true)
@@ -284,7 +474,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (accuracyDifference != 0)
                 {
-                    value = $"{FormatHelper.To100Percent(accuracy, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(accuracyDifference, false).ToString(), accuracyDifference)})".WrapInColor(Colors.Green);
+                    value = $"{FormatHelper.To100Percent(accuracy, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(Math.Abs(accuracyDifference), false).ToString(), accuracyDifference)})".WrapInColor(Colors.Green);
 
                     _factory.AddPanelToTooltip().SetIcon(recordPoq.IsMelee ? "common_accuracy_melee" : "common_accuracy").
                     LocalizeName(recordPoq.IsMelee ? "tooltip.MeleeAccuracy" : "tooltip.RangeAccuracy")
@@ -421,7 +611,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     if (magCapacityDifference != 0)
                     {
-                        value = $"{magCapacityPoq} ({FormatDifference(magCapacityDifference.ToString(), magCapacityDifference)})".WrapInColor(Colors.Green);
+                        value = $"{magCapacityPoq} ({FormatDifference(Math.Abs(magCapacityDifference).ToString(), magCapacityDifference)})".WrapInColor(Colors.Green);
 
                         _factory.AddPanelToTooltip().SetIcon(iconMagCapacity).LocalizeName("item." + str + ".name")
                             .SetValue(value, true)
@@ -447,7 +637,7 @@ namespace QM_PathOfQuasimorph.Core
 
             bool unbreakable = false;
 
-            foreach(var component in item.Components)
+            foreach (var component in item.Components)
             {
                 var breakableItemComponent = component as BreakableItemComponent;
 
@@ -464,7 +654,7 @@ namespace QM_PathOfQuasimorph.Core
             if (durabilityDifference != 0 || unbreakable)
             {
                 var value = $"{recordPoq.MaxDurability.ToString()} ({FormatDifference(Math.Abs(durabilityDifference).ToString(), durabilityDifference)})".WrapInColor(Colors.Green);
-                
+
                 _factory.AddPanelToTooltip().SetIcon("common_condition").LocalizeName("tooltip.Condition")
                 .SetValue(unbreakable == true ? Localization.Get("poq.ui.tooltip.unbreakable") : value, true)
                 .SetComparsionValue(genericRecord.MaxDurability.ToString());
@@ -560,7 +750,7 @@ namespace QM_PathOfQuasimorph.Core
                   .SetComparsionValue(oldVal.ToString());
 
                 // Ranged Combat
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.range").WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _basicRangeAccuracy
                 (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "rangeAccuracy");
@@ -590,7 +780,7 @@ namespace QM_PathOfQuasimorph.Core
                     .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // Close Combat
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.melee").WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _hitChance
                 (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "weaponsDamageBonus");
@@ -639,7 +829,7 @@ namespace QM_PathOfQuasimorph.Core
                     .SetComparsionValue(FormatHelper.To100Percent(oldVal, false).ToString());
 
                 // Defense
-                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").PadRight(15, '-').WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
+                _factory.AddPanelToTooltip().SetValue(Localization.Get("ui.mercclass.defense").WrapInColor(Helpers.HexStringToUnityColor("#FFFEC1")));
 
                 // _dodgeChance
                 (oldVal, newVal, diffVal) = creatureData.GetCreatureStats(creatureData, "dodge");
@@ -659,5 +849,11 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
+        internal void ApplyColors()
+        {
+            DifferenceColorMap["positive"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Positive);
+            DifferenceColorMap["negative"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Negative);
+            DifferenceColorMap["equal"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Equal);
+        }
     }
 }
