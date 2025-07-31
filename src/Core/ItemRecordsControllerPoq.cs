@@ -1,6 +1,7 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
 using QM_PathOfQuasimorph.Core.Processors;
+using QM_PathOfQuasimorph.Core.Records;
 using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections;
@@ -111,9 +112,21 @@ namespace QM_PathOfQuasimorph.Core
                 // Item breaks into this, unless it has it's own itemTransformationRecord.
                 itemTransformationRecord = Data.ItemTransformation.GetRecord("prison_tshirt_1", true);
             }
-            
+
             _logger.Log($" Cloning and adding record record.");
-            Data.ItemTransformation.AddRecord(newId, itemTransformationRecord.Clone(newId));
+
+            var itemTransformationRecordNew = itemTransformationRecord.Clone(newId);
+
+            // Check amplifier drop chance
+            var canApplyAmplifierDrop = Helpers._random.Next(0, 100 + 1) < AmplifierController.DROP_CHANCE;
+
+            if (canApplyAmplifierDrop)
+            {
+                var amplifierName = PathOfQuasimorph.amplifierController.GetAmplifierNameFromRarity(itemRarity);
+                itemTransformationRecordNew.OutputItems.Add(new ItemQuantity(amplifierName, 1));
+            }
+
+            Data.ItemTransformation.AddRecord(newId, itemTransformationRecordNew);
 
             _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");
 
@@ -454,6 +467,40 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return canProcess;
+        }
+
+        internal bool ChangeRecordFromAmplifier(BasePickupItem target, BasePickupItem repair)
+        {
+            _logger.Log($"ChangeRecordFromAmplifier");
+
+            var hasKey = RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out MetadataWrapper metadata);
+            var ampRecord = repair.Record<AmplifierRecord>();
+
+            if (!hasKey || !metadata.PoqItem)
+            {
+                _logger.Log($"ChangeRecordFromAmplifier: Failure!");
+
+                return false;
+            }
+
+            CompositeItemRecord obj = Data.Items.GetRecord(target.Id) as CompositeItemRecord;
+
+            foreach (BasePickupItemRecord basePickupItemRecord in obj.Records)
+            {
+                WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
+
+                if (weaponRecord != null)
+                {
+                    _logger.Log($"weaponRecord processing");
+
+                    weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, metadata.Id, metadata.ReturnItemUid());
+                    weaponRecordProcessorPoq.Reroll(weaponRecord, ampRecord, metadata);
+                }
+            }
+
+            _logger.Log($"ChangeRecordFromAmplifier: Success!");
+
+            return true;
         }
     }
 }

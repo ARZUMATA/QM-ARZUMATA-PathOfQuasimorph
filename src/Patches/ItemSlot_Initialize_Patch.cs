@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using QM_PathOfQuasimorph.Core;
 using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using QM_PathOfQuasimorph.Core.Records;
+using System;
+using UnityEngine.UI;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -24,6 +27,25 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
                 ApplyItemRarityBackground(__instance, item);
+                
+                if (AmplifierController.IsAmplifier(item))
+                {
+                    ApplyAmplifierColor(__instance, item);
+                }
+            }
+
+            private static void ApplyAmplifierColor(ItemSlot __instance, BasePickupItem item)
+            {
+                CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(item.Id, false) as CompositeItemRecord;
+
+                var ampRecord = item.Record<AmplifierRecord>();
+
+                if (ampRecord != null)
+                {
+                    var Icon = __instance.transform.Find("Icon");
+                    Image iconImage = Icon.gameObject.GetComponent<Image>();
+                    iconImage.color = Helpers.HexStringToUnityColor(RaritySystem.Colors[ampRecord.Rarity]);
+                }
             }
         }
 

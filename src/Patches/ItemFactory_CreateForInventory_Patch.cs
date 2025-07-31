@@ -49,6 +49,11 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
 
+                if (AmplifierController.IsAmplifier(itemId))
+                {
+                    return true;
+                }
+
                 //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 // No more magnum projects

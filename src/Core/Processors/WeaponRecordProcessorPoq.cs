@@ -1,6 +1,7 @@
 ﻿using JetBrains.Annotations;
 using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Core.Records;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -132,72 +133,81 @@ namespace QM_PathOfQuasimorph.Core.Processors
             foreach (var stat in parameters)
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-
-                // Simply for logging
-                float outOldValue = -1;
-                float outNewValue = -1;
-
-                switch (stat.Key)
-                {
-
-                    case "weight":
-                        //var weight = itemRecord.Weight;
-                        //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref weight, finalModifier, increase, out outOldValue, out outNewValue);
-                        //itemRecord.Weight = weight;
-
-                        PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.Weight = v, () => itemRecord.Weight, finalModifier, increase, out outOldValue, out outNewValue);
-                        break;
-
-                    case "max_durability":
-                        PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MaxDurability = v, () => itemRecord.MaxDurability, finalModifier, increase, out outOldValue, out outNewValue);
-                        break;
-
-                    case "damage":
-                        var dmgInfo = itemRecord.Damage;
-                        PathOfQuasimorph.raritySystem.Apply<int>(v => dmgInfo.minDmg = v, () => dmgInfo.minDmg, finalModifier, increase, out outOldValue, out outNewValue);
-                        PathOfQuasimorph.raritySystem.Apply<int>(v => dmgInfo.maxDmg = v, () => dmgInfo.maxDmg, finalModifier, increase, out outOldValue, out outNewValue);
-                        itemRecord.Damage = dmgInfo;
-                        break;
-
-                    case "crit_damage":
-                        dmgInfo = itemRecord.Damage;
-                        PathOfQuasimorph.raritySystem.Apply<float>(v => dmgInfo.critDmg = v, () => dmgInfo.critDmg, finalModifier, increase, out outOldValue, out outNewValue);
-                        itemRecord.Damage = dmgInfo;
-                        break;
-
-                    case "accuracy":
-                        PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.BonusAccuracy = v, () => itemRecord.BonusAccuracy, finalModifier, increase, out outOldValue, out outNewValue);
-
-                        break;
-                    case "scatter_angle":
-                        PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.BonusScatterAngle = v, () => itemRecord.BonusScatterAngle, finalModifier, increase, out outOldValue, out outNewValue);
-
-                        break;
-
-                    case "reload_duration":
-                        PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.ReloadDuration = v, () => itemRecord.ReloadDuration, finalModifier, increase, out outOldValue, out outNewValue);
-
-                        // If we get that trait
-                        if (itemRecord.Traits.Contains("single_load"))
-                        {
-                            itemRecord.ReloadDuration = 1;
-                        }
-
-                        break;
-
-                    case "magazine_capacity":
-                        PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MagazineCapacity = v, () => itemRecord.MagazineCapacity, finalModifier, increase, out outOldValue, out outNewValue);
-                        break;
-
-                    case "special_ability":
-                        break;
-                    case "none":
-                        break;
-                }
-
-                Plugin.Logger.Log($"\t\t old value {outOldValue}");
-                Plugin.Logger.Log($"\t\t new value {outNewValue}");
+                ApplyStat(finalModifier, increase, stat);
             }
+        }
+
+        private void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, WeaponRecord genericRecord = null)
+        {
+            // Simply for logging
+            float outOldValue = -1;
+            float outNewValue = -1;
+
+            // If we got declared generic we take their values for reroll, and if not, use it as actual item record.
+            if (genericRecord == null)
+            {
+                genericRecord = itemRecord;
+            }
+
+            switch (stat.Key)
+            {
+
+                case "weight":
+                    //var weight = genericRecord.Weight;
+                    //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref weight, finalModifier, increase, out outOldValue, out outNewValue);
+                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.Weight = v, () => genericRecord.Weight, finalModifier, increase, out outOldValue, out outNewValue);
+                    //itemRecord.Weight = weight;
+                    break;
+
+                case "max_durability":
+                    PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MaxDurability = v, () => genericRecord.MaxDurability, finalModifier, increase, out outOldValue, out outNewValue);
+                    break;
+
+                case "damage":
+                    var dmgInfo = genericRecord.Damage;
+                    PathOfQuasimorph.raritySystem.Apply<int>(v => dmgInfo.minDmg = v, () => dmgInfo.minDmg, finalModifier, increase, out outOldValue, out outNewValue);
+                    PathOfQuasimorph.raritySystem.Apply<int>(v => dmgInfo.maxDmg = v, () => dmgInfo.maxDmg, finalModifier, increase, out outOldValue, out outNewValue);
+                    itemRecord.Damage = dmgInfo;
+                    break;
+
+                case "crit_damage":
+                    dmgInfo = itemRecord.Damage;
+                    PathOfQuasimorph.raritySystem.Apply<float>(v => dmgInfo.critDmg = v, () => dmgInfo.critDmg, finalModifier, increase, out outOldValue, out outNewValue);
+                    itemRecord.Damage = dmgInfo;
+                    break;
+
+                case "accuracy":
+                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.BonusAccuracy = v, () => genericRecord.BonusAccuracy, finalModifier, increase, out outOldValue, out outNewValue);
+
+                    break;
+                case "scatter_angle":
+                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.BonusScatterAngle = v, () => genericRecord.BonusScatterAngle, finalModifier, increase, out outOldValue, out outNewValue);
+
+                    break;
+
+                case "reload_duration":
+                    PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.ReloadDuration = v, () => genericRecord.ReloadDuration, finalModifier, increase, out outOldValue, out outNewValue);
+
+                    // If we get that trait
+                    if (itemRecord.Traits.Contains("single_load"))
+                    {
+                        itemRecord.ReloadDuration = 1;
+                    }
+
+                    break;
+
+                case "magazine_capacity":
+                    PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MagazineCapacity = v, () => genericRecord.MagazineCapacity, finalModifier, increase, out outOldValue, out outNewValue);
+                    break;
+
+                case "special_ability":
+                    break;
+                case "none":
+                    break;
+            }
+
+            Plugin.Logger.Log($"\t\t old value {outOldValue}");
+            Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
         internal void ApplyTraits()
@@ -310,6 +320,25 @@ namespace QM_PathOfQuasimorph.Core.Processors
             {
                 itemRecord.Unbreakable = true;
             }
+        }
+
+        internal void Reroll(WeaponRecord weaponRecord, AmplifierRecord ampRecord, MetadataWrapper metadata)
+        {
+            itemRarity = ampRecord.Rarity;
+
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+
+            float baseModifier, finalModifier;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
+            string boostedParamString;
+            bool increase;
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            var statIdx = Helpers._random.Next(0, parameters.Count);
+            var stat = parameters.ElementAt(statIdx);
+
+            finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
+            ApplyStat(finalModifier, increase, stat, genericRecord);
         }
     }
 }

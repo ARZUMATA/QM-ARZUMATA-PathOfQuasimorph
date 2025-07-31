@@ -30,5 +30,31 @@ namespace QM_PathOfQuasimorph.Core
                 __instance._tooltip.ShowAdditionalBlock();
             }
         }
+
+
+        [HarmonyPatch(typeof(ItemTooltipBuilder), "InitRepair")]
+        public static class ItemTooltipBuilder_InitRepair_Patch
+        {
+            public static void Postfix(ItemTooltipBuilder __instance, RepairRecord record)
+            {
+                if (AmplifierController.IsAmplifier(record.Id))
+                {
+                    __instance._tooltip.ShowAdditionalBlock();
+          
+                }
+            }
+        }
+        [HarmonyPatch(typeof(ItemTooltipBuilder), "BuildAdditionalInfo")]
+        public static class ItemTooltipBuilder_BuildAdditionalInfo_Patch
+        {
+            public static void Postfix(ItemTooltipBuilder __instance, BasePickupItem item, BasePickupItemRecord record, Mercenary mercenary = null)
+            {
+                if (AmplifierController.IsAmplifier(item.Id))
+                {
+                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{AmplifierController.nameBase}.desc")).SetNameColor(Colors.AltGreen);
+                }
+            }
+        }
+
     }
 }
