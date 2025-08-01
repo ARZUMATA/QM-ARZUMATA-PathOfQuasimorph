@@ -216,10 +216,30 @@ namespace QM_PathOfQuasimorph.Core
                 //Data.Items.AddRecord(itemRecord.Id, itemRecord);
             }
 
-            foreach (var woundSlotRecord in WoundSlotRecords)
+            foreach (var keyValuePair in WoundSlotRecords)
             {
-                Data.WoundSlots.RemoveRecord(woundSlotRecord.Key);
-                Data.WoundSlots.AddRecord(woundSlotRecord.Key, woundSlotRecord.Value);
+                _logger.Log($"\t woundSlotRecord.Key: {keyValuePair.Key}");
+                _logger.Log($"\t woundSlotRecord itemRecord.Value.Id: {keyValuePair.Value.Id}");
+
+                var woundSlotRecord = keyValuePair.Value;
+                var baseIdExist = MetadataWrapper.TryGetBaseId(woundSlotRecord.Id, out string baseId);
+
+                baseId = baseId.Split('_')[0];
+
+                _logger.Log($"\t baseId: {baseId}");
+                _logger.Log($"\t baseIdExist: {baseIdExist}");
+
+                _logger.Log($"\t Data.Descriptors.Count: {Data.Descriptors.Count}");
+
+                var foundDescriptor = TryFindDescriptor(baseId);
+                if (foundDescriptor != null)
+                {
+                    woundSlotRecord.ContentDescriptor = foundDescriptor;
+                }
+
+                Data.WoundSlots.RemoveRecord(keyValuePair.Key);
+                Data.WoundSlots.AddRecord(keyValuePair.Key, keyValuePair.Value);
+                Localization.DuplicateKey("woundslot." + baseId + ".name", "woundslot." + woundSlotRecord.Id + ".name");
             }
         }
 
@@ -312,7 +332,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            SerializeCollection();
+            //SerializeCollection();
         }
     }
 

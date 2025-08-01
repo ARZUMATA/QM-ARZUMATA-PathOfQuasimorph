@@ -380,7 +380,8 @@ namespace QM_PathOfQuasimorph.Core
 
         public bool CanProcessItemRecord(string id)
         {
-            bool canProcess = true;
+            // Don't process by default anything
+            bool canProcess = false;
 
             // Blacklist some items
             List<string> blacklistedCategories = new List<string>
@@ -404,12 +405,14 @@ namespace QM_PathOfQuasimorph.Core
                 switch (recordType.Name)
                 {
                     case nameof(WeaponRecord):
+                        // Check weapon record first
                         checkWeaponRecord = true;
                         break;
                     case nameof(ArmorRecord):
                     case nameof(HelmetRecord):
                     case nameof(LeggingsRecord):
                     case nameof(BootsRecord):
+                        canProcess = true;
                         break;
                     case nameof(AugmentationRecord):
                         checkAugmentationRecord = true;
@@ -427,6 +430,8 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (checkWeaponRecord)
                 {
+                    // We can process weapons except some cases that will be checked later.
+                    canProcess = true;
                     var weaponRecord = rec as WeaponRecord;
 
                     if (weaponRecord != null)
