@@ -47,6 +47,8 @@ namespace QM_PathOfQuasimorph.PoQHelpers
             clone.AmputatedDrop = DataSerializerHelper.MakeDeepCopy(original.AmputatedDrop);
             clone.AdditionalAmputation = DataSerializerHelper.MakeDeepCopy(original.AdditionalAmputation);
 
+            clone.ContentDescriptor = original.ContentDescriptor;
+
             return clone;
         }
 

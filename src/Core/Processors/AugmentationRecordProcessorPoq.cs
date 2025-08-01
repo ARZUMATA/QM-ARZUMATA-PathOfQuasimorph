@@ -141,19 +141,22 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 foreach (var woundSlot in itemRecord.WoundSlotIds)
                 {
                     Plugin.Logger.Log($"\t processing wouldSlot: {woundSlot}");
-                    Plugin.Logger.Log($"\t new name will be {woundSlot}_{itemId}");
+
+                    var newId = $"{woundSlot}_{itemId}";
+                    Plugin.Logger.Log($"\t new name will be {newId}");
 
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
-                    WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{woundSlot}_{itemId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{woundSlot}_{itemId}", oldId);
+                    WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{newId}", oldId);
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     //records.Add(augmentationRecordNew);
                     // TODO
 
-                    newWoundSlotIds.Add($"{woundSlot}_{itemId}");
+                    newWoundSlotIds.Add($"{newId}");
 
-                    Data.WoundSlots.AddRecord($"{woundSlot}_{itemId}", woundSlotRecordNew);
-                    RecordCollection.WoundSlotRecords.Add($"{woundSlot}_{itemId}", woundSlotRecordNew);
+                    Data.WoundSlots.AddRecord($"{newId}", woundSlotRecordNew);
+                    RecordCollection.WoundSlotRecords.Add($"{newId}", woundSlotRecordNew);
+                    Localization.DuplicateKey("woundslot." + woundSlot + ".name", "woundslot." + newId + ".name");
                 }
 
                 Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");
