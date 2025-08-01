@@ -128,7 +128,7 @@ namespace QM_PathOfQuasimorph.Core
         public static void SpaceStarted(IModContext context)
         {
             _logger.Log($"SpaceStarted");
-            CleanupSystem.CleanObsoleteProjects(context, true);
+            //CleanupSystem.CleanObsoleteProjects(context, true);
             creaturesControllerPoq.CleanCreatureDataPoq();
         }
 

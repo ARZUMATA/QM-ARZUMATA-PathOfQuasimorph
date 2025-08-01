@@ -20,11 +20,12 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     Plugin.Logger.Log($"EscScreen.Mode.Spacemode : Can clean obsolete projects.");
                     CleanupSystem.CleanObsoleteProjects(_context, true, true);
+                    RecordCollection.SerializeCollection();
                 }
                 else
                 {
-                    Plugin.Logger.Log($"EscScreen.Mode.Ingame : Holding on cleaning projects.");
-
+                    RecordCollection.SerializeCollection();
+                    Plugin.Logger.Log($"EscScreen.Mode.Ingame : Holding on cleaning projects. Serialize only.");
                 }
 
                 Plugin.Logger.Log($"EscScreen");

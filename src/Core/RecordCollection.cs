@@ -312,7 +312,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
             }
 
-            SerializeCollection();
+            //SerializeCollection();
         }
     }
 

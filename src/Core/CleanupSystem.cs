@@ -102,6 +102,8 @@ namespace QM_PathOfQuasimorph.Core
 
             _logger.Log($"\t idsToKeep {idsToKeep.Count}");
 
+            //RecordCollection.SerializeCollection();
+
             // Cleanup magnum projects.
             if (cleanProjects)
             {
