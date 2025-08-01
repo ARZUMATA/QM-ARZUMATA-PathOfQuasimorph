@@ -232,3 +232,7 @@ Thanks community for feedback.
 
 ## 1.8.2 (40f9eb0)
 - Fixed issue where pressing Esc to save and quit during a mission did not preserve item metadata, causing items to revert to default values.
+
+## 1.8.3 (145e1b3)
+- Improved wound slot augmentation localization and descriptor lookup. (This was leading to savegame load errors if you apply rare-augmentation)
+- Updated item processing logic to deny all by default, with explicit allowance after validation checks.
