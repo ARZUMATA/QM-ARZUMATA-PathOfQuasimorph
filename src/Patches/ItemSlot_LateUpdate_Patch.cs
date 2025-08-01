@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
 using QM_PathOfQuasimorph.Core.Records;
+using static QM_PathOfQuasimorph.Core.RecombinatorController;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -33,6 +34,7 @@ namespace QM_PathOfQuasimorph.Core
                             //Plugin.Logger.Log($"RecombinatorRecord");
                             RecombinatorContext.Item = __instance.Item;
                             RecombinatorContext.Process = true;
+                            RecombinatorContext.RecombinatorType = __instance.Item.Record<RecombinatorRecord>().RecombinatorType;
                         }
                         else
                         {

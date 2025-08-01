@@ -252,3 +252,12 @@ item.amplifier_poq.shortdesc,Amplifier component,Компонент усилит
 item.amplifier_poq.desc,Changes a random parameter stat on the item based on the amplifier's rarity class and its corresponding stat boost range.,Корректирует случайный параметр предмета в зависимости от редкости усилителя и соответствующего диапазона усиления характеристик.,Ändert einen zufälligen Parameter des Gegenstands basierend auf der Seltenheitsklasse des Verstärkers und dem entsprechenden Statistik-Boost-Bereich.,Modifie un paramètre aléatoire de l'objet en fonction de la classe de rareté de l'amplificateur et de la plage d'amélioration des statistiques correspondante.,Cambia un parámetro aleatorio del objeto según la clase de rareza del amplificador y su rango correspondiente de aumento de estadísticas.,Zmienia losowy parametr przedmiotu w zależności od rzadkości wzmacniacza i odpowiadającego mu zakresu wzmocnienia statystyk.,"Rastgele bir öğe parametresini, kuvvetlendiricinin nadirlik sınıfına ve buna karşılık gelen istatistik artırma aralığına göre değiştirir.",Altera um parâmetro aleatório do item com base na classe de raridade do amplificador e na faixa correspondente de aumento de estatísticas.,강화 아이템의 희귀도 등급과 이에 해당하는 능력치 보정 범위에 따라 아이템의 무작위 능력치를 변경합니다.,アイテムのランダムなパラメータを、アンプリファイアのレアリティクラスと対応するステータスブースト範囲に基づいて変更します。,根据放大器的稀有度等级及其对应的属性加成范围，更改物品的随机属性。
 ui.context.poq.Amplify,Amplify,Усилить,Verstärken,Amplifier,Amplificar,Wzmacniać,Güçlendirmek,Ampliar,증폭하다,増幅する,放大
 ui.context.poq.Recombinate,Recombinate,Рекомбинировать,Rekombinieren,Recombiner,Recombinar,Rekombinować,Rekombinasyon yapmak,Recombinar,재결합하다,再結合する,重组
+item.recombinator_poq_0.name,Weapon Traits Recombinator,,,,,,,,,,
+item.recombinator_poq_1.name,,,,,,,,,,,
+item.recombinator_poq_2.name,,,,,,,,,,,
+item.recombinator_poq_3.name,,,,,,,,,,,
+item.recombinator_poq.shortdesc,,,,,,,,,,,
+item.recombinator_poq_0.desc,Recombinates weapon traits completely replacing existing ones.,,,,,,,,,,
+item.recombinator_poq_1.desc,,,,,,,,,,,
+item.recombinator_poq_2.desc,,,,,,,,,,,
+item.recombinator_poq_3.desc,,,,,,,,,,,

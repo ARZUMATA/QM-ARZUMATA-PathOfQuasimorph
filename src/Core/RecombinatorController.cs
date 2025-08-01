@@ -62,20 +62,24 @@ namespace QM_PathOfQuasimorph.Core
             record.Weight = 0;
             record.InventoryWidthSize = 1;
             record.ItemClass = ItemClass.Parts;
-            record.RepairSpecialRule = RepairSpecialRule.All;
+
+            record.RepairSpecialRule = RepairSpecialRule.None;
+
+            if (type == RecombinatorType.WeaponTraits)
+            {
+                record.RepairSpecialRule = RepairSpecialRule.AllWeapons;
+            }
+
             record.MaxStack = 100;
             record.UsageCost = 1;
             record.MaxUsage = 1;
             record.RecombinatorType = type;
 
             RepairDescriptor descriptor = ScriptableObject.CreateInstance("RepairDescriptor") as RepairDescriptor;
-
             Sprite icon = System.Array.Find(sprites, s => s.name == $"recombinator_icons_{index}");
-
             descriptor._icon = icon;
             descriptor._smallIcon = icon;
             descriptor.name = itemId;
-
             record.ContentDescriptor = descriptor;
 
             compositeItemRecord.Records.Add(record);
@@ -84,11 +88,6 @@ namespace QM_PathOfQuasimorph.Core
 
             //Localization.DuplicateKey($"item.{nameBase}_{index}.shortdesc", "item." + itemId + ".shortdesc");
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
-        }
-
-        internal string GetAmplifierNameFromRarity(ItemRarity itemRarity)
-        {
-            return $"{nameBase}_{itemRarity.ToString().ToLower()}";
         }
     }
 }

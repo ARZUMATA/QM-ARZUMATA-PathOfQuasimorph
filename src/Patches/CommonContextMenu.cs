@@ -23,6 +23,7 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"CommonContextMenu_SetupCommand_Patch");
                 Plugin.Logger.Log($"interactable {interactable}");
                 Plugin.Logger.Log($"AmplifierContext.Process {AmplifierContext.Process}");
+                Plugin.Logger.Log($"RecombinatorContext.Process {RecombinatorContext.Process}");
 
                 if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
                 {
