@@ -212,7 +212,7 @@ namespace QM_PathOfQuasimorph.Core
                     WeaponRecord weaponRecordNew = ItemRecordHelpers.CloneWeaponRecord(weaponRecord, itemId);
                     //WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
                     // WeaponRecord weaponRecordNew = weaponRecord.Clone($"*{itemId}");
-                    weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     weaponRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(weaponRecordNew);
                 }
@@ -224,7 +224,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"helmetRecord processing");
 
                     HelmetRecord helmetRecordNew = helmetRecord.Clone(itemId);
-                    helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     helmetRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(helmetRecordNew);
                 }
@@ -236,7 +236,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"armorRecord processing");
 
                     ArmorRecord armorRecordNew = armorRecord.Clone(itemId);
-                    armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     armorRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(armorRecordNew);
                 }
@@ -248,7 +248,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"leggingsRecord processing");
 
                     LeggingsRecord leggingsRecordNew = leggingsRecord.Clone(itemId);
-                    leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     leggingsRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(leggingsRecordNew);
                 }
@@ -260,7 +260,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"bootsRecord processing");
 
                     BootsRecord bootsRecordNew = bootsRecord.Clone(itemId);
-                    bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     bootsRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(bootsRecordNew);
                 }
@@ -279,7 +279,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"implantRecord processing");
 
                     ImplantRecord implantRecordNew = ItemRecordHelpers.CloneImplantRecord(implantRecord, itemId);
-                    implantRecordProcessorPoq.Init(implantRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    implantRecordProcessorPoq.Init(implantRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     implantRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(implantRecordNew);
                 }
@@ -291,7 +291,7 @@ namespace QM_PathOfQuasimorph.Core
                     _logger.Log($"augmentationRecord processing");
 
                     AugmentationRecord augmentationRecordNew = ItemRecordHelpers.CloneAugmentationRecord(augmentationRecord, itemId);
-                    augmentationRecordProcessorPoq.Init(augmentationRecordNew, itemRarity, mobRarityBoost, itemId, oldId);
+                    augmentationRecordProcessorPoq.Init(augmentationRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
                     augmentationRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(augmentationRecordNew);
                 }
@@ -493,14 +493,63 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     _logger.Log($"weaponRecord processing");
 
-                    weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, metadata.Id, metadata.ReturnItemUid());
-                    weaponRecordProcessorPoq.Reroll(weaponRecord, ampRecord, metadata);
+                    weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                    weaponRecordProcessorPoq.Reroll(ampRecord, metadata);
                 }
             }
 
             _logger.Log($"ChangeRecordFromAmplifier: Success!");
 
             return true;
+        }
+
+        internal bool ReplaceWeaponTraits(BasePickupItem target, BasePickupItem repair)
+        {
+            _logger.Log($"ReplaceWeaponTraits");
+
+            var hasKey = RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out MetadataWrapper metadata);
+            var recombRecord = repair.Record<RecombinatorRecord>();
+
+            if (!hasKey || !metadata.PoqItem)
+            {
+                _logger.Log($"ReplaceWeaponTraits: Failure! hasKey / PoqItem");
+                return false;
+            }
+
+            CompositeItemRecord obj = Data.Items.GetRecord(target.Id) as CompositeItemRecord;
+
+            foreach (BasePickupItemRecord basePickupItemRecord in obj.Records)
+            {
+                WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
+
+                if (weaponRecord != null)
+                {
+                    _logger.Log($"weaponRecord processing");
+
+                    weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                    weaponRecordProcessorPoq.ReplaceWeaponTraits(recombRecord, metadata);
+
+                    var weaponComponent = target.Comp<WeaponComponent>();
+
+                    if (weaponComponent != null)
+                    {
+                        weaponComponent.Traits.Clear();
+                        foreach (var trait in weaponRecord.Traits)
+                        {
+                            weaponComponent.Traits.Add(ItemTraitSystem.CreateItemTrait(trait));
+                        }
+                        _logger.Log($"ReplaceWeaponTraits: Success!");
+
+                        return true;
+                    }
+                }
+            }
+
+
+
+
+            _logger.Log($"ReplaceWeaponTraits: Failure!");
+            return false;
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -16,19 +17,19 @@ namespace QM_PathOfQuasimorph.Core
         public enum RecombinatorType
         {
             WeaponTraits,
+            AmmoTraits,
             WeaponRandoms,
-            Ammo,
             Indestructible
         }
 
-        public static string nameBase = "recombinator_poq_";
-
+        public static string nameBase = "recombinator_poq";
+        private static Sprite[] sprites = Helpers.LoadSpritesFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph");
         public static void AddRecombinators()
         {
             // Add our own custom items.
             foreach (RecombinatorType type in Enum.GetValues(typeof(RecombinatorType)))
             {
-                CreateRecombinator(type);
+                CreateRecombinator(type, (int)type);
             }
         }
 
@@ -47,9 +48,9 @@ namespace QM_PathOfQuasimorph.Core
             return false;
         }
 
-        private static void CreateRecombinator(RecombinatorType type)
+        private static void CreateRecombinator(RecombinatorType type, int index)
         {
-            var itemId = $"{nameBase}{type.ToString().ToLower()}";
+            var itemId = $"{nameBase}_{index}";
 
             CompositeItemRecord compositeItemRecord = new CompositeItemRecord(itemId);
 
@@ -68,8 +69,11 @@ namespace QM_PathOfQuasimorph.Core
             record.RecombinatorType = type;
 
             RepairDescriptor descriptor = ScriptableObject.CreateInstance("RepairDescriptor") as RepairDescriptor;
-            descriptor._icon = Helpers.LoadSpriteFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph", "amplifier_icon");
-            descriptor._smallIcon = Helpers.LoadSpriteFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph", "amplifier_icon");
+
+            Sprite icon = System.Array.Find(sprites, s => s.name == $"recombinator_icons_{index}");
+
+            descriptor._icon = icon;
+            descriptor._smallIcon = icon;
             descriptor.name = itemId;
 
             record.ContentDescriptor = descriptor;
@@ -78,12 +82,13 @@ namespace QM_PathOfQuasimorph.Core
 
             Data.Items._records.Add(itemId, compositeItemRecord);
 
+            //Localization.DuplicateKey($"item.{nameBase}_{index}.shortdesc", "item." + itemId + ".shortdesc");
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
         }
 
         internal string GetAmplifierNameFromRarity(ItemRarity itemRarity)
         {
-            return $"{nameBase}{itemRarity.ToString().ToLower()}";
+            return $"{nameBase}_{itemRarity.ToString().ToLower()}";
         }
     }
 }

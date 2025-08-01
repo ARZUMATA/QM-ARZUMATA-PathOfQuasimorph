@@ -12,6 +12,7 @@ namespace QM_PathOfQuasimorph.Core
             public static BasePickupItem Item;
             public static bool Process = false;
             public static ItemRarity Rarity;
+            public static GameLoopGroup GameLoopGroup;
         }
     }
 }

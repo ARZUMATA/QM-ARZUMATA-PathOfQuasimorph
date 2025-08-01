@@ -11,6 +11,7 @@ namespace QM_PathOfQuasimorph.Core
             [ThreadStatic]
             public static BasePickupItem Item;
             public static bool Process = false;
+            public static GameLoopGroup GameLoopGroup;
         }
     }
 }

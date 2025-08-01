@@ -22,6 +22,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
         public abstract Dictionary<string, bool> parameters { get; }
         protected ItemRarity itemRarity;
         protected bool mobRarityBoost;
+        protected bool amplifierRarityBoost;
         protected string itemId;
         protected string oldId;
 
@@ -30,11 +31,12 @@ namespace QM_PathOfQuasimorph.Core.Processors
             this.itemRecordsControllerPoq = itemRecordsControllerPoq;
         }
 
-        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, string itemId, string oldId)
+        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, bool amplifierRarityBoost, string itemId, string oldId)
         {
             this.itemRecord = itemRecord;
             this.itemRarity = itemRarity;
             this.mobRarityBoost = mobRarityBoost;
+            this.amplifierRarityBoost = amplifierRarityBoost;
             this.itemId = itemId;
             this.oldId = oldId;
         }
@@ -91,6 +93,15 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 _logger.Log($"\t\t boosting final modifier from {baseModifier} to {mobModifier}");
 
                 baseModifier = mobModifier;
+            }
+
+            if (amplifierRarityBoost)
+            {
+                float ampModifier = baseModifier * PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
+                _logger.Log($"\t\t amplifierRarityBoost exist, Rarity: {itemRarity}");
+                _logger.Log($"\t\t boosting final modifier from {baseModifier} to {ampModifier}");
+
+                baseModifier = ampModifier;
             }
 
             finalModifier = 0;

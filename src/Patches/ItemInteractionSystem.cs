@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static QM_PathOfQuasimorph.Core.RecombinatorController;
 using static UnityEngine.UI.Image;
 using Type = System.Type;
 
@@ -23,6 +24,12 @@ namespace QM_PathOfQuasimorph.Core
             public static bool Prefix(BasePickupItem target, BasePickupItem repair, ref bool __result)
             {
                 Plugin.Logger.Log($"ItemInteractionSystem_CanRepair_Patch");
+
+                if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
+                {
+                    // Do original method
+                    return true;
+                }
 
                 if (target.Comp<BreakableItemComponent>() == null || (!repair.Is<AmplifierRecord>() || !repair.Is<RecombinatorRecord>()) || target.Locked)
                 {
@@ -45,6 +52,12 @@ namespace QM_PathOfQuasimorph.Core
                 //Plugin.Logger.Log($"ItemInteractionSystem_Repair_Patch");
 
                 disassembleToTrash = false;
+
+                if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
+                {
+                    // Do original method
+                    return true;
+                }
 
                 if (!repair.Is<AmplifierRecord>() && !repair.Is<RecombinatorRecord>())
                 {
@@ -70,6 +83,24 @@ namespace QM_PathOfQuasimorph.Core
                         __result = true;
                         return false;
                     }
+
+                    RecombinatorRecord recombinatorRecord = repair.Record<RecombinatorRecord>();
+
+                    if (recombinatorRecord != null)
+                    {
+                        if (recombinatorRecord.RecombinatorType == RecombinatorType.WeaponTraits)
+                        {
+                            PickupItem item = target as PickupItem;
+
+                            PathOfQuasimorph.itemRecordsControllerPoq.ReplaceWeaponTraits(target, repair);
+                            ItemInteractionSystem.ConsumeItem(repair);
+                            __result = true;
+                            return false;
+                        }
+
+                        // && PathOfQuasimorph.itemRecordsControllerPoq.ChangeRecordFromAmplifier(target, repair)
+                    }
+
                 }
 
                 // Do original method

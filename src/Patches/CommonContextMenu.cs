@@ -24,6 +24,11 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"interactable {interactable}");
                 Plugin.Logger.Log($"AmplifierContext.Process {AmplifierContext.Process}");
 
+                if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
+                {
+                    return;
+                }
+
                 if (!interactable || ((ContextMenuCommand)bindedVal != ContextMenuCommand.Repair))
                 {
                     return;
@@ -31,7 +36,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 CommonButton commandButton = __instance._activeButtonsList.Last<CommonButton>();
                 Plugin.Logger.Log($"commandButton {commandButton.name}");
-                
+
                 // Compatibility with QM_ContextMenuHotkeys by NKB_RedSpy
 
                 if (AmplifierContext.Process)

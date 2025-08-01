@@ -7,13 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 
 namespace QM_PathOfQuasimorph.Core
 {
     internal class AmplifierController
     {
         public static float DROP_CHANCE = 100;
-        public static string nameBase = "amplifier_poq_";
+        public static string nameBase = "amplifier_poq";
 
         public static void AddAmplifiers()
         {
@@ -41,7 +42,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void CreateAmplifier(ItemRarity rarity)
         {
-            var itemId = $"{nameBase}{rarity.ToString().ToLower()}";
+            var itemId = $"{nameBase}_{rarity.ToString().ToLower()}";
 
             CompositeItemRecord compositeItemRecord = new CompositeItemRecord(itemId);
 
@@ -70,12 +71,12 @@ namespace QM_PathOfQuasimorph.Core
 
             Data.Items._records.Add(itemId, compositeItemRecord);
 
-            Localization.DuplicateKey($"item.amplifier_poq.shortdesc", "item." + itemId + ".shortdesc");
+            Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
         }
 
         internal string GetAmplifierNameFromRarity(ItemRarity itemRarity)
         {
-            return $"{nameBase}{itemRarity.ToString().ToLower()}";
+            return $"{nameBase}_{itemRarity.ToString().ToLower()}";
         }
     }
 }

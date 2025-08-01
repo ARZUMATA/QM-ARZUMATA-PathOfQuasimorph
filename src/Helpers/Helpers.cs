@@ -155,7 +155,7 @@ internal static class Helpers
         }
     }
 
-    public static Sprite LoadSpriteFromEmbeddedBundle(string bundleResourceName, string assetName)
+    public static Sprite[] LoadSpritesFromEmbeddedBundle(string bundleResourceName)
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
         using (Stream stream = assembly.GetManifestResourceStream(bundleResourceName))
@@ -176,12 +176,27 @@ internal static class Helpers
                 return null;
             }
 
-            Sprite mySprite = bundle.LoadAsset<Sprite>(assetName);
-            bundle.Unload(false); // Unload to prevent memory leaks
+            Sprite[] sprites = bundle.LoadAllAssets<Sprite>();
+            bundle.Unload(false);
 
-            return mySprite;
+            if (sprites == null || sprites.Length == 0)
+            {
+                Plugin.Logger.LogWarning($"No sprites found in AssetBundle '{bundleResourceName}'.");
+                return null;
+            }
+
+            return sprites;
         }
     }
+
+    public static Sprite LoadSpriteFromEmbeddedBundle(string bundleResourceName, string assetName)
+    {
+        Sprite[] sprites = LoadSpritesFromEmbeddedBundle(bundleResourceName);
+        if (sprites == null) return null;
+
+        return System.Array.Find(sprites, s => s.name == assetName);
+    }
+
 
     public static Sprite FindSpriteByName(string spriteName)
     {

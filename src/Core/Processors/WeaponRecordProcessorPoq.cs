@@ -210,7 +210,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void ApplyTraits()
+        internal void ApplyTraits(bool replaceTraits = false)
         {
             if (itemRarity == ItemRarity.Standard)
             {
@@ -218,7 +218,32 @@ namespace QM_PathOfQuasimorph.Core.Processors
             }
 
             AddUnbreakableTrait();
+            List<string> selectedTraits = PrepareTraits();
 
+            // Apply traits to record
+            // Should we remove existing traits?
+            if (replaceTraits)
+            {
+                itemRecord.Traits.Clear();
+            }
+            else
+            {
+                // Randomly decide whether to remove existing traits (20% chance)
+                if (Helpers._random.NextDouble() < 0.2)
+                {
+                    itemRecord.Traits.Clear();
+                }
+            }
+
+            // Add traits
+            for (int i = 0; i < selectedTraits.Count; i++)
+            {
+                itemRecord.Traits.Add(selectedTraits[i]);
+            }
+        }
+
+        private List<string> PrepareTraits(bool removeExisting = false)
+        {
             // Determine if the item is a melee weapon
             _logger.Log($"\t\t  isMelee: {itemRecord.IsMelee}");
 
@@ -248,24 +273,16 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 (itemRecord.IsMelee && meleeTraitsBlacklist.Contains(t)) ||
                 (!itemRecord.IsMelee && rangedTraitsBlacklist.Contains(t)));
 
-            // Remove already present traits
-            selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
+            if (removeExisting)
+            {
+                // Remove already present traits
+                selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
+            }
+
 
             // Filter all traits if they are not in allowed list (just in case)
             selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
-
-            // Should we remove existing traits?
-            // Randomly decide whether to remove existing traits (20% chance)
-            if (Helpers._random.NextDouble() < 0.2)
-            {
-                itemRecord.Traits.Clear();
-            }
-            
-            // Add traits
-            for (int i = 0; i < selectedTraits.Count; i++)
-            {
-                itemRecord.Traits.Add(selectedTraits[i]);
-            }
+            return selectedTraits;
         }
 
         private List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count)
@@ -322,7 +339,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             }
         }
 
-        internal void Reroll(WeaponRecord weaponRecord, AmplifierRecord ampRecord, MetadataWrapper metadata)
+        internal void Reroll(AmplifierRecord ampRecord, MetadataWrapper metadata)
         {
             itemRarity = ampRecord.Rarity;
 
@@ -339,6 +356,30 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
             finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
             ApplyStat(finalModifier, increase, stat, genericRecord);
+        }
+
+        internal void RerollRarities(WeaponRecord weaponRecord, AmplifierRecord ampRecord, MetadataWrapper metadata)
+        {
+            itemRarity = ampRecord.Rarity;
+
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+
+            float baseModifier, finalModifier;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
+            string boostedParamString;
+            bool increase;
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            var statIdx = Helpers._random.Next(0, parameters.Count);
+            var stat = parameters.ElementAt(statIdx);
+
+            finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
+            ApplyStat(finalModifier, increase, stat, genericRecord);
+        }
+
+        internal void ReplaceWeaponTraits(RecombinatorRecord ampRecord, MetadataWrapper metadata)
+        {
+            ApplyTraits(true);
         }
     }
 }

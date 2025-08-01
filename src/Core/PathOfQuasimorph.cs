@@ -35,7 +35,7 @@ namespace QM_PathOfQuasimorph.Core
         internal static PixelizatorCameraAttachment pixelizatorCameraAttachment = null;
         private static Logger _logger = new Logger(null, typeof(PathOfQuasimorph));
         public static IModContext _context;
-
+        public static GameLoopGroup GameLoopGroup;
         public static PerkFactory perkFactoryState { get; private set; }
 
         /* All magnum project are recipes that are always available in the game. You get access to exact recipe via chip.
@@ -103,12 +103,14 @@ namespace QM_PathOfQuasimorph.Core
             _context = context;
             _logger.Log($"MainMenuStarted");
             perkFactoryState = context.State.Get<PerkFactory>();
+            GameLoopGroup = GameLoopGroup.MainMenu;
         }
 
         [Hook(ModHookType.MainMenuDestroyed)]
         public static void MainMenuDestroyed(IModContext context)
         {
             _logger.Log($"MainMenuDestroyed");
+            GameLoopGroup = GameLoopGroup.None;
             ApplyModConfigs();
         }
         private static void ApplyModConfigs()
@@ -122,6 +124,7 @@ namespace QM_PathOfQuasimorph.Core
         public static void DungeonStarted(IModContext context)
         {
             _logger.Log($"DungeonStarted");
+            GameLoopGroup = GameLoopGroup.Dungeon;
             Initialize();
         }
 
@@ -131,6 +134,14 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"SpaceStarted");
             CleanupSystem.CleanObsoleteProjects(context, true);
             creaturesControllerPoq.CleanCreatureDataPoq();
+            GameLoopGroup = GameLoopGroup.Space;
+        }
+
+        [Hook(ModHookType.SpaceFinished)]
+        public static void SpaceFinished(IModContext context)
+        {
+            _logger.Log($"SpaceFinished");
+            GameLoopGroup = GameLoopGroup.None;
         }
 
         [Hook(ModHookType.DungeonFinished)]
@@ -143,6 +154,7 @@ namespace QM_PathOfQuasimorph.Core
             gameCamera = null;
             camera = null;
             pixelizatorCameraAttachment = null;
+            GameLoopGroup = GameLoopGroup.None;
         }
     }
 }

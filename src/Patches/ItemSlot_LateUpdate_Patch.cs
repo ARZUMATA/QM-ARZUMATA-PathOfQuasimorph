@@ -11,32 +11,35 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ItemSlot __instance)
             {
-                DragController drag = UI.Drag;
-                bool flag = __instance.IsPointerInside && !drag.IsDragging;
-
-                if (flag && drag._dragMode != DragMode.RepairMode)
+                if (PathOfQuasimorph.GameLoopGroup == GameLoopGroup.Space)
                 {
-                    //Plugin.Logger.Log($"ItemSlot_LateUpdate_Patch");
+                    DragController drag = UI.Drag;
+                    bool flag = __instance.IsPointerInside && !drag.IsDragging;
 
-                    if (__instance.Item != null && __instance.Item.Is<AmplifierRecord>())
+                    if (flag && drag._dragMode != DragMode.RepairMode)
                     {
-                        //Plugin.Logger.Log($"AmplifierRecord");
-                        AmplifierContext.Item = __instance.Item;
-                        AmplifierContext.Process = true;
-                        AmplifierContext.Rarity = __instance.Item.Record<AmplifierRecord>().Rarity;
-                    }
+                        //Plugin.Logger.Log($"ItemSlot_LateUpdate_Patch");
 
-                    else if (__instance.Item != null && __instance.Item.Is<RecombinatorRecord>())
-                    {
-                        //Plugin.Logger.Log($"RecombinatorRecord");
-                        RecombinatorContext.Item = __instance.Item;
-                        RecombinatorContext.Process = true;
-                    }
-                    else
-                    {
-                        //Plugin.Logger.Log($"No AmplifierRecord and No RecombinatorRecord");
-                        AmplifierContext.Process = false;
-                        RecombinatorContext.Process = false;
+                        if (__instance.Item != null && __instance.Item.Is<AmplifierRecord>())
+                        {
+                            //Plugin.Logger.Log($"AmplifierRecord");
+                            AmplifierContext.Item = __instance.Item;
+                            AmplifierContext.Process = true;
+                            AmplifierContext.Rarity = __instance.Item.Record<AmplifierRecord>().Rarity;
+                        }
+
+                        else if (__instance.Item != null && __instance.Item.Is<RecombinatorRecord>())
+                        {
+                            //Plugin.Logger.Log($"RecombinatorRecord");
+                            RecombinatorContext.Item = __instance.Item;
+                            RecombinatorContext.Process = true;
+                        }
+                        else
+                        {
+                            //Plugin.Logger.Log($"No AmplifierRecord and No RecombinatorRecord");
+                            AmplifierContext.Process = false;
+                            RecombinatorContext.Process = false;
+                        }
                     }
                 }
 
