@@ -230,3 +230,5 @@ Thanks community for feedback.
 ## 1.8.1 (6202d68)
 - Fix: some items were reset to default if you switch saves without restarting the game
 
+## 1.8.2 (40f9eb0)
+- Fixed issue where pressing Esc to save and quit during a mission did not preserve item metadata, causing items to revert to default values.
