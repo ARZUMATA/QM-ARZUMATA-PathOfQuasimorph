@@ -8,7 +8,6 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.RecombinatorController;
 using static UnityEngine.UI.Image;
 using Type = System.Type;
 
@@ -31,7 +30,7 @@ namespace QM_PathOfQuasimorph.Core
                     return true;
                 }
 
-                if (target.Comp<BreakableItemComponent>() == null || (!repair.Is<AmplifierRecord>() || !repair.Is<RecombinatorRecord>()) || target.Locked)
+                if (target.Comp<BreakableItemComponent>() == null || !repair.Is<SynthraformerRecord>() || target.Locked)
                 {
                     // Do original method
                     return true;
@@ -59,34 +58,52 @@ namespace QM_PathOfQuasimorph.Core
                     return true;
                 }
 
-                var ampRec = repair.Record<AmplifierRecord>();
-                var recombRec = repair.Record<RecombinatorRecord>();
+                var ampRec = repair.Record<SynthraformerRecord>();
                 Plugin.Logger.Log($"ampRec null {ampRec == null} {ampRec}");
-                Plugin.Logger.Log($"recombRec null {recombRec == null} {recombRec}");
 
-                if (!repair.Is<AmplifierRecord>() && !repair.Is<RecombinatorRecord>())
+                if (!repair.Is<SynthraformerRecord>())
                 {
                     return true;
                 }
 
                 if (target.Is<AmmoRecord>() || target.Is<ImplantRecord>() || target.Is<AugmentationRecord>() || target.Is<ResistRecord>() || target.Is<WeaponRecord>())
                 {
-
-
                     if (ampRec != null)
                     {
-                        return PathOfQuasimorph.amplifierController.ApplyAmplifier(ref target, repair, ampRec, ref __result);
-                    }
-
-                    if (recombRec != null)
-                    {
-                        return PathOfQuasimorph.recombinatorController.ApplyRecombinator(target, repair, ref __result);
-                        // && PathOfQuasimorph.itemRecordsControllerPoq.ChangeRecordFromAmplifier(target, repair)
+                        return PathOfQuasimorph.synthraformerController.Apply(ref target, repair, ampRec, ref __result);
                     }
                 }
 
                 // Do original method
                 return true;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(ItemInteractionSystem), nameof(ItemInteractionSystem.Disassemble))]
+
+        public static class ItemInteractionSystem_Disassemble_Patch
+        {
+            public static void Postfix(ref bool __result, BasePickupItem item, Inventory inventory, ref List<BasePickupItem> itemsWithoutStorage, int toDisassembleCount = -1, bool guaranteed = false)
+            {
+                if (__result)
+                {
+
+                    if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out var metadata))
+                    {
+                        // We can use transformation record but i want it random, so.
+                        if (metadata.RarityClass != ItemRarity.Standard && (item.Is<WeaponRecord>() || item.Is<ResistRecord>()))
+                        {
+                            // Check amplifier drop chance
+                            var canApplySynthraformerDrop = Helpers._random.Next(0, 100 + 1) < SynthraformerController.DROP_CHANCE;
+
+                            if (canApplySynthraformerDrop)
+                            {
+                                BasePickupItem basePickupItem = SingletonMonoBehaviour<ItemFactory>.Instance.CreateForInventory(PathOfQuasimorph.synthraformerController.GetBaseDrop(), false);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -121,15 +121,6 @@ namespace QM_PathOfQuasimorph.Core
 
             var itemTransformationRecordNew = itemTransformationRecord.Clone(newId);
 
-            // Check amplifier drop chance
-            var canApplyAmplifierDrop = Helpers._random.Next(0, 100 + 1) < AmplifierController.DROP_CHANCE;
-
-            if (canApplyAmplifierDrop)
-            {
-                var amplifierName = PathOfQuasimorph.amplifierController.GetAmplifierNameFromRarity(itemRarity);
-                itemTransformationRecordNew.OutputItems.Add(new ItemQuantity(amplifierName, 1));
-            }
-
             Data.ItemTransformation.AddRecord(newId, itemTransformationRecordNew);
 
             _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");

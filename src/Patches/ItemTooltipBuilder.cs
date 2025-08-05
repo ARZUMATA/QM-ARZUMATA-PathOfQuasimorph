@@ -37,7 +37,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ItemTooltipBuilder __instance, RepairRecord record)
             {
-                if (AmplifierController.IsAmplifier(record.Id))
+                if (SynthraformerController.Is(record.Id))
                 {
                     __instance._tooltip.ShowAdditionalBlock();
           
@@ -49,9 +49,9 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ItemTooltipBuilder __instance, BasePickupItem item, BasePickupItemRecord record, Mercenary mercenary = null)
             {
-                if (AmplifierController.IsAmplifier(item.Id))
+                if (SynthraformerController.Is(item.Id))
                 {
-                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{AmplifierController.nameBase}.desc")).SetNameColor(Colors.AltGreen);
+                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{SynthraformerController.nameBase}.desc")).SetNameColor(Colors.AltGreen);
                 }
             }
         }

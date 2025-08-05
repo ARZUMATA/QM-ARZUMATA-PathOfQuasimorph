@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
 using QM_PathOfQuasimorph.Core.Records;
-using static QM_PathOfQuasimorph.Core.RecombinatorController;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -21,26 +20,17 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         //Plugin.Logger.Log($"ItemSlot_LateUpdate_Patch");
 
-                        if (__instance.Item != null && __instance.Item.Is<AmplifierRecord>())
+                        if (__instance.Item != null && __instance.Item.Is<SynthraformerRecord>())
                         {
-                            //Plugin.Logger.Log($"AmplifierRecord");
-                            AmplifierContext.Item = __instance.Item;
-                            AmplifierContext.Process = true;
-                            AmplifierContext.Rarity = __instance.Item.Record<AmplifierRecord>().Rarity;
-                        }
-
-                        else if (__instance.Item != null && __instance.Item.Is<RecombinatorRecord>())
-                        {
-                            //Plugin.Logger.Log($"RecombinatorRecord");
-                            RecombinatorContext.Item = __instance.Item;
-                            RecombinatorContext.Process = true;
-                            RecombinatorContext.RecombinatorType = __instance.Item.Record<RecombinatorRecord>().RecombinatorType;
+                            //Plugin.Logger.Log($"SynthraformerRecord");
+                            SynthraformerContext.Item = __instance.Item;
+                            SynthraformerContext.Process = true;
+                            SynthraformerContext.RecombinatorType = __instance.Item.Record<SynthraformerRecord>().RecombinatorType;
                         }
                         else
                         {
-                            //Plugin.Logger.Log($"No AmplifierRecord and No RecombinatorRecord");
-                            AmplifierContext.Process = false;
-                            RecombinatorContext.Process = false;
+                            //Plugin.Logger.Log($"No SynthraformerRecord and No RecombinatorRecord");
+                            SynthraformerContext.Process = false;
                         }
                     }
                 }

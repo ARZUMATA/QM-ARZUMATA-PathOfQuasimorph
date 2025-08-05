@@ -135,8 +135,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 // Add our own item records
                 PathOfQuasimorph.magnumProjectsController.AddItemRecords(DataSerializerHelper._jsonSettingsPoq);
-                AmplifierController.AddAmplifiers();
-                RecombinatorController.AddRecombinators();
+                SynthraformerController.AddItems();
             }
         }
     }

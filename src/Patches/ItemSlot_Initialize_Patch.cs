@@ -27,25 +27,6 @@ namespace QM_PathOfQuasimorph.Core
                 }
 
                 ApplyItemRarityBackground(__instance, item);
-                
-                if (AmplifierController.IsAmplifier(item))
-                {
-                    ApplyAmplifierColor(__instance, item);
-                }
-            }
-
-            private static void ApplyAmplifierColor(ItemSlot __instance, BasePickupItem item)
-            {
-                CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(item.Id, false) as CompositeItemRecord;
-
-                var ampRecord = item.Record<AmplifierRecord>();
-
-                if (ampRecord != null)
-                {
-                    var Icon = __instance.transform.Find("Icon");
-                    Image iconImage = Icon.gameObject.GetComponent<Image>();
-                    iconImage.color = Helpers.HexStringToUnityColor(RaritySystem.Colors[ampRecord.Rarity]);
-                }
             }
         }
 

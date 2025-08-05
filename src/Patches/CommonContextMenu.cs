@@ -22,8 +22,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 Plugin.Logger.Log($"CommonContextMenu_SetupCommand_Patch");
                 Plugin.Logger.Log($"interactable {interactable}");
-                Plugin.Logger.Log($"AmplifierContext.Process {AmplifierContext.Process}");
-                Plugin.Logger.Log($"RecombinatorContext.Process {RecombinatorContext.Process}");
+                Plugin.Logger.Log($"SynthraformerContext.Process {SynthraformerContext.Process}");
 
                 if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
                 {
@@ -40,17 +39,9 @@ namespace QM_PathOfQuasimorph.Core
 
                 // Compatibility with QM_ContextMenuHotkeys by NKB_RedSpy
 
-                if (AmplifierContext.Process)
+                if (SynthraformerContext.Process)
                 {
-                    string localizedEnchant = Localization.Get("ui.context.poq.Amplify");
-                    string temp = ExtractAndReplace(commandButton.captionText.text, localizedEnchant);
-                    commandButton.captionText.text = temp;
-                    return;
-                }
-
-                if (RecombinatorContext.Process)
-                {
-                    string localizedEnchant = Localization.Get("ui.context.poq.Recombinate");
+                    string localizedEnchant = Localization.Get("ui.context.poq.Synthraform");
                     string temp = ExtractAndReplace(commandButton.captionText.text, localizedEnchant);
                     commandButton.captionText.text = temp;
                     return;

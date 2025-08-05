@@ -319,7 +319,24 @@ namespace QM_PathOfQuasimorph.Core.Processors
             }
         }
 
-        internal void Reroll(AmplifierRecord ampRecord, MetadataWrapper metadata)
+        internal void Reroll(SynthraformerRecord ampRecord, MetadataWrapper metadata)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+
+            float baseModifier, finalModifier;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
+            string boostedParamString;
+            bool increase;
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            var statIdx = Helpers._random.Next(0, parameters.Count);
+            var stat = parameters.ElementAt(statIdx);
+
+            finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
+            ApplyStat(finalModifier, increase, stat, genericRecord);
+        }
+
+        internal void RerollRarities(WeaponRecord weaponRecord, SynthraformerRecord ampRecord, MetadataWrapper metadata)
         {
             itemRarity = ampRecord.Rarity;
 
@@ -338,28 +355,43 @@ namespace QM_PathOfQuasimorph.Core.Processors
             ApplyStat(finalModifier, increase, stat, genericRecord);
         }
 
-        internal void RerollRarities(WeaponRecord weaponRecord, AmplifierRecord ampRecord, MetadataWrapper metadata)
-        {
-            itemRarity = ampRecord.Rarity;
-
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
-
-            float baseModifier, finalModifier;
-            int numToHinder, numToImprove, improvedCount, hinderedCount;
-            string boostedParamString;
-            bool increase;
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
-
-            var statIdx = Helpers._random.Next(0, parameters.Count);
-            var stat = parameters.ElementAt(statIdx);
-
-            finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-            ApplyStat(finalModifier, increase, stat, genericRecord);
-        }
-
-        internal void ReplaceWeaponTraits(RecombinatorRecord ampRecord, MetadataWrapper metadata)
+        internal void ReplaceWeaponTraits(SynthraformerRecord recomb, MetadataWrapper metadata, WeaponComponent weaponComponent)
         {
             ApplyTraits(true);
+
+            weaponComponent.Traits.Clear();
+
+            foreach (var trait in itemRecord.Traits)
+            {
+                weaponComponent.Traits.Add(ItemTraitSystem.CreateItemTrait(trait));
+            }
+
+            _logger.Log($"ReplaceWeaponTraits: Success!");
+        }
+
+        internal void ReplaceRequiredAmmo(SynthraformerRecord recomb, MetadataWrapper meta)
+        {
+             Dictionary<string, string> requiredAmmo = new Dictionary<string, string>
+             {
+                { "BatteryCells" , "battery_basic_ammo" },
+                { "Bolts" , "nail_bolts_ammo" },
+                { "Bullets" , "small_basic_ammo" },
+                { "Gas" , "gas_ammo" },
+                { "Heavy" , "rifle_basic_ammo" },
+                { "Medium" , "medium_basic_ammo" },
+                { "QuasiCells" , "quasi_basic_ammo" },
+                { "Rocket" , "rocket_basic_ammo" },
+                { "SawBlade" , "sawblade_ammo" },
+                { "Shells" , "shotgun_bullet_ammo" },
+                { "SuperHeavy" , "heavy_basic_ammo" },
+                { "Toxic" , "toxic_ammo" },
+                { string.Empty , string.Empty },
+             };
+
+            var rndIndx = Helpers._random.Next(0, requiredAmmo.Keys.Count);
+
+            itemRecord.RequiredAmmo = requiredAmmo.ElementAt(rndIndx).Key;
+            itemRecord.DefaultAmmoId = requiredAmmo.ElementAt(rndIndx).Value;
         }
     }
 }
