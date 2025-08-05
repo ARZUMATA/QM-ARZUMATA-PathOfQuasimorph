@@ -2,12 +2,7 @@
 using QM_PathOfQuasimorph.Core.Records;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -27,6 +22,11 @@ namespace QM_PathOfQuasimorph.Core
 
         public static bool IsAmplifier(BasePickupItem item)
         {
+            if (item == null || item.Id == null)
+            {
+                return false;
+            }
+
             return IsAmplifier(item.Id);
         }
 
@@ -69,6 +69,7 @@ namespace QM_PathOfQuasimorph.Core
 
             compositeItemRecord.Records.Add(record);
 
+            Data.Items._records.Remove(itemId);
             Data.Items._records.Add(itemId, compositeItemRecord);
 
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
@@ -77,6 +78,84 @@ namespace QM_PathOfQuasimorph.Core
         internal string GetAmplifierNameFromRarity(ItemRarity itemRarity)
         {
             return $"{nameBase}_{itemRarity.ToString().ToLower()}";
+        }
+        public bool ApplyAmplifier(ref BasePickupItem target, BasePickupItem repair, AmplifierRecord ampRec, ref bool __result)
+        {
+            RepairRecord repairRecord = repair.Record<RepairRecord>();
+            Plugin.Logger.Log($"oldItem.Is<RepairRecord>() {repair.Is<RepairRecord>()}");
+
+            if (!repairRecord.IsValidCategory(target))
+            {
+                Plugin.Logger.Log($"Invalid category");
+
+                // Do original method
+                return true;
+            }
+
+            // We replace item instead changing records and copy some item data to keep stuff like loaded ammo / durability etc.
+            DragController drag = UI.Drag;
+
+            if (true) //PathOfQuasimorph.itemRecordsControllerPoq.ChangeRecordFromAmplifier(oldItem, repair))
+            {
+                var baseId = MetadataWrapper.GetBaseId(target.Id);
+                var newId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(baseId, false, ampRec.Rarity);
+                var newItem = ItemFactoryPoq.CreateNewItem(newId);
+
+                Plugin.Logger.Log($"oldItem {target.Id}");
+                Plugin.Logger.Log($"newItem {newItem.Id}");
+
+                if (drag.SlotUnderCursor._itemStorage.SwitchItems(target, newItem))
+                {
+                    ProcessItem(target, newItem);
+                    //ItemInteractionSystem.ConsumeItem(repair);
+                    __result = true;
+
+                }
+
+                Plugin.Logger.Log($"ChangeRecordFromAmplifier Do");
+
+                // oldItem.Id = newItem.Id; // ?
+
+                //Plugin.Logger.Log($"drag.SlotUnderCursor.Item before {drag.SlotUnderCursor.Item.Id}");
+                ////drag.SlotUnderCursor.Item = newItem;
+                //Plugin.Logger.Log($"drag.SlotUnderCursor.Item after {drag.SlotUnderCursor.Item.Id}");
+
+                //drag.SlotUnderCursor.Initialize(newItem, drag.SlotUnderCursor._itemStorage);
+
+
+
+            }
+
+            return false;
+        }
+
+
+
+        private static void ProcessItem(BasePickupItem oldItem, BasePickupItem newItem)
+        {
+            var pickupItemNew = newItem as PickupItem;
+
+            foreach (PickupItemComponent comp in pickupItemNew.Components)
+            {
+                StackableItemComponent stackableItemComponent = comp as StackableItemComponent;
+                var oldStackableItemComponent = oldItem.Comp<StackableItemComponent>();
+
+                if (stackableItemComponent != null)
+                {
+                    stackableItemComponent.Count = oldStackableItemComponent.Count;
+                    stackableItemComponent.Max = oldStackableItemComponent.Max;
+                }
+            }
+
+            foreach (BasePickupItemRecord basePickupItemRecord in pickupItemNew.Records)
+            {
+                AmmoRecord ammoRecord = basePickupItemRecord as AmmoRecord;
+
+                if (ammoRecord != null)
+                {
+                    newItem.
+                }
+            }
         }
     }
 }

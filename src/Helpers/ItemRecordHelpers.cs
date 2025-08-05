@@ -12,6 +12,31 @@ namespace QM_PathOfQuasimorph.PoQHelpers
     internal class ItemRecordHelpers
     {
         // In game the Clone method doesn't copy Traits that we need also it for some reason does a deep-copy on immutable fields like int and string.
+
+        internal static ItemRecord CloneItemRecord(ItemRecord original, string newId)
+        {
+            Plugin.Logger.Log($"ItemRecord: CloneAmmoRecord");
+
+            ItemRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
+
+            clone.Categories = SerializationHelper.MakeDeepCopy(original.Categories);
+
+            return clone;
+        }
+
+        internal static AmmoRecord CloneAmmoRecord(AmmoRecord original, string newId)
+        {
+            Plugin.Logger.Log($"AmmoRecord: CloneAmmoRecord");
+
+            AmmoRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
+
+            clone.Traits = SerializationHelper.MakeDeepCopy(original.Traits);
+
+            return clone;
+        }
+        
         internal static WeaponRecord CloneWeaponRecord(WeaponRecord original, string newId)
         {
             Plugin.Logger.Log($"WeaponRecord: CloneWeaponRecord");

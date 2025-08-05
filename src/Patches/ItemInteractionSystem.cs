@@ -59,58 +59,30 @@ namespace QM_PathOfQuasimorph.Core
                     return true;
                 }
 
+                var ampRec = repair.Record<AmplifierRecord>();
+                var recombRec = repair.Record<RecombinatorRecord>();
+                Plugin.Logger.Log($"ampRec null {ampRec == null} {ampRec}");
+                Plugin.Logger.Log($"recombRec null {recombRec == null} {recombRec}");
+
                 if (!repair.Is<AmplifierRecord>() && !repair.Is<RecombinatorRecord>())
                 {
                     return true;
                 }
 
-                if (target.Is<ImplantRecord>() || target.Is<AugmentationRecord>() || target.Is<ResistRecord>() || target.Is<WeaponRecord>())
+                if (target.Is<AmmoRecord>() || target.Is<ImplantRecord>() || target.Is<AugmentationRecord>() || target.Is<ResistRecord>() || target.Is<WeaponRecord>())
                 {
-                    RepairRecord repairRecord = repair.Record<RepairRecord>();
-                    Plugin.Logger.Log($"target.Is<RepairRecord>() {repair.Is<RepairRecord>()}");
 
-                    if (!repairRecord.IsValidCategory(target))
+
+                    if (ampRec != null)
                     {
-                        Plugin.Logger.Log($"Invalid category");
-
-                        // Do original method
-                        return true;
+                        return PathOfQuasimorph.amplifierController.ApplyAmplifier(ref target, repair, ampRec, ref __result);
                     }
 
-                    if (repair.Is<AmplifierRecord>() && PathOfQuasimorph.itemRecordsControllerPoq.ChangeRecordFromAmplifier(target, repair))
+                    if (recombRec != null)
                     {
-                        Plugin.Logger.Log($"ChangeRecordFromAmplifier Do");
-                        ItemInteractionSystem.ConsumeItem(repair);
-                        __result = true;
-                        return false;
-                    }
-
-                    RecombinatorRecord recombinatorRecord = repair.Record<RecombinatorRecord>();
-                    Plugin.Logger.Log($"recombinatorRecord null {recombinatorRecord == null}");
-
-                    if (recombinatorRecord != null)
-                    {
-                        Plugin.Logger.Log($"RecombinatorType  {recombinatorRecord.RecombinatorType}");
-
-                        if (recombinatorRecord.RecombinatorType == RecombinatorType.WeaponTraits)
-                        {
-                            Plugin.Logger.Log($"ReplaceWeaponTraits Do");
-                            PickupItem item = target as PickupItem;
-
-                            if (PathOfQuasimorph.itemRecordsControllerPoq.ReplaceWeaponTraits(target, repair))
-                            {
-                                ItemInteractionSystem.ConsumeItem(repair);
-                                __result = true;
-                                return false;
-                            }
-                   
-                        }
-
-                        __result = true;
-                        return false;
+                        return PathOfQuasimorph.recombinatorController.ApplyRecombinator(target, repair, ref __result);
                         // && PathOfQuasimorph.itemRecordsControllerPoq.ChangeRecordFromAmplifier(target, repair)
                     }
-
                 }
 
                 // Do original method

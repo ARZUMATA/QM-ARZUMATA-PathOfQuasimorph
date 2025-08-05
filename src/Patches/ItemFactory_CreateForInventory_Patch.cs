@@ -49,11 +49,6 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
 
-                if (AmplifierController.IsAmplifier(itemId))
-                {
-                    return true;
-                }
-
                 //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 // No more magnum projects
@@ -150,7 +145,7 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     // Create new item record
-                    itemId = PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemId, mobRarityBoost);
+                    itemId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(itemId, mobRarityBoost);
                 }
 
                 return true;  // Allow original method.

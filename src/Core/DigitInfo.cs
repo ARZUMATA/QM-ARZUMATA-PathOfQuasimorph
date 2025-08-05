@@ -44,6 +44,11 @@ namespace QM_PathOfQuasimorph.Core
             return $"{LeftPart}{SerializedStorage:D1}{BoostedParam:D2}{UnusedData2:D2}{Rarity:D1}";
         }
 
+        public static DigitInfo GetRandomDigits()
+        {
+            return GetDigits(Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters());
+        }
+
         // Safe, low-allocation parser
         public static DigitInfo GetDigits(long ticks)
         {

@@ -28,6 +28,7 @@ namespace QM_PathOfQuasimorph.Core
         internal static ItemRecordsControllerPoq itemRecordsControllerPoq = new ItemRecordsControllerPoq();
         private static TooltipGeneratorPoq tooltipGeneratorPoq = new TooltipGeneratorPoq();
         internal static AmplifierController amplifierController = new AmplifierController();
+        internal static RecombinatorController recombinatorController = new RecombinatorController();
         public static RaritySystem raritySystem = new RaritySystem();
         internal static DungeonGameMode dungeonGameMode = null;
         internal static GameCamera gameCamera = null;

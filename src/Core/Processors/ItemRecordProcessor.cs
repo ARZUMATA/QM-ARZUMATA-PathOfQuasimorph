@@ -143,5 +143,63 @@ namespace QM_PathOfQuasimorph.Core.Processors
         //protected abstract void SetWeight(float value);
         //protected abstract int GetMaxDurability();
         //protected abstract void SetMaxDurability(int value);
+
+        // internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count
+        internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count, List<HashSet<string>> exclusiveGroups = null)
+        {
+            var availableTraits = traitWeights
+                .Where(t => t.Value > 0) // Skip traits with 0 or negative weight
+                .ToDictionary(t => t.Key, t => t.Value);
+
+            // Normalize exclusiveGroups to avoid null checks
+            var groups = exclusiveGroups;
+
+            if (groups == null)
+            {
+                groups = new List<HashSet<string>>();
+            }
+
+            var selected = new List<string>();
+
+            // for (int i = 0; i < count && availableTraits.Count > 0; i++)
+            // {
+            //     string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
+            //     selected.Add(selectedTrait);
+
+            //     // Remove already selected trait to prevent duplicates
+            //     availableTraits = availableTraits
+            //         .Where(t => t.Key != selectedTrait)
+            //         .ToDictionary(t => t.Key, t => t.Value);
+            // }
+
+
+            while (selected.Count < count && availableTraits.Count > 0)
+            {
+                // Select one trait using weighted randomness
+                string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
+                selected.Add(selectedTrait);
+
+                // Remove the selected trait from pool
+                availableTraits.Remove(selectedTrait);
+
+                // Remove all conflicting traits from the same exclusive group
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    var group = groups[i];
+                    if (group.Contains(selectedTrait))
+                    {
+                        // Remove all members of this group from available traits
+                        foreach (var conflict in group)
+                        {
+                            availableTraits.Remove(conflict);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return selected;
+        }
+
     }
 }

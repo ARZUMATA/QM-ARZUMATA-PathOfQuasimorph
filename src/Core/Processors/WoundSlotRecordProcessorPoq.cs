@@ -294,7 +294,9 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 _logger.Log($"itemRarity {itemRarity}");
                 _logger.Log($"finishTime.Ticks.ToString() {finishTime.Ticks.ToString()}");
 
-                return PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemRecord.BareHandWeapon, mobRarityBoost, itemRarity, finishTime.Ticks.ToString());
+                // We need just add record as CreatureSystem.SetBareHandSlot creates item for us.
+
+                return PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(itemRecord.BareHandWeapon, mobRarityBoost, itemRarity, finishTime.Ticks.ToString());
             }
 
             return string.Empty;

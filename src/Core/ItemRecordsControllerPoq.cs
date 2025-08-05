@@ -20,6 +20,7 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal class ItemRecordsControllerPoq
     {
+        internal AmmoRecordProcessorPoq ammoRecordProcessorPoq;
         internal AugmentationRecordProcessorPoq augmentationRecordProcessorPoq;
         internal ImplantRecordProcessorPoq implantRecordProcessorPoq;
         internal WeaponRecordProcessorPoq weaponRecordProcessorPoq;
@@ -34,6 +35,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal ItemRecordsControllerPoq()
         {
+            ammoRecordProcessorPoq = new AmmoRecordProcessorPoq(this);
             augmentationRecordProcessorPoq = new AugmentationRecordProcessorPoq(this);
             implantRecordProcessorPoq = new ImplantRecordProcessorPoq(this);
             weaponRecordProcessorPoq = new WeaponRecordProcessorPoq(this);
@@ -44,9 +46,9 @@ namespace QM_PathOfQuasimorph.Core
             woundSlotRecordProcessorPoq = new WoundSlotRecordProcessorPoq(this);
         }
 
-        internal string CreateNew(string itemIdOrigin, bool mobRarityBoost)
+        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, bool ignoreBlacklist = false)
         {
-            _logger.Log($"CreateNew");
+            _logger.Log($"InterceptAndReplaceItemId");
 
             var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
             _logger.Log($"\t itemRarity {itemRarity}");
@@ -64,36 +66,38 @@ namespace QM_PathOfQuasimorph.Core
             //    return itemIdOrigin;
             //}
 
-            if (!PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
+            if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
             {
                 _logger.Log($"\t CanProcessItemRecord FALSE, returning generic");
                 return itemIdOrigin;
             }
 
-            // Generate a new UID
-            var randomUid = Helpers.UniqueIDGenerator.GenerateRandomIDWith16Characters();
-            DigitInfo digits = DigitInfo.GetDigits(randomUid);
+          
+            return InterceptAndReplaceItemId(itemIdOrigin, mobRarityBoost, itemRarity);
+        }
+
+        private string GenerateUid(ItemRarity itemRarity)
+        {
+            DigitInfo digits = DigitInfo.GetRandomDigits();
             digits.FillZeroes();
             digits.Rarity = (int)itemRarity;
             var randomUidInjected = digits.ReturnUID();
 
             _logger.Log($"\t randomUidInjected: {randomUidInjected}");
-
-
-            return CreateNew(itemIdOrigin, mobRarityBoost, itemRarity, randomUidInjected);
+            return randomUidInjected;
         }
 
-        internal string CreateNew(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected)
+        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected = null)
         {
-            // Resulting UID
-            var wrapper = new MetadataWrapper(
-                 id: itemIdOrigin,
-                 poqItem: true,
-                 startTime: new DateTime(MagnumPoQProjectsController.MAGNUM_PROJECT_START_TIME),
-                 finishTime: new DateTime(Int64.Parse(randomUidInjected))
-                 );
+            // Generate a new UID
+            if (randomUidInjected == null)
+            {
+                randomUidInjected = GenerateUid(itemRarity);
+            }
 
-            var newId = wrapper.ReturnItemUid();
+            MetadataWrapper wrapper;
+            string newId;
+            GetNewId(itemIdOrigin, randomUidInjected, out wrapper, out newId);
 
             _logger.Log($"\t newId: {newId}");
 
@@ -181,6 +185,18 @@ namespace QM_PathOfQuasimorph.Core
             RaritySystem.AddAffixes(newId);
 
             return newId;
+        }
+
+        private static void GetNewId(string itemIdOrigin, string randomUidInjected, out MetadataWrapper wrapper, out string newId)
+         {
+            // Resulting UID
+            wrapper = new MetadataWrapper(
+                 id: itemIdOrigin,
+                 poqItem: true,
+                 startTime: new DateTime(MagnumPoQProjectsController.MAGNUM_PROJECT_START_TIME),
+                 finishTime: new DateTime(Int64.Parse(randomUidInjected))
+                 );
+            newId = wrapper.ReturnItemUid();
         }
 
         public string GetItemBoostedString(string itemId)
@@ -295,6 +311,18 @@ namespace QM_PathOfQuasimorph.Core
                     augmentationRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(augmentationRecordNew);
                 }
+
+                AmmoRecord ammoRecord = basePickupItemRecord as AmmoRecord;
+
+                if (ammoRecord != null)
+                {
+                    _logger.Log($"augmentationRecord processing");
+
+                    AmmoRecord ammoRecordNew = ItemRecordHelpers.CloneAmmoRecord(ammoRecord, itemId);
+                    ammoRecordProcessorPoq.Init(ammoRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    ammoRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    records.Add(ammoRecordNew);
+                }
             }
         }
 
@@ -404,6 +432,10 @@ namespace QM_PathOfQuasimorph.Core
 
                 switch (recordType.Name)
                 {
+                    case nameof(AmmoRecord):
+                        // We don't process ammo records, every unloaded shell is a new item so no reason.
+                        canProcess = false;
+                        break;
                     case nameof(WeaponRecord):
                         // Check weapon record first
                         checkWeaponRecord = true;
@@ -472,89 +504,6 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             return canProcess;
-        }
-
-        internal bool ChangeRecordFromAmplifier(BasePickupItem target, BasePickupItem repair)
-        {
-            _logger.Log($"ChangeRecordFromAmplifier");
-
-            var hasKey = RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out MetadataWrapper metadata);
-            var ampRecord = repair.Record<AmplifierRecord>();
-
-            if (!hasKey || !metadata.PoqItem)
-            {
-                _logger.Log($"ChangeRecordFromAmplifier: Failure!");
-
-                return false;
-            }
-
-            CompositeItemRecord obj = Data.Items.GetRecord(target.Id) as CompositeItemRecord;
-
-            foreach (BasePickupItemRecord basePickupItemRecord in obj.Records)
-            {
-                WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
-
-                if (weaponRecord != null)
-                {
-                    _logger.Log($"weaponRecord processing");
-
-                    weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
-                    weaponRecordProcessorPoq.Reroll(ampRecord, metadata);
-                }
-            }
-
-            _logger.Log($"ChangeRecordFromAmplifier: Success!");
-
-            return true;
-        }
-
-        internal bool ReplaceWeaponTraits(BasePickupItem target, BasePickupItem repair)
-        {
-            _logger.Log($"ReplaceWeaponTraits");
-
-            var hasKey = RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out MetadataWrapper metadata);
-            var recombRecord = repair.Record<RecombinatorRecord>();
-
-            if (!hasKey || !metadata.PoqItem)
-            {
-                _logger.Log($"ReplaceWeaponTraits: Failure! hasKey / PoqItem");
-                return false;
-            }
-
-            CompositeItemRecord obj = Data.Items.GetRecord(target.Id) as CompositeItemRecord;
-
-            foreach (BasePickupItemRecord basePickupItemRecord in obj.Records)
-            {
-                WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
-
-                if (weaponRecord != null)
-                {
-                    _logger.Log($"weaponRecord processing");
-
-                    weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
-                    weaponRecordProcessorPoq.ReplaceWeaponTraits(recombRecord, metadata);
-
-                    var weaponComponent = target.Comp<WeaponComponent>();
-
-                    if (weaponComponent != null)
-                    {
-                        weaponComponent.Traits.Clear();
-                        foreach (var trait in weaponRecord.Traits)
-                        {
-                            weaponComponent.Traits.Add(ItemTraitSystem.CreateItemTrait(trait));
-                        }
-                        _logger.Log($"ReplaceWeaponTraits: Success!");
-
-                        return true;
-                    }
-                }
-            }
-
-
-
-
-            _logger.Log($"ReplaceWeaponTraits: Failure!");
-            return false;
         }
     }
 }

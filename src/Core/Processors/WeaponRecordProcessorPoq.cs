@@ -285,27 +285,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             return selectedTraits;
         }
 
-        private List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count)
-        {
-            var availableTraits = traitWeights
-                .Where(t => t.Value > 0) // Skip traits with 0 or negative weight
-                .ToDictionary(t => t.Key, t => t.Value);
-
-            var selected = new List<string>();
-
-            for (int i = 0; i < count && availableTraits.Count > 0; i++)
-            {
-                string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
-                selected.Add(selectedTrait);
-
-                // Remove already selected trait to prevent duplicates
-                availableTraits = availableTraits
-                    .Where(t => t.Key != selectedTrait)
-                    .ToDictionary(t => t.Key, t => t.Value);
-            }
-
-            return selected;
-        }
+        
 
         private void AddUnbreakableTrait()
         {
