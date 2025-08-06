@@ -2,9 +2,9 @@
 using QM_PathOfQuasimorph.Core.Records;
 using System;
 using System.Collections.Generic;
-using System.IO.Ports;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -236,14 +236,12 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         _logger.Log($"weaponRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord2, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
-                            PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata);
                         __result = true;
                     }
                 }
             }
         }
-
-
 
         private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair)
         {
@@ -271,16 +269,64 @@ namespace QM_PathOfQuasimorph.Core
         {
             Plugin.Logger.Log($"CopyFromOld");
             var pickupItemNew = newItem as PickupItem;
+            var pickupItemOld = oldItem as PickupItem;
 
-            foreach (PickupItemComponent comp in pickupItemNew.Components)
+            if (pickupItemNew == null || pickupItemOld == null)
             {
-                StackableItemComponent stackableItemComponent = comp as StackableItemComponent;
-                var oldStackableItemComponent = oldItem.Comp<StackableItemComponent>();
+                return;
+            }
 
-                if (stackableItemComponent != null)
+            foreach (PickupItemComponent newComp in pickupItemNew.Components)
+            {
+                // Find old component with same concrete type
+                var oldComp = pickupItemOld.Components
+                    .FirstOrDefault(c => c?.GetType() == newComp.GetType());
+
+                if (oldComp == null) continue;
+
+                // Copy all [Save]-marked properties
+                CopySaveFieldsFrom(newComp, oldComp);
+            }
+        }
+
+        private static void CopySaveFieldsFrom(PickupItemComponent target, PickupItemComponent source)
+        {
+            if (source == null || target == null) return;
+
+            Type type = target.GetType();
+            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (PropertyInfo prop in properties)
+            {
+                // Skip if not marked with [Save]
+                if (!Attribute.IsDefined(prop, typeof(Save))) continue;
+                if (!prop.CanRead || !prop.CanWrite) continue;
+
+                Type propType = prop.PropertyType;
+
+                // Ignore string
+                //if (propType == typeof(string))
+                //    continue;
+
+                // Ignore List<T>
+                if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(List<>))
+                    continue;
+
+                // Ignore Dictionary<TKey, TValue>
+                if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+                    continue;
+
+                // Optionally: ignore other collections? e.g. HashSet<T>, arrays?
+                // Add more if needed.
+
+                try
                 {
-                    stackableItemComponent.Count = oldStackableItemComponent.Count;
-                    stackableItemComponent.Max = oldStackableItemComponent.Max;
+                    object value = prop.GetValue(source);
+                    prop.SetValue(target, value);
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Logger.Log($"Failed to copy {prop.Name}: {ex.Message}");
                 }
             }
         }
