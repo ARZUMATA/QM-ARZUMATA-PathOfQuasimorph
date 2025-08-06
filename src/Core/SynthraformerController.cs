@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using UnityEngine;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -14,47 +15,12 @@ namespace QM_PathOfQuasimorph.Core
         private static Sprite[] sprites = Helpers.LoadSpritesFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph");
         private static Logger _logger = new Logger(null, typeof(SynthraformerController));
 
-        private static readonly Dictionary<Type, Action<ItemRecord, MetadataWrapper>> _initializers = new Dictionary<Type, Action<ItemRecord, MetadataWrapper>>();
-
         public enum SynthraformerType
         {
             Amplifier,
             Traits,
             RandomRarity,
             Indestructible,
-        }
-
-        static SynthraformerController()
-        {
-            RegisterInitializer<WeaponRecord>((r, m) =>
-                PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(r, m.RarityClass, false, false, m.Id, m.ReturnItemUid()));
-
-            RegisterInitializer<ArmorRecord>((r, m) =>
-                PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.Init(r, m.RarityClass, false, false, m.Id, m.ReturnItemUid()));
-
-            RegisterInitializer<HelmetRecord>((r, m) =>
-                PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.Init(r, m.RarityClass, false, false, m.Id, m.ReturnItemUid()));
-
-            RegisterInitializer<LeggingsRecord>((r, m) =>
-                PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.Init(r, m.RarityClass, false, false, m.Id, m.ReturnItemUid()));
-
-            RegisterInitializer<BootsRecord>((r, m) =>
-                PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.Init(r, m.RarityClass, false, false, m.Id, m.ReturnItemUid()));
-
-            RegisterInitializer<AmmoRecord>((r, m) =>
-                PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(r, m.RarityClass, false, false, m.Id, m.ReturnItemUid()));
-
-            foreach (var s in sprites)
-            {
-                _logger.Log($"SynthraformerController sprites available: {s.name}");
-            }
-
-        }
-
-        private static void RegisterInitializer<T>(Action<T, MetadataWrapper> initAction)
-            where T : ItemRecord
-        {
-            _initializers[typeof(T)] = (record, meta) => initAction((T)record, meta);
         }
 
         public static void AddItems()
@@ -89,6 +55,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             return $"{nameBase}_0";
         }
+
         private static void CreateItem(SynthraformerType type)
         {
             var itemId = $"{nameBase}_{(int)type}";
@@ -97,16 +64,22 @@ namespace QM_PathOfQuasimorph.Core
             ItemProduceReceipt itemRecipe = new ItemProduceReceipt();
             itemRecipe.RequiredItems = new List<ItemQuantity>();
 
-            var record = new SynthraformerRecord();
-            record.Id = itemId;
-            record.Categories = new List<string>();
-            record.TechLevel = 1;
-            record.Price = 0;
-            record.Weight = 0;
-            record.InventoryWidthSize = 1;
-            record.ItemClass = ItemClass.Parts;
-            record.RepairSpecialRule = RepairSpecialRule.All;
+            var record = new SynthraformerRecord
+            {
+                Id = itemId,
+                Categories = new List<string>(),
+                TechLevel = 1,
+                Price = 0,
+                Weight = 0,
+                InventoryWidthSize = 1,
+                ItemClass = ItemClass.Parts,
+                RepairSpecialRule = RepairSpecialRule.All,
+                MaxStack = 100,
+                UsageCost = 1,
+                MaxUsage = 1,
+                Type = type
 
+            };
             switch (type)
             {
                 case SynthraformerType.Amplifier:
@@ -138,11 +111,6 @@ namespace QM_PathOfQuasimorph.Core
                     break;
             }
 
-            record.MaxStack = 100;
-            record.UsageCost = 1;
-            record.MaxUsage = 1;
-            record.Type = type;
-
             RepairDescriptor descriptor = ScriptableObject.CreateInstance("RepairDescriptor") as RepairDescriptor;
             Sprite icon = System.Array.Find(sprites, s => s.name == $"synthraformer_poq_icons_{((int)type)}");
 
@@ -159,25 +127,13 @@ namespace QM_PathOfQuasimorph.Core
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
         }
 
-        internal string GetNameFromRarity(ItemRarity itemRarity)
-        {
-            return $"{nameBase}_{itemRarity.ToString().ToLower()}";
-        }
-
-        public void Apply(ref BasePickupItem target, BasePickupItem repair, SynthraformerRecord record, ref bool __result)
+        public void Apply(BasePickupItem target, BasePickupItem repair, SynthraformerRecord record, ref bool __result)
         {
             Plugin.Logger.Log($"Apply");
 
-            // We replace item instead changing records and copy some item data to keep stuff like loaded ammo / durability etc.
-            DragController drag = UI.Drag;
-
             var targetItem = target as PickupItem;
 
-            var hasMetadata = RecordCollection.MetadataWrapperRecords.TryGetValue(targetItem.Id, out var metadata);
-
-            Plugin.Logger.Log($"hasMetadata: {hasMetadata}");
-
-            if (!hasMetadata)
+            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(targetItem.Id, out var metadata))
             {
                 metadata = MetadataWrapper.SplitItemUid(targetItem.Id);
             }
@@ -185,20 +141,21 @@ namespace QM_PathOfQuasimorph.Core
             if (metadata.RarityClass == ItemRarity.Standard)
             {
                 Plugin.Logger.Log($"Synthraformer Apply : metadata.RarityClass == ItemRarity.Standard");
-                __result = CreateNewItem(targetItem, repair, ref __result, drag);
+                __result = CreateNewItem(targetItem, repair);
             }
 
             if (record.Type == SynthraformerType.Amplifier)
             {
                 foreach (var basePickupItemRecord in targetItem.Records)
                 {
-
                     WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
 
                     if (weaponRecord != null)
                     {
                         _logger.Log($"weaponRecord processing");
-                        ApplyWeaponRecord(targetItem, repair, ref __result, drag, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        __result = true;
                     }
 
                     HelmetRecord helmetRecord = basePickupItemRecord as HelmetRecord;
@@ -206,7 +163,8 @@ namespace QM_PathOfQuasimorph.Core
                     if (helmetRecord != null)
                     {
                         _logger.Log($"helmetRecord processing");
-                        ApplyHelmetRecord(targetItem, repair, ref __result, drag, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.Init(helmetRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.RerollRandomStat(record, metadata);
                     }
 
                     ArmorRecord armorRecord = basePickupItemRecord as ArmorRecord;
@@ -214,7 +172,8 @@ namespace QM_PathOfQuasimorph.Core
                     if (armorRecord != null)
                     {
                         _logger.Log($"armorRecord processing");
-                        ApplyArmorRecord(targetItem, repair, ref __result, drag, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.Init(armorRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.RerollRandomStat(record, metadata);
                     }
 
                     LeggingsRecord leggingsRecord = basePickupItemRecord as LeggingsRecord;
@@ -222,7 +181,8 @@ namespace QM_PathOfQuasimorph.Core
                     if (leggingsRecord != null)
                     {
                         _logger.Log($"leggingsRecord processing");
-                        ApplyLeggingsRecord(targetItem, repair, ref __result, drag, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.Init(leggingsRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.RerollRandomStat(record, metadata);
                     }
 
                     BootsRecord bootsRecord = basePickupItemRecord as BootsRecord;
@@ -230,7 +190,8 @@ namespace QM_PathOfQuasimorph.Core
                     if (bootsRecord != null)
                     {
                         _logger.Log($"bootsRecord processing");
-                        ApplyBootsRecord(targetItem, repair, ref __result, drag, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.Init(bootsRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.RerollRandomStat(record, metadata);
                     }
 
                     BreakableItemRecord breakableItemRecord = basePickupItemRecord as BreakableItemRecord;
@@ -245,7 +206,6 @@ namespace QM_PathOfQuasimorph.Core
                     if (implantRecord != null)
                     {
                         _logger.Log($"implantRecord processing");
-                        ApplyImplantRecord(targetItem, repair, ref __result, drag, metadata);
                     }
 
                     AugmentationRecord augmentationRecord = basePickupItemRecord as AugmentationRecord;
@@ -253,7 +213,6 @@ namespace QM_PathOfQuasimorph.Core
                     if (augmentationRecord != null)
                     {
                         _logger.Log($"augmentationRecord processing");
-                        ApplyAugmentationRecord(targetItem, repair, ref __result, drag, metadata);
                     }
 
                     AmmoRecord ammoRecord = basePickupItemRecord as AmmoRecord;
@@ -261,163 +220,32 @@ namespace QM_PathOfQuasimorph.Core
                     if (ammoRecord != null)
                     {
                         _logger.Log($"augmentationRecord processing");
-                        ApplyAmmoRecord(targetItem, repair, ref __result, drag, metadata);
-
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollRandomStat(record, metadata);
                     }
                 }
-
-                return;
             }
 
             if (record.Type == SynthraformerType.Traits)
             {
-                var weaponRecord = targetItem.Record<WeaponRecord>();
-
-                if (weaponRecord != null)
+                foreach (var basePickupItemRecord in targetItem.Records)
                 {
-                    if (PathOfQuasimorph.synthraformerController.ProcessAction<WeaponRecord>(
-                        targetItem,
-                        repair,
-                        (recomb, meta) =>
-                        {
-                            PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(recomb, meta);
-                        }))
+                    WeaponRecord weaponRecord2 = basePickupItemRecord as WeaponRecord;
+
+                    if (weaponRecord2 != null)
                     {
-                        var weaponComponent = targetItem.Comp<WeaponComponent>();
-
-                        ItemInteractionSystem.ConsumeItem(repair);
-
-                        // Also replace traits on actual weapon
-
-                        weaponComponent.Traits.Clear();
-
-                        foreach (var trait in weaponRecord.Traits)
-                        {
-                            weaponComponent.Traits.Add(ItemTraitSystem.CreateItemTrait(trait));
-                        }
-
+                        _logger.Log($"weaponRecord processing");
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord2, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                            PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata);
                         __result = true;
                     }
                 }
-
-                return;
             }
         }
 
-        private void ApplyImplantRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : ImplantRecord");
-        }
 
-        private void ApplyAugmentationRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : AugmentationRecord");
 
-        }
-
-        private void ApplyBootsRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : BootsRecord");
-
-            if (PathOfQuasimorph.synthraformerController.ProcessAction<BootsRecord>(
-                target,
-                repair,
-                (recomb, meta) =>
-                {
-                    PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.RerollRandomStat(recomb, meta);
-                }))
-            {
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
-            }
-        }
-
-        private void ApplyLeggingsRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : LeggingsRecord");
-
-            if (PathOfQuasimorph.synthraformerController.ProcessAction<LeggingsRecord>(
-                target,
-                repair,
-                (recomb, meta) =>
-                {
-                    PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.RerollRandomStat(recomb, meta);
-                }))
-            {
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
-            }
-        }
-
-        private void ApplyArmorRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : ArmorRecord");
-
-            if (PathOfQuasimorph.synthraformerController.ProcessAction<ArmorRecord>(
-                target,
-                repair,
-                (recomb, meta) =>
-                {
-                    PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.RerollRandomStat(recomb, meta);
-                }))
-            {
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
-            }
-        }
-
-        private void ApplyHelmetRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : HelmetRecord");
-
-            if (PathOfQuasimorph.synthraformerController.ProcessAction<HelmetRecord>(
-              target,
-              repair,
-              (recomb, meta) =>
-              {
-                  PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.RerollRandomStat(recomb, meta);
-              }))
-            {
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
-            }
-        }
-
-        private static void ApplyWeaponRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : WeaponRecord");
-
-            if (PathOfQuasimorph.synthraformerController.ProcessAction<WeaponRecord>(
-                target,
-                repair,
-                (recomb, meta) =>
-                {
-                    PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(recomb, meta);
-                }))
-            {
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
-            }
-        }
-
-        private static void ApplyAmmoRecord(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag, MetadataWrapper metadata)
-        {
-            Plugin.Logger.Log($"Synthraformer Apply : AmmoRecord");
-
-            if (PathOfQuasimorph.synthraformerController.ProcessAction<AmmoRecord>(
-                target,
-                repair,
-                (recomb, meta) =>
-                {
-                    PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollRandomStat(recomb, meta);
-                }))
-            {
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
-            }
-        }
-
-        private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, ref bool __result, DragController drag)
+        private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair)
         {
             Plugin.Logger.Log($"Synthraformer CreateNewItem");
 
@@ -428,21 +256,20 @@ namespace QM_PathOfQuasimorph.Core
             Plugin.Logger.Log($"oldItem {target.Id}");
             Plugin.Logger.Log($"newItem {newItem.Id}");
 
-            if (drag.SlotUnderCursor._itemStorage.SwitchItems(target, newItem))
+            if (UI.Drag.SlotUnderCursor._itemStorage.SwitchItems(target, newItem))
             {
                 Plugin.Logger.Log($"SwitchItems OK");
 
-                ProcessItem(target, newItem);
-                ItemInteractionSystem.ConsumeItem(repair);
-                __result = true;
+                CopyFromOld(target, newItem);
+                return true;
             }
 
-            return __result;
+            return false;
         }
 
-        private static void ProcessItem(BasePickupItem oldItem, BasePickupItem newItem)
+        private static void CopyFromOld(BasePickupItem oldItem, BasePickupItem newItem)
         {
-            Plugin.Logger.Log($"ProcessItem");
+            Plugin.Logger.Log($"CopyFromOld");
             var pickupItemNew = newItem as PickupItem;
 
             foreach (PickupItemComponent comp in pickupItemNew.Components)
@@ -456,68 +283,6 @@ namespace QM_PathOfQuasimorph.Core
                     stackableItemComponent.Max = oldStackableItemComponent.Max;
                 }
             }
-        }
-
-        internal bool ProcessAction<TRecord>(
-            BasePickupItem target,
-            BasePickupItem repair,
-            Action<SynthraformerRecord, MetadataWrapper> processorAction)
-            where TRecord : ItemRecord
-        {
-            _logger.Log($"ProcessAction<{typeof(TRecord).Name}>: Invoked");
-
-            // Validate metadata
-            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out MetadataWrapper metadata) ||
-                !metadata.PoqItem)
-            {
-                _logger.Log("ProcessAction: Failed - Missing metadata or not PoqItem");
-                return false;
-            }
-
-            // Get composite record
-            var composite = Data.Items.GetRecord(target.Id) as CompositeItemRecord;
-            if (composite == null)
-            {
-                _logger.Log("ProcessAction: Failed - No CompositeItemRecord found");
-                return false;
-            }
-
-            var recombRecord = repair.Record<SynthraformerRecord>();
-
-            foreach (var record in composite.Records)
-            {
-                if (record is TRecord targetRecord)
-                {
-                    _logger.Log($"Processing {typeof(TRecord).Name} with {processorAction.Method.Name}");
-
-                    // Generic Init: Call appropriate processor based on TRecord
-                    if (!InitializeRecordProcessor<TRecord>(targetRecord, metadata))
-                    {
-                        _logger.Log($"Init failed for {typeof(TRecord).Name}");
-                        return false;
-                    }
-
-                    // Execute the action
-                    processorAction(recombRecord, metadata);
-                    return true;
-                }
-            }
-
-            _logger.Log($"No valid {typeof(TRecord).Name} pair found");
-            return false;
-        }
-
-        private bool InitializeRecordProcessor<TRecord>(TRecord record, MetadataWrapper metadata)
-      where TRecord : ItemRecord
-        {
-            if (_initializers.TryGetValue(typeof(TRecord), out var initializer))
-            {
-                initializer(record, metadata);
-                return true;
-            }
-
-            _logger.Log($"No initializer registered for record type: {typeof(TRecord).Name}");
-            return false;
         }
     }
 }
