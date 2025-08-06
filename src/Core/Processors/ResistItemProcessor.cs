@@ -55,11 +55,25 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
+            float averageResist;
+            bool averageResistApplied;
+            GetAverageResists(out averageResist, out averageResistApplied);
+
+            // Apply modifiers
+            foreach (var stat in parameters)
+            {
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
+                ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
+            }
+        }
+
+        private void GetAverageResists(out float averageResist, out bool averageResistApplied)
+        {
             // Get average resist for armor
-            float averageResist = 0;
+            averageResist = 0;
             int resistCount = 0;
             var resistSheet = itemRecord.ResistSheet;
-            bool averageResistApplied = false;
+            averageResistApplied = false;
 
             _logger.Log($"\t\t\t\t itemRecord null {itemRecord == null}");
             _logger.Log($"\t\t\t\t resistSheet null {resistSheet == null}");
@@ -74,13 +88,6 @@ namespace QM_PathOfQuasimorph.Core.Processors
             averageResist = resistCount > 0 ? (float)Math.Round(averageResist / resistCount, 2) : 0f;
             averageResist = Math.Max(averageResist, 1.0f); // Ensure average resist is at least 1.0
             _logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
-
-            // Apply modifiers
-            foreach (var stat in parameters)
-            {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
-                ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
-            }
         }
 
         private void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat)
@@ -93,6 +100,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             {
                 var resistName = stat.Key.Split('_')[1];
                 var resistValue = itemRecord.GetResist(resistName);
+                _logger.Log($"\t\t\t resist {resistName} with original value: {resistValue}");
 
                 if (resistValue == 0)
                 {
@@ -156,13 +164,14 @@ namespace QM_PathOfQuasimorph.Core.Processors
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
+            float averageResist;
+            bool averageResistApplied;
+            GetAverageResists(out averageResist, out averageResistApplied);
+
             var statIdx = Helpers._random.Next(0, parameters.Count);
             var stat = parameters.ElementAt(statIdx);
 
             finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-
-            float averageResist = 0;
-            bool averageResistApplied = true;
 
             ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
         }

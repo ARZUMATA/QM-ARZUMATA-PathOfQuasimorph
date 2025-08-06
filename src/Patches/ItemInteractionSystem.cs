@@ -79,7 +79,13 @@ namespace QM_PathOfQuasimorph.Core
                     if (synthraformerRecord.IsValidTarget((PickupItem)target, synthraformerRecord))
                     {
                         Plugin.Logger.Log($"synthraformerRecord IsValidTarget");
-                        PathOfQuasimorph.synthraformerController.Apply(ref target, repair, synthraformerRecord, ref __result);
+                        PathOfQuasimorph.synthraformerController.Apply(target, repair, synthraformerRecord, ref __result);
+
+                        if (__result)
+                        {
+                            ItemInteractionSystem.ConsumeItem(repair);
+
+                        }
                     }
 
                     return false;
