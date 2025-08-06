@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using static UnityEngine.UI.Image;
 using Type = System.Type;
@@ -30,15 +31,22 @@ namespace QM_PathOfQuasimorph.Core
                     return true;
                 }
 
-                if (target.Comp<BreakableItemComponent>() == null || !repair.Is<SynthraformerRecord>() || target.Locked)
+                if (!repair.Is<SynthraformerRecord>() || target.Locked)
                 {
                     // Do original method
                     return true;
                 }
+                else
+                {
+                    Plugin.Logger.Log($"ItemInteractionSystem_CanRepair_Patch");
 
-                RepairRecord repairRecord = repair.Record<RepairRecord>();
-                __result = repairRecord.IsValidCategory(target);// || breakableItemRecord.RepairItemIds.Contains(repairRecord.Id);
-                return false;
+                    RepairRecord repairRecord = repair.Record<RepairRecord>();
+                    SynthraformerRecord synthraformerRecord = repair.Record<SynthraformerRecord>();
+                    __result = synthraformerRecord.IsValidTarget((PickupItem)target, synthraformerRecord);
+                    //__result = repairRecord.IsValidCategory(target);
+
+                    return false;
+                }
             }
         }
 
@@ -58,24 +66,24 @@ namespace QM_PathOfQuasimorph.Core
                     return true;
                 }
 
-                var ampRec = repair.Record<SynthraformerRecord>();
-                Plugin.Logger.Log($"ampRec null {ampRec == null} {ampRec}");
+                var synthraformerRecord = repair.Record<SynthraformerRecord>();
+                Plugin.Logger.Log($"synthraformerRecord null {synthraformerRecord == null} synthraformerRecord:{synthraformerRecord}");
+                Plugin.Logger.Log($"synthraformerRecord repair.id {repair.Id}");
 
-                if (!repair.Is<SynthraformerRecord>())
+                if (synthraformerRecord == null)
                 {
                     return true;
                 }
-
-                if (target.Is<AmmoRecord>() || target.Is<ImplantRecord>() || target.Is<AugmentationRecord>() || target.Is<ResistRecord>() || target.Is<WeaponRecord>())
+                else
                 {
-                    if (ampRec != null)
+                    if (synthraformerRecord.IsValidTarget((PickupItem)target, synthraformerRecord))
                     {
-                        return PathOfQuasimorph.synthraformerController.Apply(ref target, repair, ampRec, ref __result);
+                        Plugin.Logger.Log($"synthraformerRecord IsValidTarget");
+                        PathOfQuasimorph.synthraformerController.Apply(ref target, repair, synthraformerRecord, ref __result);
                     }
-                }
 
-                // Do original method
-                return true;
+                    return false;
+                }
             }
         }
 

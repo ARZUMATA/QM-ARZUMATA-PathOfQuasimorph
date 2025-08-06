@@ -12,7 +12,7 @@ namespace QM_PathOfQuasimorph.Core
             [ThreadStatic]
             public static BasePickupItem Item;
             public static bool Process = false;
-            public static RecombinatorType RecombinatorType;
+            public static SynthraformerType RecombinatorType;
             public static GameLoopGroup GameLoopGroup;
         }
     }

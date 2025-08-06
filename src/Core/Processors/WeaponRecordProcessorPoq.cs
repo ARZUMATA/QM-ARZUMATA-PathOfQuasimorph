@@ -285,8 +285,6 @@ namespace QM_PathOfQuasimorph.Core.Processors
             return selectedTraits;
         }
 
-        
-
         private void AddUnbreakableTrait()
         {
             var canAddUnbreakableTrait = false;
@@ -319,7 +317,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             }
         }
 
-        internal void Reroll(SynthraformerRecord ampRecord, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata)
         {
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
 
@@ -336,35 +334,16 @@ namespace QM_PathOfQuasimorph.Core.Processors
             ApplyStat(finalModifier, increase, stat, genericRecord);
         }
 
-        internal void RerollRarities(WeaponRecord weaponRecord, SynthraformerRecord ampRecord, MetadataWrapper metadata)
-        {
-            itemRarity = ampRecord.Rarity;
-
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
-
-            float baseModifier, finalModifier;
-            int numToHinder, numToImprove, improvedCount, hinderedCount;
-            string boostedParamString;
-            bool increase;
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
-
-            var statIdx = Helpers._random.Next(0, parameters.Count);
-            var stat = parameters.ElementAt(statIdx);
-
-            finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-            ApplyStat(finalModifier, increase, stat, genericRecord);
-        }
-
-        internal void ReplaceWeaponTraits(SynthraformerRecord recomb, MetadataWrapper metadata, WeaponComponent weaponComponent)
+        internal void ReplaceWeaponTraits(SynthraformerRecord recomb, MetadataWrapper metadata)
         {
             ApplyTraits(true);
 
-            weaponComponent.Traits.Clear();
+            //weaponComponent.Traits.Clear();
 
-            foreach (var trait in itemRecord.Traits)
-            {
-                weaponComponent.Traits.Add(ItemTraitSystem.CreateItemTrait(trait));
-            }
+            //foreach (var trait in itemRecord.Traits)
+            //{
+            //    weaponComponent.Traits.Add(ItemTraitSystem.CreateItemTrait(trait));
+            //}
 
             _logger.Log($"ReplaceWeaponTraits: Success!");
         }

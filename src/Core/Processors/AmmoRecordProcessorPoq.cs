@@ -231,7 +231,6 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 itemRecord.Traits.Add(selectedTraits[i]);
             }
         }
-
         private List<string> PrepareTraits(bool removeExisting = false)
         {
             // Allowed traits for item type
@@ -261,6 +260,23 @@ namespace QM_PathOfQuasimorph.Core.Processors
             // Filter all traits if they are not in allowed list (just in case)
             selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
             return selectedTraits;
+        }
+
+        internal void RerollRandomStat(SynthraformerRecord recomb, MetadataWrapper metadata)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
+
+            float baseModifier, finalModifier;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
+            string boostedParamString;
+            bool increase;
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            var statIdx = Helpers._random.Next(0, parameters.Count);
+            var stat = parameters.ElementAt(statIdx);
+
+            finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
+            ApplyStat(finalModifier, increase, stat, genericRecord);
         }
     }
 }

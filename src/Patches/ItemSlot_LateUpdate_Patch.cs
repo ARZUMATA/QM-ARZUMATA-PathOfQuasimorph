@@ -25,7 +25,7 @@ namespace QM_PathOfQuasimorph.Core
                             //Plugin.Logger.Log($"SynthraformerRecord");
                             SynthraformerContext.Item = __instance.Item;
                             SynthraformerContext.Process = true;
-                            SynthraformerContext.RecombinatorType = __instance.Item.Record<SynthraformerRecord>().RecombinatorType;
+                            SynthraformerContext.RecombinatorType = __instance.Item.Record<SynthraformerRecord>().Type;
                         }
                         else
                         {

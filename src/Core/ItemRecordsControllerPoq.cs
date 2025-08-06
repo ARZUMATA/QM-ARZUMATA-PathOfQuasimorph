@@ -72,7 +72,7 @@ namespace QM_PathOfQuasimorph.Core
                 return itemIdOrigin;
             }
 
-          
+
             return InterceptAndReplaceItemId(itemIdOrigin, mobRarityBoost, itemRarity);
         }
 
@@ -179,7 +179,7 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         private static void GetNewId(string itemIdOrigin, string randomUidInjected, out MetadataWrapper wrapper, out string newId)
-         {
+        {
             // Resulting UID
             wrapper = new MetadataWrapper(
                  id: itemIdOrigin,
@@ -307,7 +307,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (ammoRecord != null)
                 {
-                    _logger.Log($"augmentationRecord processing");
+                    _logger.Log($"ammoRecord processing");
 
                     AmmoRecord ammoRecordNew = ItemRecordHelpers.CloneAmmoRecord(ammoRecord, itemId);
                     ammoRecordProcessorPoq.Init(ammoRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
@@ -414,6 +414,11 @@ namespace QM_PathOfQuasimorph.Core
 
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(id, true) as CompositeItemRecord;
 
+            if (compositeItemRecord != null)
+            {
+                return false;
+            }
+
             foreach (var rec in compositeItemRecord.Records)
             {
                 Type recordType = rec.GetType();
@@ -444,6 +449,9 @@ namespace QM_PathOfQuasimorph.Core
                     case nameof(ImplantRecord):
                         checkImplantRecord = true;
                         //canProcess = false;
+                        break;
+                    case nameof(SynthraformerRecord):
+                        canProcess = false;
                         break;
                     default:
                         _logger.Log($"canProcess = false : {recordType.Name}");
