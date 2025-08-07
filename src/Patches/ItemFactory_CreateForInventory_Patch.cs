@@ -113,7 +113,7 @@ namespace QM_PathOfQuasimorph.Core
                 var wrapper = MetadataWrapper.SplitItemUid(itemId);
                 Plugin.Logger.Log($"wrapper == null {wrapper == null}");
 
-                if (wrapper.PoqItem || wrapper.SerializedStorage)
+                if (wrapper != null && (wrapper.PoqItem || wrapper.SerializedStorage))
                 {
                     Plugin.Logger.Log($"wrapper.PoqItem {wrapper.PoqItem}");
                     Plugin.Logger.Log($"wrapper.SerializedStorage {wrapper.SerializedStorage}");

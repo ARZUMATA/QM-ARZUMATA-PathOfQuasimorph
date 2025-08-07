@@ -380,7 +380,14 @@ namespace QM_PathOfQuasimorph.Core
                     "none"
                 };
 
+            _logger.Log($"CanProcessItemRecord: id: {id}");
+
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(id, true) as CompositeItemRecord;
+
+            if (compositeItemRecord == null) 
+            {
+                return false;
+            }
 
             foreach (var rec in compositeItemRecord.Records)
             {
@@ -403,11 +410,11 @@ namespace QM_PathOfQuasimorph.Core
                         break;
                     case nameof(AugmentationRecord):
                         checkAugmentationRecord = true;
-                        //canProcess = false;
+                        canProcess = false;
                         break;
                     case nameof(ImplantRecord):
                         checkImplantRecord = true;
-                        //canProcess = false;
+                        canProcess = false;
                         break;
                     default:
                         _logger.Log($"canProcess = false : {recordType.Name}");
