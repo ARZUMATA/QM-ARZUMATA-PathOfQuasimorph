@@ -15,10 +15,10 @@ namespace QM_PathOfQuasimorph.Core
             nameof(StationSystem.AddItemToStationStorage),
             new Type[]
             {
-                typeof(Mercenary),
-                typeof(string),
-                typeof(ItemStorage),
-                typeof(bool),
+                typeof(SpaceTime),
+                typeof(Factions),
+                typeof(Station),
+                typeof(BasePickupItem),
             }
         )]
         public static class StationSystem_AddItemToStationStorage_Patch
