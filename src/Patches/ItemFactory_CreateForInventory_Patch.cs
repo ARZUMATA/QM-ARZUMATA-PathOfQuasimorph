@@ -152,8 +152,6 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     // Create new item record
-                    // We don't need custom suffix anyway since we create own records for magnum crafted projects.
-                    itemId.Replace("_custom", string.Empty);
                     itemId = PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemId, mobRarityBoost);
                 }
 

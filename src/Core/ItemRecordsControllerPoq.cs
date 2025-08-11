@@ -84,9 +84,13 @@ namespace QM_PathOfQuasimorph.Core
 
         internal string CreateNew(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected)
         {
+            var trimmedId = itemIdOrigin.Replace("_custom", string.Empty);
+
             // Resulting UID
             var wrapper = new MetadataWrapper(
-                 id: itemIdOrigin,
+                // We don't need custom suffix anyway since we create own records for magnum crafted projects.
+                // So we replace it here as we need _custom one to get item record
+                 id: trimmedId,
                  poqItem: true,
                  startTime: new DateTime(MagnumPoQProjectsController.MAGNUM_PROJECT_START_TIME),
                  finishTime: new DateTime(Int64.Parse(randomUidInjected))
@@ -97,15 +101,17 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"\t newId: {newId}");
 
             CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
+            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
+
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
+
 
             _logger.Log($"Checking ItemTransformationRecord");
 
-            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
 
             if (itemTransformationRecord == null)
             {
-                _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {itemIdOrigin}.");
+                _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {trimmedId}.");
                 _logger.Log($"Need a placeholder");
 
                 // Item breaks into this, unless it has it's own itemTransformationRecord.
@@ -118,7 +124,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");
 
             string boostedParamString = string.Empty;
-            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, itemIdOrigin, ref boostedParamString);
+            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, trimmedId, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
 
             _logger.Log($"");
@@ -161,10 +167,10 @@ namespace QM_PathOfQuasimorph.Core
             RecordCollection.MetadataWrapperRecords.Add(newId, wrapper);
 
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(newId)}");
-            _logger.Log($"oldId {Data.Items._records.Keys.Contains(itemIdOrigin)}");
+            _logger.Log($"oldId {Data.Items._records.Keys.Contains(trimmedId)}");
 
-            Localization.DuplicateKey("item." + itemIdOrigin + ".name", "item." + newId + ".name");
-            Localization.DuplicateKey("item." + itemIdOrigin + ".shortdesc", "item." + newId + ".shortdesc");
+            Localization.DuplicateKey("item." + trimmedId + ".name", "item." + newId + ".name");
+            Localization.DuplicateKey("item." + trimmedId + ".shortdesc", "item." + newId + ".shortdesc");
             RaritySystem.AddAffixes(newId);
 
             return newId;
