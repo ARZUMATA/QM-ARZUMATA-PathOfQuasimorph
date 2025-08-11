@@ -49,6 +49,13 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
 
+                if (ItemFactoryContext.CanDo == false)
+                {
+                    // Flag to block rarity apply for that item, skip and reset flag.
+                    ItemFactoryContext.CanDo = true;
+                    return true;
+                }
+
                 //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 // No more magnum projects
