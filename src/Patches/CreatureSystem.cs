@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
 using QM_PathOfQuasimorph.PoQHelpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,11 +14,14 @@ namespace QM_PathOfQuasimorph.Core
     {
         //This generates creature data without uniqueId
         [HarmonyPatch(typeof(CreatureSystem), "SetBareHandSlot")]
-        public static class test1
+        public static class CreatureSystem_SetBareHandSlot_Patch
         {
             public static bool Prefix(CreatureData creatureData)
             {
-                // Test run to fix missing data
+                Dictionary<string, (string, string)> replacedData = new Dictionary<string, (string, string)>();
+
+                // This is old save safe-load if we have some missing record so we reset id and effects to the generics.
+
                 foreach (string WoundSlotMapKey in creatureData.WoundSlotMap.Keys.ToList())
                 {
                     WoundSlotRecord record = Data.WoundSlots.GetRecord(WoundSlotMapKey, true);
@@ -28,54 +32,86 @@ namespace QM_PathOfQuasimorph.Core
                         // so need to get a baseline and clone the record.
                         Plugin.Logger.LogWarning($"Record missing for {WoundSlotMapKey} FIXME");
 
-                        var baseIdExist = MetadataWrapper.TryGetBaseId(WoundSlotMapKey, out string baseId_WoundSlotMapKey);
-                        var strArray = baseId_WoundSlotMapKey.Split('_');
+                        var baseIdExist = MetadataWrapper.TryGetBaseId(WoundSlotMapKey, out string WoundSlot_BaseId);
+                        var strArray = WoundSlot_BaseId.Split('_');
+                        WoundSlot_BaseId = strArray[0];
+                        var Item_BaseId = strArray[0];
 
-                        baseId_WoundSlotMapKey = strArray[0];
-                        var baseId_WoundSlotMapValue = string.Join("_", strArray.Skip(1));
-
-                        creatureData.WoundSlotMap[baseId_WoundSlotMapKey] = creatureData.WoundSlotMap[WoundSlotMapKey];
+                        creatureData.WoundSlotMap[WoundSlot_BaseId] = creatureData.WoundSlotMap[WoundSlotMapKey];
                         creatureData.WoundSlotMap.Remove(WoundSlotMapKey);
 
-                        //dict["newKey"] = dict["oldKey"];  // Add new key
-                        //dict.Remove("oldKey");            // Remove old key
+                        if (!replacedData.ContainsKey(WoundSlotMapKey))
+                        {
+                            replacedData.Add(WoundSlotMapKey, (WoundSlot_BaseId, Item_BaseId));
+                        }
 
-                        //Plugin.Logger.LogWarning($"Reverting to baseid WoundSlotMapKey: {baseId_WoundSlotMapKey}");
-                        //Plugin.Logger.LogWarning($"Reverting to baseid WoundSlotMapValue: {baseId_WoundSlotMapValue}");
-
-                        //Plugin.Logger.LogWarning($"Getting record for {baseId_WoundSlotMapKey}");
-
-                        //record = Data.WoundSlots.GetRecord(baseId_WoundSlotMapKey, true);
-                        //Plugin.Logger.LogWarning($"record == null {record == null}");
-                        //Plugin.Logger.LogWarning($"record.Id {record.Id}");
-
-                        //Plugin.Logger.LogWarning($"Clonning wouldSlotRecord for new key: {WoundSlotMapKey}");
-
-                        //WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(record, WoundSlotMapKey);
-                        //Data.WoundSlots.RemoveRecord(WoundSlotMapKey);
-                        //Data.WoundSlots.AddRecord(WoundSlotMapKey, woundSlotRecordNew);
-                        ////Localization.DuplicateKey("woundslot." + baseId_WoundSlotMapKey + ".name", "woundslot." + WoundSlotMapKey + ".name");
-
-                        //Plugin.Logger.LogWarning($"Getting item record for {baseId_WoundSlotMapValue}");
-                        //var itemRecord = Data.Items.GetRecord(baseId_WoundSlotMapValue);
-                        //Plugin.Logger.LogWarning($"itemRecord == null {itemRecord == null}");
-                        //Plugin.Logger.LogWarning($"itemRecord.Id {itemRecord.Id}");
-
-                        //Data.Items.AddRecord(baseId_WoundSlotMapValue, itemRecord);
+                        Plugin.Logger.LogWarning($"Reverting to baseid WoundSlotMap Key: {WoundSlot_BaseId}");
                     }
-
-
                 }
+
                 foreach (string AugmentationMapKey in creatureData.AugmentationMap.Keys.ToList())
                 {
-                        var strArray = AugmentationMapKey.Split('_');
+                    WoundSlotRecord record = Data.WoundSlots.GetRecord(AugmentationMapKey, true);
 
-                        var baseId_key = strArray[0];
-                        var baseId_value = string.Join("_", strArray.Skip(1));
+                    if (record == null)
+                    {
+                        // We missing wouldslot record, we can't reset to baseline as this record used along the json,
+                        // so need to get a baseline and clone the record.
+                        Plugin.Logger.LogWarning($"Record missing for {AugmentationMapKey} FIXME");
 
-                        creatureData.AugmentationMap[baseId_key] = creatureData.AugmentationMap[AugmentationMapKey];
+                        var baseIdExist = MetadataWrapper.TryGetBaseId(AugmentationMapKey, out string WoundSlot_BaseId);
+                        var strArray = WoundSlot_BaseId.Split('_');
+                        WoundSlot_BaseId = strArray[0];
+                        var Item_BaseId = strArray[0];
+
+                        var AugmentationMapKeyValue_BaseId = string.Join("_", strArray.Skip(1));
+
+                        creatureData.AugmentationMap[WoundSlot_BaseId] = AugmentationMapKeyValue_BaseId;
                         creatureData.AugmentationMap.Remove(AugmentationMapKey);
-                    creatureData.AugmentationMap[baseId_key] = baseId_value;
+
+                        if (!replacedData.ContainsKey(AugmentationMapKey))
+                        {
+                            replacedData.Add(AugmentationMapKey, (WoundSlot_BaseId, Item_BaseId));
+                        }
+
+                        Plugin.Logger.LogWarning($"Reverting to baseid AugmentationMap Key: {WoundSlot_BaseId}");
+                        Plugin.Logger.LogWarning($"Reverting to baseid AugmentationMap Value: {AugmentationMapKeyValue_BaseId}");
+                    }
+
+                }
+
+
+
+                foreach (var effect in creatureData.EffectsController.Effects)
+                {
+                    if (effect is WoundEffect woundEffect)
+                    {
+                        // Now you can access SlotType and ParentWoundId directly
+                        // Example:
+                        // woundEffect.SlotType = "newSlot";
+                        // woundEffect.ParentWoundId = "newWoundId";
+
+                        if (replacedData.ContainsKey(woundEffect.ParentWoundId))
+                        {
+                            var (woundslot, item) = replacedData[woundEffect.ParentWoundId];
+                            woundEffect.ParentWoundId = woundslot;
+                        }
+
+                        if (replacedData.ContainsKey(woundEffect.SlotType))
+                        {
+                            var (woundslot, item) = replacedData[woundEffect.SlotType];
+                            woundEffect.SlotType = woundslot;
+                        }
+
+                    }
+                    else if (effect is ImplicitAugEffect implicitEffect)
+                    {
+                        if (replacedData.ContainsKey(implicitEffect._woundSlotId))
+                        {
+                            var (woundslot, item) = replacedData[implicitEffect._woundSlotId];
+                            implicitEffect._woundSlotId = woundslot;
+                        }
+                    }
 
                 }
 
