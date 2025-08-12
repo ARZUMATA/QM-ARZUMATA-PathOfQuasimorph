@@ -77,7 +77,8 @@ namespace QM_PathOfQuasimorph.Core
                 MaxStack = 100,
                 UsageCost = 1,
                 MaxUsage = 1,
-                Type = type
+                Type = type,
+                Rarity = ItemRarity.Standard
 
             };
             switch (type)

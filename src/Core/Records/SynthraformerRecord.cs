@@ -21,6 +21,7 @@ namespace QM_PathOfQuasimorph.Core.Records
         }
 
         public SynthraformerType Type { get; set; }
+        public ItemRarity Rarity { get; set; }
 
         // Whitelist dictionary: maps each SynthraformerType to allowed record types
         public static readonly Dictionary<SynthraformerType, List<Type>> AllowedTypesByType =
