@@ -46,12 +46,21 @@ namespace QM_PathOfQuasimorph.Core
             woundSlotRecordProcessorPoq = new WoundSlotRecordProcessorPoq(this);
         }
 
-        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, bool ignoreBlacklist = false)
+        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool ignoreBlacklist = false, string randomUidInjected = null)
         {
+            if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
+            {
+                _logger.Log($"\t CanProcessItemRecord FALSE, returning generic");
+                return itemIdOrigin;
+            }
+
             _logger.Log($"InterceptAndReplaceItemId");
 
-            var itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
-            _logger.Log($"\t itemRarity {itemRarity}");
+            if (selectRarity)
+            {
+                itemRarity = PathOfQuasimorph.raritySystem.SelectRarity();
+                _logger.Log($"\t itemRarity {itemRarity}");
+            }
 
             /* 
              * NOTE: It's being tested, rarity standard can be skipped again.
@@ -68,42 +77,22 @@ namespace QM_PathOfQuasimorph.Core
                 return itemIdOrigin;
             }
 
-            if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
-            {
-                _logger.Log($"\t CanProcessItemRecord FALSE, returning generic");
-                return itemIdOrigin;
-            }
-
-
             return InterceptAndReplaceItemId(itemIdOrigin, mobRarityBoost, itemRarity);
-        }
-
-        private string GenerateUid(ItemRarity itemRarity)
-        {
-            DigitInfo digits = DigitInfo.GetRandomDigits();
-            digits.FillZeroes();
-            digits.Rarity = (int)itemRarity;
-            var randomUidInjected = digits.ReturnUID();
-
-            _logger.Log($"\t randomUidInjected: {randomUidInjected}");
-            return randomUidInjected;
         }
 
         internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected = null)
         {
+            // Generate a new UID
+            if (randomUidInjected == null)
+            {
+                randomUidInjected = GenerateUid(itemRarity);
+            }
+
             var trimmedId = itemIdOrigin.Replace("_custom", string.Empty);
 
-            // Resulting UID
-            var wrapper = new MetadataWrapper(
-                // We don't need custom suffix anyway since we create own records for magnum crafted projects.
-                // So we replace it here as we need _custom one to get item record
-                 id: trimmedId,
-                 poqItem: true,
-                 startTime: new DateTime(MagnumPoQProjectsController.MAGNUM_PROJECT_START_TIME),
-                 finishTime: new DateTime(Int64.Parse(randomUidInjected))
-                 );
-
-            var newId = wrapper.ReturnItemUid();
+            MetadataWrapper wrapper;
+            string newId;
+            GetNewId(trimmedId, randomUidInjected, out wrapper, out newId);
 
             _logger.Log($"\t newId: {newId}");
 
@@ -186,9 +175,22 @@ namespace QM_PathOfQuasimorph.Core
             return newId;
         }
 
+        private string GenerateUid(ItemRarity itemRarity)
+        {
+            DigitInfo digits = DigitInfo.GetRandomDigits();
+            digits.FillZeroes();
+            digits.Rarity = (int)itemRarity;
+            var randomUidInjected = digits.ReturnUID();
+
+            _logger.Log($"\t randomUidInjected: {randomUidInjected}");
+            return randomUidInjected;
+        }
+        
         private static void GetNewId(string itemIdOrigin, string randomUidInjected, out MetadataWrapper wrapper, out string newId)
         {
             // Resulting UID
+            // We don't need custom suffix anyway since we create own records for magnum crafted projects.
+            // So we replace it here as we need _custom one to get item record
             wrapper = new MetadataWrapper(
                  id: itemIdOrigin,
                  poqItem: true,

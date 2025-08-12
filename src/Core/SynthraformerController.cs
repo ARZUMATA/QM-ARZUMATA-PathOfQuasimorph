@@ -141,7 +141,8 @@ namespace QM_PathOfQuasimorph.Core
             if (metadata.RarityClass == ItemRarity.Standard)
             {
                 Plugin.Logger.Log($"Synthraformer Apply : metadata.RarityClass == ItemRarity.Standard");
-                __result = CreateNewItem(targetItem, repair);
+                __result = CreateNewItem(targetItem, repair, true);
+                return;
             }
 
             if (record.Type == SynthraformerType.Amplifier)
@@ -241,14 +242,17 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
             }
+
+            __result = CreateNewItem(targetItem, repair, false);
+
         }
 
-        private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair)
+        private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, bool selectRarity)
         {
             Plugin.Logger.Log($"Synthraformer CreateNewItem");
 
             var baseId = MetadataWrapper.GetBaseId(target.Id);
-            var newId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(baseId, false, true);
+            var newId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(baseId, false, ItemRarity.Standard, selectRarity, true);
             var newItem = ItemFactoryPoq.CreateNewItem(newId);
 
             Plugin.Logger.Log($"oldItem {target.Id}");
