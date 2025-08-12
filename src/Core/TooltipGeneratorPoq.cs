@@ -390,15 +390,48 @@ namespace QM_PathOfQuasimorph.Core
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
             var component = item.Comp<WeaponComponent>();
 
-            foreach (ItemTrait itemTrait in component.Traits)
+            foreach (var id in genericRecord.Traits)
             {
-                if (genericRecord.Traits.Contains(itemTrait.TraitId))
+                //_logger.Log($"InitTraits genericRecord: {id}");
+
+                // We are missing generic traits. Add with strikedout effect.
+                if (!weaponRecord.Traits.Contains(id))
+                {
+                    ItemTraitRecord record = Data.ItemTraits.GetRecord(id);
+                    _factory.AddPanelToTooltip().SetIcon(record.TooltipIconTag).SetName($"<s>{Localization.Get("trait." + id)}</s>")
+                        //.LocalizeName("trait." + id)
+                        .SetNameColor(record.IsNegative ? Helpers.DarkenColor(Colors.Red, 0.75f) : Helpers.DarkenColor(Colors.Yellow, 0.75f));
+                }
+            }
+
+            foreach (var id in weaponRecord.Traits)
+            {
+                //_logger.Log($"InitTraits {id}");
+
+                if (genericRecord.Traits.Contains(id))
                 {
                     continue;
                 }
 
-                _tooltipBuilder.AddItemTraitToTooltip(itemTrait.TraitId);
+                ItemTraitRecord record = Data.ItemTraits.GetRecord(id);
+                _factory.AddPanelToTooltip().SetIcon(record.TooltipIconTag).SetName($"{Localization.Get("trait." + id)}")
+                    //.LocalizeName("trait." + id)
+                    .SetNameColor(record.IsNegative ? Colors.Red : Colors.Yellow);
             }
+
+            //foreach (ItemTrait itemTrait in component.Traits)
+            //{
+            //    if (genericRecord.Traits.Contains(itemTrait.TraitId))
+            //    {
+
+            //        continue;
+            //    }
+
+            //    _tooltipBuilder.AddItemTraitToTooltip(itemTrait.TraitId);
+            //}
+
+            //<strikethrough>
+            
         }
 
         private static void InitWeight(ItemRecord itemRecord, string genericId, PickupItem item)
