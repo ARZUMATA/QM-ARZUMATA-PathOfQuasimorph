@@ -46,7 +46,7 @@ namespace QM_PathOfQuasimorph.Core
             woundSlotRecordProcessorPoq = new WoundSlotRecordProcessorPoq(this);
         }
 
-        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool ignoreBlacklist = false, string randomUidInjected = null)
+        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool applyRarity, bool ignoreBlacklist, string randomUidInjected)
         {
             if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
             {
@@ -77,10 +77,10 @@ namespace QM_PathOfQuasimorph.Core
                 return itemIdOrigin;
             }
 
-            return InterceptAndReplaceItemId(itemIdOrigin, mobRarityBoost, itemRarity);
+            return InterceptAndReplaceItemId(itemIdOrigin, mobRarityBoost, itemRarity, applyRarity, randomUidInjected);
         }
 
-        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected = null)
+        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool applyRarity, string randomUidInjected)
         {
             // Generate a new UID
             if (randomUidInjected == null)
@@ -101,9 +101,7 @@ namespace QM_PathOfQuasimorph.Core
 
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
 
-
             _logger.Log($"Checking ItemTransformationRecord");
-
 
             if (itemTransformationRecord == null)
             {

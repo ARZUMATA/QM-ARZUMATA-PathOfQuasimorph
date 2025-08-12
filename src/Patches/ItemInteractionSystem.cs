@@ -38,7 +38,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
                 else
                 {
-                    Plugin.Logger.Log($"ItemInteractionSystem_CanRepair_Patch");
+                    //Plugin.Logger.Log($"ItemInteractionSystem_CanRepair_Patch");
 
                     RepairRecord repairRecord = repair.Record<RepairRecord>();
                     SynthraformerRecord synthraformerRecord = repair.Record<SynthraformerRecord>();

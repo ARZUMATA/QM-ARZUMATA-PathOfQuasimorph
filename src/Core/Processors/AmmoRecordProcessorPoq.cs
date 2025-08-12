@@ -278,5 +278,10 @@ namespace QM_PathOfQuasimorph.Core.Processors
             finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
             ApplyStat(finalModifier, increase, stat, genericRecord);
         }
+
+        internal void ReplaceWeaponTraits(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            ApplyTraits(true);
+        }
     }
 }

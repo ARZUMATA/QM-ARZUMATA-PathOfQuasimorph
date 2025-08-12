@@ -666,8 +666,8 @@ namespace QM_PathOfQuasimorph.Core
             // Max durability
             var durabilityDifference = recordPoq.MaxDurability - genericRecord.MaxDurability;
 
-            _logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
-            _logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
+            //_logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
+            //_logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
 
             bool unbreakable = false;
 

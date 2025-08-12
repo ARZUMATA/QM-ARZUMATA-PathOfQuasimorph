@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting.Contexts;
 using UnityEngine;
+using static HarmonyLib.Code;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -203,16 +204,38 @@ namespace QM_PathOfQuasimorph.Core
                 metadata = MetadataWrapper.SplitItemUid(targetItem.Id);
             }
 
-            if (metadata.RarityClass == ItemRarity.Standard)
+            // To rarity roller.
+            //if (metadata.RarityClass == ItemRarity.Standard)
+            //{
+            //    Plugin.Logger.Log($"Synthraformer Apply : metadata.RarityClass == ItemRarity.Standard");
+            //    __result = CreateNewItem(targetItem, repair, ItemRarity.Standard, true);
+            //    return;
+            //}
+
+            Plugin.Logger.Log($"metadata.RarityClass {metadata.RarityClass}");
+            Plugin.Logger.Log($"metadata.Id {metadata.Id}");
+            Plugin.Logger.Log($"metadata.ReturnItemUid {metadata.ReturnItemUid()}");
+
+            CompositeItemRecord obj = Data.Items.GetRecord(targetItem.Id) as CompositeItemRecord;
+
+            if (record.Type == SynthraformerType.Amplifier && metadata.RarityClass == ItemRarity.Standard)
             {
-                Plugin.Logger.Log($"Synthraformer Apply : metadata.RarityClass == ItemRarity.Standard");
-                __result = CreateNewItem(targetItem, repair, true);
-                return;
+                foreach (var basePickupItemRecord in obj.Records)
+                {
+                    AmmoRecord ammoRecord = basePickupItemRecord as AmmoRecord;
+
+                    if (ammoRecord != null)
+                    {
+                        // There is only one exception for Standard Rarity - Ammmo.
+                        __result = CreateNewItem(targetItem, repair, metadata.RarityClass, true, true);
+                        return;
+                    }
+                }
             }
 
-            if (record.Type == SynthraformerType.Amplifier)
+            if (record.Type == SynthraformerType.Amplifier && metadata.RarityClass != ItemRarity.Standard)
             {
-                foreach (var basePickupItemRecord in targetItem.Records)
+                foreach (var basePickupItemRecord in obj.Records)
                 {
                     WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
 
@@ -221,7 +244,7 @@ namespace QM_PathOfQuasimorph.Core
                         _logger.Log($"weaponRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        __result = true;
+                        //__result = true;
                     }
 
                     HelmetRecord helmetRecord = basePickupItemRecord as HelmetRecord;
@@ -290,34 +313,72 @@ namespace QM_PathOfQuasimorph.Core
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollRandomStat(record, metadata);
                     }
                 }
+
+                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+                return;
             }
 
-            if (record.Type == SynthraformerType.Traits)
+            if (record.Type == SynthraformerType.Traits && metadata.RarityClass != ItemRarity.Standard)
             {
                 foreach (var basePickupItemRecord in targetItem.Records)
                 {
-                    WeaponRecord weaponRecord2 = basePickupItemRecord as WeaponRecord;
+                    WeaponRecord weaponRecord = basePickupItemRecord as WeaponRecord;
 
-                    if (weaponRecord2 != null)
+                    if (weaponRecord != null)
                     {
                         _logger.Log($"weaponRecord processing");
-                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord2, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata);
-                        __result = true;
                     }
+
+                    AmmoRecord ammoRecord = basePickupItemRecord as AmmoRecord;
+
+                    if (ammoRecord != null)
+                    {
+                        _logger.Log($"ammoRecord processing");
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.ReplaceWeaponTraits(record, metadata);
+                    }
+
+                    __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+                    RecordCollection.ItemRecords.Remove(targetItem.Id);
+                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+                    return;
                 }
             }
 
-            __result = CreateNewItem(targetItem, repair, false);
+            __result = false;
         }
 
-        private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, bool selectRarity)
+        private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, ItemRarity itemRarity, bool selectRarity, bool applyRarity)
         {
             Plugin.Logger.Log($"Synthraformer CreateNewItem");
+            Plugin.Logger.Log($"itemRarity {itemRarity}");
+            Plugin.Logger.Log($"selectRarity {selectRarity}");
+            Plugin.Logger.Log($"applyRarity {applyRarity}");
 
             var baseId = MetadataWrapper.GetBaseId(target.Id);
-            var newId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(baseId, false, ItemRarity.Standard, selectRarity, true);
+
+            var newId = target.Id;
+
+            if (selectRarity)
+            {
+                newId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
+                    itemIdOrigin: baseId,
+                    mobRarityBoost: false,
+                    itemRarity: itemRarity,
+                    selectRarity: selectRarity,
+                    ignoreBlacklist: true,
+                    randomUidInjected: null,
+                    applyRarity: applyRarity
+                );
+            }
+
             var newItem = ItemFactoryPoq.CreateNewItem(newId);
+
+            Plugin.Logger.Log($"newId {newId}");
 
             Plugin.Logger.Log($"oldItem {target.Id}");
             Plugin.Logger.Log($"newItem {newItem.Id}");

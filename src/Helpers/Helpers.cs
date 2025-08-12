@@ -60,6 +60,12 @@ internal static class Helpers
         // Convert to normalized float values
         return new Color(r / 255f, g / 255f, b / 255f, a / 255f);
     }
+    public static Color DarkenColor(Color color, float percent)
+    {
+        // percent should be between 0 (no change) and 1 (completely dark)
+        float factor = 1 - Mathf.Clamp01(percent);
+        return new Color(color.r * factor, color.g * factor, color.b * factor, color.a);
+    }
 
     public static string GetMd5HashFromFilePath(string filePath)
     {

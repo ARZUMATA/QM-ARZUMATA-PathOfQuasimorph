@@ -61,6 +61,7 @@ namespace QM_PathOfQuasimorph.Core.Records
                 SynthraformerType.Traits,
                 new List<Type> {
                     typeof(WeaponRecord),
+                    typeof(AmmoRecord),
                 }
             },
             {
@@ -68,8 +69,22 @@ namespace QM_PathOfQuasimorph.Core.Records
                 new List<Type> { typeof(BreakableItemRecord) }
             },
             {
+                SynthraformerType.RandomRarity,
+                new List<Type>
+                {
+                    //typeof(WeaponRecord),
+                    //typeof(HelmetRecord),
+                    //typeof(ArmorRecord),
+                    //typeof(LeggingsRecord),
+                    //typeof(BootsRecord),
+                    //typeof(AmmoRecord),
+                    //typeof(ImplantRecord),
+                    //typeof(AugmentationRecord),
+                }
+            },
+            {
                 SynthraformerType.Catalyst,
-                new List<Type> 
+                new List<Type>
                 { 
                     //typeof(AugmentationRecord),
                     //typeof(ImplantRecord)
@@ -103,7 +118,7 @@ namespace QM_PathOfQuasimorph.Core.Records
                 }
             }
 
-            Plugin.Logger.Log($"NO MATCH");
+            //Plugin.Logger.Log($"NO MATCH");
 
             return false;
         }
