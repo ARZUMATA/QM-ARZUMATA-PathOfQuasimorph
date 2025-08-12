@@ -186,9 +186,15 @@ namespace QM_PathOfQuasimorph.Core
                 return false;
             }
 
-            baseId = uid.Contains("_custom_poq")
-                ? uid.Substring(0, uid.IndexOf("_custom_poq"))
-                : uid.Replace("_custom", "");
+            int customIndex = uid.IndexOf("_custom");
+            if (customIndex != -1)
+            {
+                baseId = uid.Substring(0, customIndex);
+            }
+            else
+            {
+                baseId = uid;
+            }
 
             return !string.IsNullOrEmpty(baseId);
         }

@@ -54,6 +54,8 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"\t itemRarity {itemRarity}");
 
             /* 
+             * NOTE: It's being tested, rarity standard can be skipped again.
+             * 
              * We can't drop processing even if rarity standard and we do nothing.            
              * Reason for it is simple: if we put non-rarity augment on the mercenary and remove augment back,
              * it triggers item creation and we can't decide if we need to pass it as is or apply rarity as item is still non-rarity.
@@ -61,10 +63,10 @@ namespace QM_PathOfQuasimorph.Core
              * and apply Standard rarity and do nothing.
             */
 
-            //if (itemRarity == ItemRarity.Standard)
-            //{
-            //    return itemIdOrigin;
-            //}
+            if (itemRarity == ItemRarity.Standard)
+            {
+                return itemIdOrigin;
+            }
 
             if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
             {
@@ -89,28 +91,34 @@ namespace QM_PathOfQuasimorph.Core
 
         internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, string randomUidInjected = null)
         {
-            // Generate a new UID
-            if (randomUidInjected == null)
-            {
-                randomUidInjected = GenerateUid(itemRarity);
-            }
+            var trimmedId = itemIdOrigin.Replace("_custom", string.Empty);
 
-            MetadataWrapper wrapper;
-            string newId;
-            GetNewId(itemIdOrigin, randomUidInjected, out wrapper, out newId);
+            // Resulting UID
+            var wrapper = new MetadataWrapper(
+                // We don't need custom suffix anyway since we create own records for magnum crafted projects.
+                // So we replace it here as we need _custom one to get item record
+                 id: trimmedId,
+                 poqItem: true,
+                 startTime: new DateTime(MagnumPoQProjectsController.MAGNUM_PROJECT_START_TIME),
+                 finishTime: new DateTime(Int64.Parse(randomUidInjected))
+                 );
+
+            var newId = wrapper.ReturnItemUid();
 
             _logger.Log($"\t newId: {newId}");
 
             CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
+            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
+
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
+
 
             _logger.Log($"Checking ItemTransformationRecord");
 
-            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
 
             if (itemTransformationRecord == null)
             {
-                _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {itemIdOrigin}.");
+                _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {trimmedId}.");
                 _logger.Log($"Need a placeholder");
 
                 // Item breaks into this, unless it has it's own itemTransformationRecord.
@@ -126,7 +134,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");
 
             string boostedParamString = string.Empty;
-            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, itemIdOrigin, ref boostedParamString);
+            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, trimmedId, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
 
             _logger.Log($"");
@@ -169,10 +177,10 @@ namespace QM_PathOfQuasimorph.Core
             RecordCollection.MetadataWrapperRecords.Add(newId, wrapper);
 
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(newId)}");
-            _logger.Log($"oldId {Data.Items._records.Keys.Contains(itemIdOrigin)}");
+            _logger.Log($"oldId {Data.Items._records.Keys.Contains(trimmedId)}");
 
-            Localization.DuplicateKey("item." + itemIdOrigin + ".name", "item." + newId + ".name");
-            Localization.DuplicateKey("item." + itemIdOrigin + ".shortdesc", "item." + newId + ".shortdesc");
+            Localization.DuplicateKey("item." + trimmedId + ".name", "item." + newId + ".name");
+            Localization.DuplicateKey("item." + trimmedId + ".shortdesc", "item." + newId + ".shortdesc");
             RaritySystem.AddAffixes(newId);
 
             return newId;
@@ -412,10 +420,13 @@ namespace QM_PathOfQuasimorph.Core
                     "none"
                 };
 
+            _logger.Log($"CanProcessItemRecord: id: {id}");
+
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(id, true) as CompositeItemRecord;
 
-            if (compositeItemRecord != null)
+            if (compositeItemRecord == null) 
             {
+                _logger.Log($"compositeItemRecord == null. Break.");
                 return false;
             }
 
@@ -425,6 +436,8 @@ namespace QM_PathOfQuasimorph.Core
                 bool checkWeaponRecord = false;
                 bool checkAugmentationRecord = false;
                 bool checkImplantRecord = false;
+
+                _logger.Log($"recordType.Name {recordType.Name}");
 
                 switch (recordType.Name)
                 {
@@ -444,11 +457,11 @@ namespace QM_PathOfQuasimorph.Core
                         break;
                     case nameof(AugmentationRecord):
                         checkAugmentationRecord = true;
-                        //canProcess = false;
+                        canProcess = true;
                         break;
                     case nameof(ImplantRecord):
                         checkImplantRecord = true;
-                        //canProcess = false;
+                        canProcess = true;
                         break;
                     case nameof(SynthraformerRecord):
                         canProcess = false;

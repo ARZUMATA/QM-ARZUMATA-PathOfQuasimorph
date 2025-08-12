@@ -59,7 +59,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             _logger.Log($"Updating {statStr}");
 
             // Apply boost
-            if (statStr == boostedParamString)
+            if (statStr != string.Empty && statStr == boostedParamString)
             {
                 finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
 

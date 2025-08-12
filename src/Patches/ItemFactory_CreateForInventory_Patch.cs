@@ -49,6 +49,15 @@ namespace QM_PathOfQuasimorph.Core
                     }
                 }
 
+                if (ItemFactoryContext.CanDo == false)
+                {
+                    // Flag to block rarity apply for that item, skip and reset flag.
+                    ItemFactoryContext.CanDo = true;
+                    ItemFactoryContext.Context = "None";
+                    Plugin.Logger.Log($"ItemFactoryContext.CanDo == {ItemFactoryContext.CanDo}. Context {ItemFactoryContext.Context}. Reverting flag back to original (true).");
+                    return true;
+                }
+
                 //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
 
                 // No more magnum projects
@@ -113,7 +122,7 @@ namespace QM_PathOfQuasimorph.Core
                 var wrapper = MetadataWrapper.SplitItemUid(itemId);
                 Plugin.Logger.Log($"wrapper == null {wrapper == null}");
 
-                if (wrapper.PoqItem || wrapper.SerializedStorage)
+                if (wrapper != null && (wrapper.PoqItem || wrapper.SerializedStorage))
                 {
                     Plugin.Logger.Log($"wrapper.PoqItem {wrapper.PoqItem}");
                     Plugin.Logger.Log($"wrapper.SerializedStorage {wrapper.SerializedStorage}");
