@@ -236,3 +236,35 @@ Thanks community for feedback.
 ## 1.8.3 (145e1b3)
 - Improved wound slot augmentation localization and descriptor lookup. (This was leading to savegame load errors if you apply rare-augmentation)
 - Updated item processing logic to deny all by default, with explicit allowance after validation checks.
+
+## 1.9 (5e1999f)
+### Added
+- **Synthraformers System**
+  - Introduced new Synthraformer items with unique effects:
+    - *Amplifier*: Boosts a random stat on an item, based on rarity; can roll hindered stats and allows upgrade during crafting.
+    - *Traits Recombinator*: Recombines item traits completely, preserving only those from the item’s generic counterpart.
+    - *Random Rarity*: Rolls a new random rarity on standard items.
+    - *Indestructible Activator*: Grants a chance to add the Indestructible trait to an item.
+    - *Augmentation Catalyst*: Adds a random positive or negative stat to augments; consumed regardless of stat presence.
+  - Added associated recipes under the *Synthraformers* category in Magnum Crafting.
+
+- **Tooltips**
+  - Implemented full synthraformer tooltip support and localization integration.
+  - Missing weapon traits now displayed in a darker color for clarity.
+
+### Fixed
+- Fixed boosted stats triggering incorrectly in certain cases.
+- Prevented station-produced items from getting non-standard rarities or being flagged as custom weapons.
+- Resolved duplicate suffix issue on magnum project custom weapons by relocating naming logic.
+- Corrected aug/implant processing being disabled — semi-fixed broken augment behavior. This is under testing, ping me, send saves files and logs.
+- Fixed cleanup system erroneously collecting wound slots and aug records.
+- Safely handle missing records in creature data (wound slots) during load.
+- Fixed one-line JSON-in-JSON serialization to reduce file size and improve readability.
+- Avoid applying rarity changes when removing an augment if the resulting rarity is Standard.
+
+### Changed
+- Tweaked logger prefixes for improved debugging clarity.
+- Reverted change that skipped rarity processing for Standard items to ensure consistent behavior.
+
+### Patched
+- Ammo and Metadata records now properly supported in synthraformer processing pipeline.
