@@ -93,7 +93,7 @@ namespace QM_PathOfQuasimorph
             var callerType = GetCallerType();
             if (callerType != null && !_excludedTypes.Contains(callerType))
             {
-                Debug.LogWarning($"[{LogPrefix}] [{callerType.Name}] {message}");
+                Debug.LogWarning($"[{LogPrefix}] [{callerType.Name}] [WARNING] {message}");
             }
         }
 
@@ -103,7 +103,7 @@ namespace QM_PathOfQuasimorph
             var callerType = GetCallerType();
             if (callerType != null && !_excludedTypes.Contains(callerType))
             {
-                Debug.LogError($"[{LogPrefix}] [{callerType.Name}] {message}");
+                Debug.LogError($"[{LogPrefix}] [{callerType.Name}] [ERROR] {message}");
             }
         }
 
@@ -113,7 +113,7 @@ namespace QM_PathOfQuasimorph
             var callerType = GetCallerType();
             if (callerType != null && !_excludedTypes.Contains(callerType))
             {
-                Debug.LogError($"[{LogPrefix}] [{callerType.Name}] Exception Logged:");
+                Debug.LogError($"[{LogPrefix}] [{callerType.Name}] [EXCEPTION] Exception Logged:");
                 Debug.LogException(ex);
             }
         }

@@ -8,7 +8,8 @@ namespace QM_PathOfQuasimorph.Core
         public static class ItemFactoryContext
         {
             [ThreadStatic]
-            internal static bool CanDo = false;
+            internal static bool CanDo = true;
+            internal static string Context = "None";
         }
     }
 }

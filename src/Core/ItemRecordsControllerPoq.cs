@@ -51,6 +51,8 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"\t itemRarity {itemRarity}");
 
             /* 
+             * NOTE: It's being tested, rarity standard can be skipped again.
+             * 
              * We can't drop processing even if rarity standard and we do nothing.            
              * Reason for it is simple: if we put non-rarity augment on the mercenary and remove augment back,
              * it triggers item creation and we can't decide if we need to pass it as is or apply rarity as item is still non-rarity.
@@ -58,10 +60,10 @@ namespace QM_PathOfQuasimorph.Core
              * and apply Standard rarity and do nothing.
             */
 
-            //if (itemRarity == ItemRarity.Standard)
-            //{
-            //    return itemIdOrigin;
-            //}
+            if (itemRarity == ItemRarity.Standard)
+            {
+                return itemIdOrigin;
+            }
 
             if (!PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
             {
@@ -392,6 +394,7 @@ namespace QM_PathOfQuasimorph.Core
 
             if (compositeItemRecord == null) 
             {
+                _logger.Log($"compositeItemRecord == null. Break.");
                 return false;
             }
 
@@ -401,6 +404,8 @@ namespace QM_PathOfQuasimorph.Core
                 bool checkWeaponRecord = false;
                 bool checkAugmentationRecord = false;
                 bool checkImplantRecord = false;
+
+                _logger.Log($"recordType.Name {recordType.Name}");
 
                 switch (recordType.Name)
                 {
@@ -416,11 +421,11 @@ namespace QM_PathOfQuasimorph.Core
                         break;
                     case nameof(AugmentationRecord):
                         checkAugmentationRecord = true;
-                        canProcess = false;
+                        canProcess = true;
                         break;
                     case nameof(ImplantRecord):
                         checkImplantRecord = true;
-                        canProcess = false;
+                        canProcess = true;
                         break;
                     default:
                         _logger.Log($"canProcess = false : {recordType.Name}");

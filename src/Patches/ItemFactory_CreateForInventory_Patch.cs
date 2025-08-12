@@ -53,6 +53,8 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     // Flag to block rarity apply for that item, skip and reset flag.
                     ItemFactoryContext.CanDo = true;
+                    ItemFactoryContext.Context = "None";
+                    Plugin.Logger.Log($"ItemFactoryContext.CanDo == {ItemFactoryContext.CanDo}. Context {ItemFactoryContext.Context}. Reverting flag back to original (true).");
                     return true;
                 }
 
