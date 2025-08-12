@@ -37,15 +37,43 @@ namespace QM_PathOfQuasimorph.Core
             nameof(ItemTooltipBuilder.Build),
             new Type[]
             {
-                typeof(BasePickupItem),
-                typeof(Player),
-                typeof(Mercenary),
+                typeof(BasePickupItemRecord),
             }
         )]
-        public static class ItemTooltipBuilder_Build_Patch
+        public static class ItemTooltipBuilder_Build_Patch_BasePickupItemRecord
+        {
+            public static bool Prefix(ItemTooltipBuilder __instance, BasePickupItemRecord itemRecord)
+            {
+                CompositeItemRecord compositeItemRecord = itemRecord as CompositeItemRecord;
+                SynthraformerRecord synRec = compositeItemRecord.GetRecord<SynthraformerRecord>();
+
+                if (synRec == null)
+                {
+                    return true;
+                }
+                
+                //Plugin.Logger.Log($"ItemTooltipBuilder_Build_Patch_BasePickupItemRecord");
+                PathOfQuasimorph.tooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec);
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(ItemTooltipBuilder),
+            nameof(ItemTooltipBuilder.Build),
+            new Type[]
+            {
+                        typeof(BasePickupItem),
+                        typeof(Player),
+                        typeof(Mercenary),
+            }
+        )]
+        public static class ItemTooltipBuilder_Build_Patch_BasePickupItem
         {
             public static bool Prefix(ItemTooltipBuilder __instance, BasePickupItem item, Player player, Mercenary mercenary = null)
             {
+                //Plugin.Logger.Log($"ItemTooltipBuilder_Build_Patch_BasePickupItem");
+
                 if (SynthraformerController.Is(item.Id))
                 {
                     var synRec = item.Record<SynthraformerRecord>();
@@ -57,33 +85,7 @@ namespace QM_PathOfQuasimorph.Core
                         return true;
                     }
 
-                    //Plugin.Logger.Log($"synRec.Type: {synRec.Type}");
-
-                    __instance._tooltip = __instance._factory.BuildEmptyTooltip(true, false);
-
-                    // Amplifiers have rarity
-                    if (synRec.Type == SynthraformerController.SynthraformerType.Amplifier)
-                    {
-                        PropertiesTooltipHelper.SetCaption1(__instance._tooltip, Localization.Get($"item.{synRec.Id}.name"), __instance._factory.FirstLetterColor, RaritySystem.Colors[synRec.Rarity]);
-
-                        PropertiesTooltipHelper.SetCaption2(__instance._tooltip, Localization.Get($"item.{synRec.Id}.shortdesc"), RaritySystem.Colors[synRec.Rarity]);
-
-                        // Rarity
-                        __instance._factory.AddPanelToTooltip().SetValue(synRec.Rarity.ToString().WrapInColor(RaritySystem.Colors[synRec.Rarity].Replace("#", string.Empty)));
-
-                        // Quote
-                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.Id}.{synRec.Rarity.ToString().ToLower()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
-                    }
-                    else
-                    {
-                        __instance._tooltip.SetCaption1(Localization.Get("item." + synRec.Id + ".name"), __instance._factory.FirstLetterColor);
-                        __instance._tooltip.SetCaption2(Localization.Get("item." + synRec.Id + ".shortdesc"));
-
-                        // Quote
-                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.Id}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
-                    }
-
-                    __instance._tooltip.ShowAdditionalBlock();
+                     PathOfQuasimorph.tooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec);
 
                     return false;
                 }
@@ -97,27 +99,11 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static bool Prefix(ItemTooltipBuilder __instance, RepairRecord record)
             {
+                //Plugin.Logger.Log($"record.Id {record.Id}");
+                //Plugin.Logger.Log($"SynthraformerController.Is(record.Id) {SynthraformerController.Is(record.Id)}");
+
                 if (SynthraformerController.Is(record.Id))
                 {
-                    // Gotta build our own since we use repair record direvatives
-                    var synRec = (SynthraformerRecord)record;
-
-                    // Amplifiers have rarity
-                    if (synRec.Type == SynthraformerController.SynthraformerType.Amplifier)
-                    {
-                        // Rarity
-                        __instance._factory.AddPanelToTooltip().SetValue(synRec.Rarity.ToString().WrapInColor(RaritySystem.Colors[synRec.Rarity].Replace("#", string.Empty)));
-
-                        // Quote
-                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.Id}.{synRec.Rarity.ToString().ToLower()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
-                    }
-                    else
-                    {
-                        // Quote
-                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.Id}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
-                    }
-
-                    __instance._tooltip.ShowAdditionalBlock();
                     return false;
                 }
 
@@ -128,30 +114,28 @@ namespace QM_PathOfQuasimorph.Core
         [HarmonyPatch(typeof(ItemTooltipBuilder), "BuildAdditionalInfo")]
         public static class ItemTooltipBuilder_BuildAdditionalInfo_Patch
         {
-            public static void Postfix(ItemTooltipBuilder __instance, BasePickupItem item, BasePickupItemRecord record, Mercenary mercenary = null)
+            public static bool Prefix(ItemTooltipBuilder __instance, BasePickupItem item, BasePickupItemRecord record, Mercenary mercenary = null)
             {
-                if (SynthraformerController.Is(item.Id))
+                SynthraformerRecord synRec = null;
+
+                if (item != null)
                 {
-                    var synRec = item.Record<SynthraformerRecord>();
+                    synRec = item.Record<SynthraformerRecord>();
+                }
+                else if (record != null)
+                {
+                    CompositeItemRecord compositeItemRecord = record as CompositeItemRecord;
+                    synRec = compositeItemRecord.GetRecord<SynthraformerRecord>();
+                }
 
-                    // Amplifiers have rarity
-                    if (synRec.Type == SynthraformerController.SynthraformerType.Amplifier)
-                    {
-                        // Rarity
-                        __instance._factory.AddPanelToTooltip().SetValue(synRec.Rarity.ToString().WrapInColor(RaritySystem.Colors[synRec.Rarity].Replace("#", string.Empty)));
-
-                        // Quote
-                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.Id}.{synRec.Rarity.ToString().ToLower()}.quote")).SetNameColor(Colors.AltGreen);
-
-                    }
-                    else
-                    {
-                        // Quote
-                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.Id}.quote")).SetNameColor(Colors.AltGreen);
-                    }
-
-                    // Desc
-                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.Id}.desc")).SetNameColor(Colors.DarkYellow);
+                if (synRec != null)
+                {
+                    PathOfQuasimorph.tooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec, true);
+                    return false;
+                }
+                else
+                {
+                    return true;
                 }
             }
         }

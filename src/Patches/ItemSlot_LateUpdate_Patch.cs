@@ -41,7 +41,7 @@ namespace QM_PathOfQuasimorph.Core
                     return;
                 }
 
-                ApplyItemRarityBackground(__instance, __instance.Item);
+                ApplyItemRarityBackground(__instance.gameObject, __instance.Item);
             }
         }
     }

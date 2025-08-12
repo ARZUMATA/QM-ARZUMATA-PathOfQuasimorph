@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.Core.Records;
 using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
@@ -854,6 +855,43 @@ namespace QM_PathOfQuasimorph.Core
             DifferenceColorMap["positive"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Positive);
             DifferenceColorMap["negative"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Negative);
             DifferenceColorMap["equal"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Equal);
+        }
+
+        internal void BuildSynthraformerTooltip(ItemTooltipBuilder __instance, SynthraformerRecord synRec, bool additional = false)
+        {
+            // Gotta build our own since we use repair record direvatives
+
+            //Plugin.Logger.Log($"synRec.Type: {synRec.Type}");
+            __instance._tooltip = __instance._factory.BuildEmptyTooltip(true, false);
+
+            // Amplifiers have rarity
+            if (synRec.Type == SynthraformerController.SynthraformerType.Amplifier)
+            {
+                PropertiesTooltipHelper.SetCaption1(__instance._tooltip, Localization.Get($"item.{synRec.GetId()}.name"), __instance._factory.FirstLetterColor, RaritySystem.Colors[synRec.Rarity]);
+                PropertiesTooltipHelper.SetCaption2(__instance._tooltip, Localization.Get($"item.{synRec.BaseId}.shortdesc"), RaritySystem.Colors[synRec.Rarity]);
+
+                // Rarity
+                __instance._factory.AddPanelToTooltip().SetValue(synRec.Rarity.ToString().WrapInColor(RaritySystem.Colors[synRec.Rarity].Replace("#", string.Empty)));
+
+                // Quote
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId(true)}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
+            }
+            else
+            {
+                __instance._tooltip.SetCaption1(Localization.Get("item." + synRec.GetId() + ".name"), __instance._factory.FirstLetterColor);
+                __instance._tooltip.SetCaption2(Localization.Get("item." + synRec.BaseId + ".shortdesc"));
+
+                // Quote
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
+            }
+
+            __instance._tooltip.ShowAdditionalBlock();
+
+            if (additional)
+            {
+                // Desc
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 
 namespace QM_PathOfQuasimorph.Core
@@ -14,6 +15,7 @@ namespace QM_PathOfQuasimorph.Core
         public static string nameBase = "synthraformer_poq";
         private static Sprite[] sprites = Helpers.LoadSpritesFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph");
         private static Logger _logger = new Logger(null, typeof(SynthraformerController));
+        public static List<string> recipesOutputItems = new List<string>();
 
         public enum SynthraformerType
         {
@@ -21,14 +23,24 @@ namespace QM_PathOfQuasimorph.Core
             Traits,
             RandomRarity,
             Indestructible,
+            Catalyst,
         }
 
         public static void AddItems()
         {
-            CreateItem(SynthraformerType.Amplifier);
-            CreateItem(SynthraformerType.Traits);
-            CreateItem(SynthraformerType.RandomRarity);
-            CreateItem(SynthraformerType.Indestructible);
+            RemoveExistingSynthraformerRecipes();
+            recipesOutputItems.Clear();
+            CreateItem(SynthraformerType.Amplifier, ItemRarity.Standard);
+            CreateItem(SynthraformerType.Amplifier, ItemRarity.Enhanced);
+            CreateItem(SynthraformerType.Amplifier, ItemRarity.Advanced);
+            CreateItem(SynthraformerType.Amplifier, ItemRarity.Premium);
+            CreateItem(SynthraformerType.Amplifier, ItemRarity.Prototype);
+            CreateItem(SynthraformerType.Amplifier, ItemRarity.Quantum);
+            CreateItem(SynthraformerType.Traits, ItemRarity.Standard);
+            CreateItem(SynthraformerType.RandomRarity, ItemRarity.Standard);
+            CreateItem(SynthraformerType.Indestructible, ItemRarity.Standard);
+            //CreateItem(SynthraformerType.Catalyst, ItemRarity.Standard);
+            CreateAmplifierRecipes();
         }
 
         public static bool Is(BasePickupItem item)
@@ -56,9 +68,9 @@ namespace QM_PathOfQuasimorph.Core
             return $"{nameBase}_0";
         }
 
-        private static void CreateItem(SynthraformerType type)
+        private static void CreateItem(SynthraformerType type, ItemRarity rarity)
         {
-            var itemId = $"{nameBase}_{(int)type}";
+            var itemId = $"{nameBase}_{(int)type}_{rarity.ToString().ToLower()}";
 
             CompositeItemRecord compositeItemRecord = new CompositeItemRecord(itemId);
             ItemProduceReceipt itemRecipe = new ItemProduceReceipt();
@@ -66,6 +78,7 @@ namespace QM_PathOfQuasimorph.Core
 
             var record = new SynthraformerRecord
             {
+                BaseId = nameBase,
                 Id = itemId,
                 Categories = new List<string>(),
                 TechLevel = 1,
@@ -78,9 +91,10 @@ namespace QM_PathOfQuasimorph.Core
                 UsageCost = 1,
                 MaxUsage = 1,
                 Type = type,
-                Rarity = ItemRarity.Standard
+                Rarity = rarity
 
             };
+
             switch (type)
             {
                 case SynthraformerType.Amplifier:
@@ -89,26 +103,27 @@ namespace QM_PathOfQuasimorph.Core
 
                 case SynthraformerType.Traits:
                     //record.RepairSpecialRule = RepairSpecialRule.AllWeapons;
-                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Amplifier}", 5));
-                    itemRecipe.OutputItem = $"synthraformer_poq_{(int)SynthraformerType.Traits}";
+                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Amplifier}_{ItemRarity.Standard.ToString().ToLower()}", 5));
+                    itemRecipe.OutputItem = itemId;
                     itemRecipe.ProduceTimeInHours = 2;
-                    Data.ProduceReceipts.Add(itemRecipe);
+                    AddRecipe(itemRecipe);
                     break;
 
                 case SynthraformerType.RandomRarity:
                     //record.RepairSpecialRule = RepairSpecialRule.AllWeapons;
-                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Amplifier}", 10));
-                    itemRecipe.OutputItem = $"synthraformer_poq_{(int)SynthraformerType.RandomRarity}";
+                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Traits}_{ItemRarity.Standard.ToString().ToLower()}", 2));
+                    itemRecipe.OutputItem = itemId;
                     itemRecipe.ProduceTimeInHours = 2;
-                    Data.ProduceReceipts.Add(itemRecipe);
+                    AddRecipe(itemRecipe);
                     break;
 
                 case SynthraformerType.Indestructible:
                     //record.RepairSpecialRule = RepairSpecialRule.AllWeapons;
-                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Amplifier}", 10));
-                    itemRecipe.OutputItem = $"synthraformer_poq_{(int)SynthraformerType.RandomRarity}";
+                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Traits}_{ItemRarity.Standard.ToString().ToLower()}", 1));
+                    itemRecipe.RequiredItems.Add(new ItemQuantity($"synthraformer_poq_{(int)SynthraformerType.Indestructible}_{ItemRarity.Standard.ToString().ToLower()}", 1));
+                    itemRecipe.OutputItem = itemId;
                     itemRecipe.ProduceTimeInHours = 2;
-                    Data.ProduceReceipts.Add(itemRecipe);
+                    AddRecipe(itemRecipe);
                     break;
             }
 
@@ -125,7 +140,56 @@ namespace QM_PathOfQuasimorph.Core
             Data.Items._records.Remove(itemId);
             Data.Items._records.Add(itemId, compositeItemRecord);
 
+            Localization.DuplicateKey($"item.{nameBase}_{(int)type}.name", "item." + itemId + ".name");
+            Localization.DuplicateKey($"item.{nameBase}_{(int)type}.desc", "item." + itemId + ".desc");
+
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
+        }
+
+        private static void RemoveExistingSynthraformerRecipes()
+        {
+            int removedCount = Data.ProduceReceipts.RemoveAll(recipe =>
+                recipe.OutputItem != null &&
+                recipe.OutputItem.StartsWith(nameBase, StringComparison.OrdinalIgnoreCase)
+            );
+
+            Plugin.Logger.Log($"Removed {removedCount} existing recipe(s) with OutputItem starting with '{nameBase}'");
+        }
+
+        private static void CreateAmplifierRecipes()
+        {
+            var type = (int)SynthraformerType.Amplifier;
+            var rarities = Enum.GetValues(typeof(ItemRarity)) as ItemRarity[];
+
+            int needAmnt = 5;
+
+            for (int i = 0; i < rarities.Length - 1; i++)
+            {
+                var currentRarity = rarities[i];
+                var nextRarity = rarities[i + 1];
+
+                ItemProduceReceipt itemRecipe = new ItemProduceReceipt();
+                itemRecipe.RequiredItems = new List<ItemQuantity>
+                {
+                    new ItemQuantity($"synthraformer_poq_{type}_{currentRarity.ToString().ToLower()}", needAmnt)
+                };
+                itemRecipe.OutputItem = $"synthraformer_poq_{type}_{nextRarity.ToString().ToLower()}";
+                itemRecipe.ProduceTimeInHours = 2;
+
+                AddRecipe(itemRecipe);
+            }
+        }
+
+        private static void AddRecipe(ItemProduceReceipt itemRecipe)
+        {
+            Plugin.Logger.Log($"AddRecipe");
+            Plugin.Logger.Log($"Data.ProduceReceipts.Add: {itemRecipe.Id} - {itemRecipe.OutputItem}");
+            Data.ProduceReceipts.Add(itemRecipe);
+
+            if (!recipesOutputItems.Contains(itemRecipe.OutputItem))
+            {
+                recipesOutputItems.Add(itemRecipe.OutputItem);
+            }
         }
 
         public void Apply(BasePickupItem target, BasePickupItem repair, SynthraformerRecord record, ref bool __result)
@@ -245,7 +309,6 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             __result = CreateNewItem(targetItem, repair, false);
-
         }
 
         private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, bool selectRarity)
