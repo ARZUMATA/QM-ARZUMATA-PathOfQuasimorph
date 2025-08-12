@@ -114,6 +114,10 @@ namespace QM_PathOfQuasimorph.Core
                             if (canApplySynthraformerDrop)
                             {
                                 BasePickupItem basePickupItem = SingletonMonoBehaviour<ItemFactory>.Instance.CreateForInventory(PathOfQuasimorph.synthraformerController.GetBaseDrop(), false);
+                                if (inventory == null || !inventory.TakeOrEquip(basePickupItem, false, true))
+                                {
+                                    itemsWithoutStorage.Add(basePickupItem);
+                                }
                             }
                         }
                     }

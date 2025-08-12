@@ -12,7 +12,7 @@ namespace QM_PathOfQuasimorph.Core
 {
     public class SynthraformerController
     {
-        public static float DROP_CHANCE = 80;
+        public static float DROP_CHANCE = 70;
         public static string nameBase = "synthraformer_poq";
         private static Sprite[] sprites = Helpers.LoadSpritesFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph");
         private static Logger _logger = new Logger(null, typeof(SynthraformerController));
@@ -66,7 +66,7 @@ namespace QM_PathOfQuasimorph.Core
 
         public string GetBaseDrop()
         {
-            return $"{nameBase}_0";
+            return $"{nameBase}_0_{ItemRarity.Standard.ToString().ToLower()}";
         }
 
         private static void CreateItem(SynthraformerType type, ItemRarity rarity)

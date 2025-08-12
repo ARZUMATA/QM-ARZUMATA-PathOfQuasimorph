@@ -1,18 +1,45 @@
-﻿using MGSC;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MGSC;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Core.SynthraformerController;
 
 namespace QM_PathOfQuasimorph.Core.Records
 {
+    // Helper struct to define allowed combinations
+    public readonly struct AllowedTarget
+    {
+        public readonly Type ItemType;
+        public readonly List<ItemRarity> AllowedRarities;
+
+        public AllowedTarget(Type itemType, params ItemRarity[] rarities)
+        {
+            ItemType = itemType;
+            AllowedRarities = new List<ItemRarity>(rarities);
+        }
+
+        public bool IsRarityAllowed(ItemRarity rarity) => AllowedRarities.Contains(rarity);
+    }
+
     // We will use repair item approach as it's viable and suits our needs.
     public class SynthraformerRecord : RepairRecord, IStackableRecord, IAllowInVestRecord
     {
+        static AllowedTarget AllowAll(Type type) => new AllowedTarget(type); // Empty list = all rarities allowed
+
+        static AllowedTarget BlockStandard(Type type) =>
+            new AllowedTarget(
+                type,
+                ItemRarity.Enhanced,
+                ItemRarity.Advanced,
+                ItemRarity.Premium,
+                ItemRarity.Prototype,
+                ItemRarity.Quantum
+            );
+
         public string GetId(bool rarity = false)
         {
             if (rarity)
@@ -23,74 +50,70 @@ namespace QM_PathOfQuasimorph.Core.Records
             return $"{BaseId}_{(int)Type}";
         }
 
-        public string BaseId
-        {
-            get;
-            set;
-        }
+        public string BaseId { get; set; }
 
-        public override int InventorySortOrder
-        {
-            get
-            {
-                return 40;
-            }
-        }
+        public override int InventorySortOrder => 40;
 
         public SynthraformerType Type { get; set; }
         public ItemRarity Rarity { get; set; }
 
         // Whitelist dictionary: maps each SynthraformerType to allowed record types
-        public static readonly Dictionary<SynthraformerType, List<Type>> AllowedTypesByType =
-            new Dictionary<SynthraformerType, List<Type>>
-        {
+        // Now includes both type and allowed rarities
+        public readonly Dictionary<SynthraformerType, List<AllowedTarget>> AllowedTargetsByType =
+            new Dictionary<SynthraformerType, List<AllowedTarget>>
             {
-                SynthraformerType.Amplifier,
-                new List<Type> {
-                    typeof(WeaponRecord),
-                    typeof(HelmetRecord),
-                    typeof(ArmorRecord),
-                    typeof(LeggingsRecord),
-                    typeof(BootsRecord),
-                    typeof(AmmoRecord),
-                    //typeof(ImplantRecord),
-                    //typeof(AugmentationRecord),
-                }
-            },
-            {
-                SynthraformerType.Traits,
-                new List<Type> {
-                    typeof(WeaponRecord),
-                    typeof(AmmoRecord),
-                }
-            },
-            {
-                SynthraformerType.Indestructible,
-                new List<Type> { typeof(BreakableItemRecord) }
-            },
-            {
-                SynthraformerType.RandomRarity,
-                new List<Type>
                 {
-                    //typeof(WeaponRecord),
-                    //typeof(HelmetRecord),
-                    //typeof(ArmorRecord),
-                    //typeof(LeggingsRecord),
-                    //typeof(BootsRecord),
-                    //typeof(AmmoRecord),
-                    //typeof(ImplantRecord),
-                    //typeof(AugmentationRecord),
-                }
-            },
-            {
-                SynthraformerType.Catalyst,
-                new List<Type>
-                { 
-                    //typeof(AugmentationRecord),
-                    //typeof(ImplantRecord)
-                }
-            }
-        };
+                    SynthraformerType.Amplifier,
+                    new List<AllowedTarget>
+                    {
+                        BlockStandard(typeof(WeaponRecord)),
+                        BlockStandard(typeof(HelmetRecord)),
+                        BlockStandard(typeof(ArmorRecord)),
+                        BlockStandard(typeof(LeggingsRecord)),
+                        BlockStandard(typeof(BootsRecord)),
+                        AllowAll(typeof(AmmoRecord)),
+                        //typeof(ImplantRecord),
+                        //typeof(AugmentationRecord),
+                    }
+                },
+                {
+                    SynthraformerType.Traits,
+                    new List<AllowedTarget>
+                    {
+                        BlockStandard(typeof(WeaponRecord)),
+                        BlockStandard(typeof(AmmoRecord)),
+                    }
+                },
+                {
+                    SynthraformerType.Indestructible,
+                    new List<AllowedTarget>
+                    { 
+                        BlockStandard(typeof(BreakableItemRecord))
+                    }
+                },
+                {
+                    SynthraformerType.RandomRarity,
+                    new List<AllowedTarget>
+                    {
+                        //typeof(WeaponRecord),
+                        //typeof(HelmetRecord),
+                        //typeof(ArmorRecord),
+                        //typeof(LeggingsRecord),
+                        //typeof(BootsRecord),
+                        //typeof(AmmoRecord),
+                        //typeof(ImplantRecord),
+                        //typeof(AugmentationRecord),
+                    }
+                },
+                {
+                    SynthraformerType.Catalyst,
+                    new List<AllowedTarget>
+                    {
+                        //typeof(AugmentationRecord),
+                        //typeof(ImplantRecord)
+                    }
+                },
+            };
 
         // Check if the given type is allowed
         internal bool IsValidTarget(PickupItem target, SynthraformerRecord synthraformerRecord)
@@ -98,33 +121,58 @@ namespace QM_PathOfQuasimorph.Core.Records
             //Plugin.Logger.Log($"IsValidTarget");
             //Plugin.Logger.Log($"target {target.Id}");
             //Plugin.Logger.Log($"Type {synthraformerRecord.Type}");
-
-            if (!AllowedTypesByType.TryGetValue(synthraformerRecord.Type, out var allowedTypes))
+            if (!AllowedTargetsByType.TryGetValue(synthraformerRecord.Type, out var allowedTargets))
             {
-                Plugin.Logger.Log("NO MATCH - No allowed types defined for this SynthraformerType");
+                Plugin.Logger.Log(
+                    "NO MATCH - No allowed targets defined for this SynthraformerType"
+                );
                 return false;
             }
 
-            // Check if any allowed type is assignable from the current record's type
+            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out var metadata))
+            {
+                metadata = MetadataWrapper.SplitItemUid(target.Id);
+            }
+
+            ItemRarity targetRarity = metadata.RarityClass;
 
             foreach (BasePickupItemRecord record in target._records)
             {
                 Type recordType = record.GetType();
 
-                if (allowedTypes.Any(allowedType => allowedType.IsAssignableFrom(recordType)))
+                foreach (var allowedTarget in allowedTargets)
                 {
-                    Plugin.Logger.Log($"MATCH {recordType.Name} (via inheritance)");
-                    return true;
+                    if (allowedTarget.ItemType.IsAssignableFrom(recordType))
+                    {
+                        // If no rarities specified → all allowed
+                        if (allowedTarget.AllowedRarities.Count == 0)
+                        {
+                            Plugin.Logger.Log($"MATCH {recordType.Name}: All rarities allowed");
+                            return true;
+                        }
+
+                        // Otherwise check if current rarity is allowed
+                        if (allowedTarget.IsRarityAllowed(targetRarity))
+                        {
+                            Plugin.Logger.Log(
+                                $"MATCH {recordType.Name} with rarity {targetRarity}"
+                            );
+                            return true;
+                        }
+                        else
+                        {
+                            Plugin.Logger.Log(
+                                $"BLOCKED: {recordType.Name} has disallowed rarity {targetRarity}"
+                            );
+                        }
+                    }
                 }
             }
 
-            //Plugin.Logger.Log($"NO MATCH");
-
+            Plugin.Logger.Log("NO MATCH - No valid type/rarity combination found");
             return false;
         }
 
-        public SynthraformerRecord()
-        {
-        }
+        public SynthraformerRecord() { }
     }
 }
