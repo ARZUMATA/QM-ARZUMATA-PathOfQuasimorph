@@ -1,7 +1,9 @@
 ﻿using JetBrains.Annotations;
 using MGSC;
 using Newtonsoft.Json;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -13,7 +15,7 @@ using UnityEngine;
 using static MGSC.SpawnSystem;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal class WeaponRecordProcessorPoq : ItemRecordProcessor<WeaponRecord>
     {

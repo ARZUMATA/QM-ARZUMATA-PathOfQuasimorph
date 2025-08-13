@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Records;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
 
 namespace QM_PathOfQuasimorph.Core
 {

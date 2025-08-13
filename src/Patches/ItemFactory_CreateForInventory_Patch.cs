@@ -7,8 +7,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace QM_PathOfQuasimorph.Core

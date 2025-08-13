@@ -1,12 +1,14 @@
 ﻿using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static MGSC.TurnDebugLogger;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal abstract class ResistItemProcessor<T> : ItemRecordProcessor<T> where T : ResistRecord
     {

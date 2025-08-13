@@ -3,7 +3,7 @@ using MGSC;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {

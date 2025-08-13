@@ -5,10 +5,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MGSC;
+using QM_PathOfQuasimorph.Core;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.SynthraformerController;
+using static QM_PathOfQuasimorph.Controllers.SynthraformerController;
 
-namespace QM_PathOfQuasimorph.Core.Records
+namespace QM_PathOfQuasimorph.Records
 {
     // Helper struct to define allowed combinations
     public readonly struct AllowedTarget

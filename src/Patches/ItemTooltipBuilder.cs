@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Records;
 using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,8 @@ using System.Web;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Windows;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Core

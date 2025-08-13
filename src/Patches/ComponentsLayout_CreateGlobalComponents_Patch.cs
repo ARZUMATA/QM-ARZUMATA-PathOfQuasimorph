@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 using UnityEngine.Rendering;
 
 namespace QM_PathOfQuasimorph.Core

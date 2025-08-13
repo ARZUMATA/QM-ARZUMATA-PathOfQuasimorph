@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core.Processors;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Processors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using static MGSC.Localization;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace QM_PathOfQuasimorph.Core

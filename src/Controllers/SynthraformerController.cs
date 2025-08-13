@@ -1,5 +1,6 @@
 ﻿using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Core;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 using static HarmonyLib.Code;
 
-namespace QM_PathOfQuasimorph.Core
+namespace QM_PathOfQuasimorph.Controllers
 {
     public class SynthraformerController
     {
@@ -104,7 +105,7 @@ namespace QM_PathOfQuasimorph.Core
 
             // Descriptor & Icon
             RepairDescriptor descriptor = ScriptableObject.CreateInstance("RepairDescriptor") as RepairDescriptor;
-            Sprite icon = System.Array.Find(sprites, s => s.name == $"synthraformer_poq_icons_{(int)type}");
+            Sprite icon = Array.Find(sprites, s => s.name == $"synthraformer_poq_icons_{(int)type}");
             descriptor._icon = icon;
             descriptor._smallIcon = icon;
             descriptor.name = itemId;

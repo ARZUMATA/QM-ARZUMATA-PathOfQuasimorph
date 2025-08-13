@@ -1,12 +1,14 @@
 ﻿using HarmonyLib;
 using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
 
 namespace QM_PathOfQuasimorph.Core
 {

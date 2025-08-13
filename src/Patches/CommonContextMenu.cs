@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
 using static UnityEngine.UI.Image;
 using Type = System.Type;
 

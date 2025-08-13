@@ -5,7 +5,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup>
-  <LangVersion>8.0</LangVersion>
+  <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 	<PropertyGroup>
 		<GAME_NAME>Quasimorph</GAME_NAME>

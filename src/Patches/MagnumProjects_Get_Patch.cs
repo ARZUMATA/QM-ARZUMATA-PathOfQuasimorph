@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using MGSC;
 using System;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {

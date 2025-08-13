@@ -1,5 +1,7 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
 using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,7 @@ using UnityEngine.Profiling;
 using static MGSC.SpawnSystem;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal class AugmentationRecordProcessorPoq : ItemRecordProcessor<AugmentationRecord>
     {

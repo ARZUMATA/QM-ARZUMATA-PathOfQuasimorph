@@ -1,11 +1,13 @@
 ﻿using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal class AmmoRecordProcessorPoq : ItemRecordProcessor<AmmoRecord>
     {

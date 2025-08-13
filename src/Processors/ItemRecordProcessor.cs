@@ -1,5 +1,7 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +10,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using static MGSC.SpawnSystem;
 using static MGSC.TurnDebugLogger;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
 using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal abstract class ItemRecordProcessor<T>
     {

@@ -1,16 +1,15 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QM_PathOfQuasimorph.Core;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
-using QM_PathOfQuasimorph.Core.Records;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using System;
 using UnityEngine.UI;
 using UnityEngine;
+using QM_PathOfQuasimorph.Components;
+using QM_PathOfQuasimorph.Records;
 
 namespace QM_PathOfQuasimorph.Core
 {

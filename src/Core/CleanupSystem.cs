@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngineInternal;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static UnityEngine.Rendering.CoreUtils;
 
 namespace QM_PathOfQuasimorph.Core

@@ -1,7 +1,7 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
-using QM_PathOfQuasimorph.Core.Processors;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Processors;
+using QM_PathOfQuasimorph.Records;
 using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections;
@@ -11,12 +11,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static UnityEngine.Rendering.Universal.TemporalAA;
 using static UnityEngine.UI.Image;
 using Type = System.Type;
+using QM_PathOfQuasimorph.Core;
 
-namespace QM_PathOfQuasimorph.Core
+namespace QM_PathOfQuasimorph.Controllers
 {
     internal class ItemRecordsControllerPoq
     {
@@ -192,8 +193,8 @@ namespace QM_PathOfQuasimorph.Core
             wrapper = new MetadataWrapper(
                  id: itemIdOrigin,
                  poqItem: true,
-                 startTime: new DateTime(MagnumPoQProjectsController.MAGNUM_PROJECT_START_TIME),
-                 finishTime: new DateTime(Int64.Parse(randomUidInjected))
+                 startTime: new DateTime(MAGNUM_PROJECT_START_TIME),
+                 finishTime: new DateTime(long.Parse(randomUidInjected))
                  );
             newId = wrapper.ReturnItemUid();
         }

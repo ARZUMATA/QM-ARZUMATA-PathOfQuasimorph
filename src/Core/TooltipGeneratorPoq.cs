@@ -1,5 +1,6 @@
 ﻿using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Records;
 using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,9 @@ using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq.CreatureDataPoq;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq.CreatureDataPoq;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static UnityEngine.Rendering.DebugUI;
 
 namespace QM_PathOfQuasimorph.Core

@@ -1,10 +1,11 @@
 ﻿using HarmonyLib;
 using MGSC;
 using ModConfigMenu;
+using QM_PathOfQuasimorph.Controllers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {

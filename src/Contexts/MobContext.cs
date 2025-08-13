@@ -1,7 +1,7 @@
 ﻿using System;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
 
-namespace QM_PathOfQuasimorph.Core
+namespace QM_PathOfQuasimorph.Contexts
 {
     internal partial class PathOfQuasimorph
     {

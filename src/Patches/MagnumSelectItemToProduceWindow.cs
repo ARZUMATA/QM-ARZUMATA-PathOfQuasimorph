@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core.Records;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -8,7 +8,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using static MGSC.MagnumSelectItemToProduceWindow;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {
