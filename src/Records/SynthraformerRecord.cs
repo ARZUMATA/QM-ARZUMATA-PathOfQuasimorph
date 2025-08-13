@@ -96,14 +96,14 @@ namespace QM_PathOfQuasimorph.Records
                     SynthraformerType.RandomRarity,
                     new List<AllowedTarget>
                     {
-                        //typeof(WeaponRecord),
-                        //typeof(HelmetRecord),
-                        //typeof(ArmorRecord),
-                        //typeof(LeggingsRecord),
-                        //typeof(BootsRecord),
-                        //typeof(AmmoRecord),
-                        //typeof(ImplantRecord),
-                        //typeof(AugmentationRecord),
+                        AllowAll(typeof(WeaponRecord)),
+                        AllowAll(typeof(HelmetRecord)),
+                        AllowAll(typeof(ArmorRecord)),
+                        AllowAll(typeof(LeggingsRecord)),
+                        AllowAll(typeof(BootsRecord)),
+                        AllowAll(typeof(AmmoRecord)),
+                        AllowAll(typeof(ImplantRecord)),
+                        AllowAll(typeof(AugmentationRecord)),
                     }
                 },
                 {
@@ -119,6 +119,12 @@ namespace QM_PathOfQuasimorph.Records
         // Check if the given type is allowed
         internal bool IsValidTarget(PickupItem target, SynthraformerRecord synthraformerRecord)
         {
+            // We don't process magnum crafted items, period.
+            if (MetadataWrapper.IsMagnumProjectItemUid(target.Id))
+            {
+                return false;
+            }
+
             //Plugin.Logger.Log($"IsValidTarget");
             //Plugin.Logger.Log($"target {target.Id}");
             //Plugin.Logger.Log($"Type {synthraformerRecord.Type}");

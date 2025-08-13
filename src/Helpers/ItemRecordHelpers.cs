@@ -126,6 +126,16 @@ namespace QM_PathOfQuasimorph.PoQHelpers
             return clone;
         }
 
+        internal static BreakableItemRecord CloneBreakableRecord(BreakableItemRecord original, string newId)
+        {
+            Plugin.Logger.Log($"ImplantRecord: CloneBreakableRecord");
 
+            BreakableItemRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
+
+            clone.RepairItemIds = DataSerializerHelper.MakeDeepCopy(original.RepairItemIds);
+
+            return clone;
+        }
     }
 }

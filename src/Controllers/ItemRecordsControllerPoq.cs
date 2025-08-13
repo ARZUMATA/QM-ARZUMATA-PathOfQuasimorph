@@ -1,8 +1,9 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Core;
+using QM_PathOfQuasimorph.PoQHelpers;
 using QM_PathOfQuasimorph.Processors;
 using QM_PathOfQuasimorph.Records;
-using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,16 +13,17 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
+using static UnityEngine.GraphicsBuffer;
 using static UnityEngine.Rendering.Universal.TemporalAA;
 using static UnityEngine.UI.Image;
 using Type = System.Type;
-using QM_PathOfQuasimorph.Core;
 
 namespace QM_PathOfQuasimorph.Controllers
 {
     internal class ItemRecordsControllerPoq
     {
         internal AmmoRecordProcessorPoq ammoRecordProcessorPoq;
+        internal BreakableItemProcessorPoq breakableItemProcessorPoq;
         internal AugmentationRecordProcessorPoq augmentationRecordProcessorPoq;
         internal ImplantRecordProcessorPoq implantRecordProcessorPoq;
         internal WeaponRecordProcessorPoq weaponRecordProcessorPoq;
@@ -38,6 +40,7 @@ namespace QM_PathOfQuasimorph.Controllers
         {
             ammoRecordProcessorPoq = new AmmoRecordProcessorPoq(this);
             augmentationRecordProcessorPoq = new AugmentationRecordProcessorPoq(this);
+            breakableItemProcessorPoq = new BreakableItemProcessorPoq(this);
             implantRecordProcessorPoq = new ImplantRecordProcessorPoq(this);
             weaponRecordProcessorPoq = new WeaponRecordProcessorPoq(this);
             helmetRecordProcessorPoq = new HelmetRecordProcessorPoq(this);
@@ -47,12 +50,12 @@ namespace QM_PathOfQuasimorph.Controllers
             woundSlotRecordProcessorPoq = new WoundSlotRecordProcessorPoq(this);
         }
 
-        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool applyRarity, bool ignoreBlacklist, string randomUidInjected)
+        internal string InterceptAndReplaceItemId(string Id, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool applyRarity, bool ignoreBlacklist, string randomUidInjected)
         {
-            if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(itemIdOrigin))
+            if (!ignoreBlacklist && !PathOfQuasimorph.itemRecordsControllerPoq.CanProcessItemRecord(Id))
             {
                 _logger.Log($"\t CanProcessItemRecord FALSE, returning generic");
-                return itemIdOrigin;
+                return Id;
             }
 
             _logger.Log($"InterceptAndReplaceItemId");
@@ -75,10 +78,10 @@ namespace QM_PathOfQuasimorph.Controllers
 
             if (itemRarity == ItemRarity.Standard)
             {
-                return itemIdOrigin;
+                return Id;
             }
 
-            return InterceptAndReplaceItemId(itemIdOrigin, mobRarityBoost, itemRarity, applyRarity, randomUidInjected);
+            return InterceptAndReplaceItemId(Id, mobRarityBoost, itemRarity, applyRarity, randomUidInjected);
         }
 
         internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool applyRarity, string randomUidInjected)
@@ -89,16 +92,21 @@ namespace QM_PathOfQuasimorph.Controllers
                 randomUidInjected = GenerateUid(itemRarity);
             }
 
-            var trimmedId = itemIdOrigin.Replace("_custom", string.Empty);
+            Plugin.Logger.Log($"CompositeItemRecord for: {itemIdOrigin}");
+            CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
+            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
+
+            if (itemIdOrigin.EndsWith("_custom"))
+            {
+                itemIdOrigin.Replace("_custom", string.Empty);
+            }
 
             MetadataWrapper wrapper;
             string newId;
-            GetNewId(trimmedId, randomUidInjected, out wrapper, out newId);
+            GetNewId(itemIdOrigin, randomUidInjected, out wrapper, out newId);
 
             _logger.Log($"\t newId: {newId}");
-
-            CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
-            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
+           
 
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
 
@@ -106,7 +114,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
             if (itemTransformationRecord == null)
             {
-                _logger.Log($"ItemTransformationRecord is missing for itemIdOrigin: {trimmedId}.");
+                _logger.Log($"ItemTransformationRecord is missing for Id: {itemIdOrigin}.");
                 _logger.Log($"Need a placeholder");
 
                 // Item breaks into this, unless it has it's own itemTransformationRecord.
@@ -122,7 +130,7 @@ namespace QM_PathOfQuasimorph.Controllers
             _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");
 
             string boostedParamString = string.Empty;
-            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, trimmedId, ref boostedParamString);
+            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, itemIdOrigin, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
 
             _logger.Log($"");
@@ -165,10 +173,10 @@ namespace QM_PathOfQuasimorph.Controllers
             RecordCollection.MetadataWrapperRecords.Add(newId, wrapper);
 
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(newId)}");
-            _logger.Log($"oldId {Data.Items._records.Keys.Contains(trimmedId)}");
+            _logger.Log($"oldId {Data.Items._records.Keys.Contains(itemIdOrigin)}");
 
-            Localization.DuplicateKey("item." + trimmedId + ".name", "item." + newId + ".name");
-            Localization.DuplicateKey("item." + trimmedId + ".shortdesc", "item." + newId + ".shortdesc");
+            Localization.DuplicateKey("item." + itemIdOrigin + ".name", "item." + newId + ".name");
+            Localization.DuplicateKey("item." + itemIdOrigin + ".shortdesc", "item." + newId + ".shortdesc");
             RaritySystem.AddAffixes(newId);
 
             return newId;
@@ -285,7 +293,12 @@ namespace QM_PathOfQuasimorph.Controllers
 
                 if (breakableItemRecord != null)
                 {
-                    //breakableItemRecord.Unbreakable;
+                    _logger.Log($"breakableItemRecord processing");
+
+                    BreakableItemRecord breakableItemRecordNew = ItemRecordHelpers.CloneBreakableRecord(breakableItemRecord, itemId);
+                    breakableItemProcessorPoq.Init(breakableItemRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    breakableItemProcessorPoq.ProcessRecord(ref boostedParamString);
+                    records.Add(breakableItemRecordNew);
                 }
 
                 ImplantRecord implantRecord = basePickupItemRecord as ImplantRecord;

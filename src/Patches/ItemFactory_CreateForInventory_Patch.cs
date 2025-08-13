@@ -156,7 +156,7 @@ namespace QM_PathOfQuasimorph.Core
 
                     // Create new item record
                     itemId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
-                        itemIdOrigin: itemId,
+                        Id: itemId,
                         mobRarityBoost: mobRarityBoost,
                         itemRarity: ItemRarity.Standard,
                         selectRarity: true,

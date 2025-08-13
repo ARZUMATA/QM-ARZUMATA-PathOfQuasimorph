@@ -103,6 +103,12 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMagnumProjectItemUid(string uid)
+        {
+            return uid?.EndsWith("_custom") == true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetRarityClass(string uid, out ItemRarity rarity)
         {
             if (IsPoqItemUid(uid))

@@ -299,7 +299,7 @@ namespace QM_PathOfQuasimorph.Processors
                 // We need just add record as CreatureSystem.SetBareHandSlot creates item for us.
 
                 return PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
-                    itemIdOrigin: itemRecord.BareHandWeapon,
+                    Id: itemRecord.BareHandWeapon,
                     mobRarityBoost: mobRarityBoost,
                     itemRarity: itemRarity,
                     selectRarity: false,

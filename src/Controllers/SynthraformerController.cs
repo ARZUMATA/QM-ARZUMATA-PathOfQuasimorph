@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Contexts;
 using UnityEngine;
-using static HarmonyLib.Code;
 
 namespace QM_PathOfQuasimorph.Controllers
 {
@@ -195,6 +193,14 @@ namespace QM_PathOfQuasimorph.Controllers
                     HandleTraits(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
+                case SynthraformerType.RandomRarity:
+                    HandleRandomRarity(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
+                case SynthraformerType.Indestructible:
+                    HandleIndestructible(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
                 default:
                     __result = false;
                     break;
@@ -285,7 +291,6 @@ namespace QM_PathOfQuasimorph.Controllers
             {
                 switch (basePickupItemRecord)
                 {
-
                     case WeaponRecord weaponRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata);
@@ -314,13 +319,56 @@ namespace QM_PathOfQuasimorph.Controllers
             __result = false;
         }
 
+
+        private void HandleRandomRarity(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            // We simply roll rarity i.e. just generatin new item rarity and new item for it.
+            __result = CreateNewItem(targetItem, repair, metadata.RarityClass, true, true);
+            return;
+        }
+
+        private void HandleIndestructible(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            if (metadata.RarityClass == ItemRarity.Standard)
+            {
+                __result = false;
+                return;
+            }
+
+            foreach (var basePickupItemRecord in targetItem.Records)
+            {
+                switch (basePickupItemRecord)
+                {
+                    case BreakableItemRecord breakableItemRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.Init(breakableItemRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata);
+                        break;
+
+                    default:
+                        continue;
+                }
+
+                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+
+                if (__result)
+                {
+                    RecordCollection.ItemRecords.Remove(targetItem.Id);
+                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+                }
+
+                return;
+            }
+
+            __result = false;
+        }
+
         private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, ItemRarity itemRarity, bool selectRarity, bool applyRarity)
         {
             Plugin.Logger.Log($"Synthraformer CreateNewItem: {target.Id}, Rarity={itemRarity}, SelectRarity={selectRarity}, ApplyRarity={applyRarity}");
 
             string newId = selectRarity
                 ? PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
-                    itemIdOrigin: MetadataWrapper.GetBaseId(target.Id),
+                    Id: MetadataWrapper.GetBaseId(target.Id),
                     mobRarityBoost: false,
                     itemRarity: itemRarity,
                     selectRarity: selectRarity,
