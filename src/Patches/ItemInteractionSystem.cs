@@ -100,28 +100,28 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ref bool __result, BasePickupItem item, Inventory inventory, ref List<BasePickupItem> itemsWithoutStorage, int toDisassembleCount = -1, bool guaranteed = false)
             {
-                if (__result)
-                {
+                //if (__result)
+                //{
 
-                    if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out var metadata))
-                    {
-                        // We can use transformation record but i want it random, so.
-                        if (metadata.RarityClass != ItemRarity.Standard && (item.Is<WeaponRecord>() || item.Is<ResistRecord>()))
-                        {
-                            // Check amplifier drop chance
-                            var canApplySynthraformerDrop = Helpers._random.Next(0, 100 + 1) < SynthraformerController.DROP_CHANCE;
+                //    if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out var metadata))
+                //    {
+                //        // We can use transformation record but i want it random, so.
+                //        if (metadata.RarityClass != ItemRarity.Standard && (item.Is<WeaponRecord>() || item.Is<ResistRecord>()))
+                //        {
+                //            // Check amplifier drop chance
+                //            var canApplySynthraformerDrop = Helpers._random.Next(0, 100 + 1) < SynthraformerController.DROP_CHANCE;
 
-                            if (canApplySynthraformerDrop)
-                            {
-                                BasePickupItem basePickupItem = SingletonMonoBehaviour<ItemFactory>.Instance.CreateForInventory(PathOfQuasimorph.synthraformerController.GetBaseDrop(), false);
-                                if (inventory == null || !inventory.TakeOrEquip(basePickupItem, false, true))
-                                {
-                                    itemsWithoutStorage.Add(basePickupItem);
-                                }
-                            }
-                        }
-                    }
-                }
+                //            if (canApplySynthraformerDrop)
+                //            {
+                //                BasePickupItem basePickupItem = SingletonMonoBehaviour<ItemFactory>.Instance.CreateForInventory(PathOfQuasimorph.synthraformerController.GetBaseDrop(), false);
+                //                if (inventory == null || !inventory.TakeOrEquip(basePickupItem, false, true))
+                //                {
+                //                    itemsWithoutStorage.Add(basePickupItem);
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
             }
         }
     }
