@@ -14,7 +14,6 @@ namespace QM_PathOfQuasimorph.Core
 {
     internal partial class PathOfQuasimorph
     {
-        //This generates creature data without uniqueId
         [HarmonyPatch(typeof(CreatureSystem), "SetBareHandSlot")]
         public static class CreatureSystem_SetBareHandSlot_Patch
         {
@@ -54,6 +53,7 @@ namespace QM_PathOfQuasimorph.Core
                 foreach (string AugmentationMapKey in creatureData.AugmentationMap.Keys.ToList())
                 {
                     WoundSlotRecord record = Data.WoundSlots.GetRecord(AugmentationMapKey, true);
+                    bool replaced = false;
 
                     if (record == null)
                     {
@@ -68,6 +68,8 @@ namespace QM_PathOfQuasimorph.Core
 
                         var AugmentationMapKeyValue_BaseId = string.Join("_", strArray.Skip(1));
 
+                        Plugin.Logger.LogWarning($"AugmentationMapKeyValue_BaseId: {AugmentationMapKeyValue_BaseId}");
+
                         creatureData.AugmentationMap[WoundSlot_BaseId] = AugmentationMapKeyValue_BaseId;
                         creatureData.AugmentationMap.Remove(AugmentationMapKey);
 
@@ -79,10 +81,47 @@ namespace QM_PathOfQuasimorph.Core
                         Plugin.Logger.LogWarning($"Reverting to baseid AugmentationMap Key: {WoundSlot_BaseId}");
                         Plugin.Logger.LogWarning($"Reverting to baseid AugmentationMap Value: {AugmentationMapKeyValue_BaseId}");
                     }
+                    else
+                    {
+                        if (creatureData.AugmentationMap[AugmentationMapKey] == null)
+                        {
+                            Plugin.Logger.LogWarning($"creatureData.AugmentationMap[AugmentationMapKey] is NULL.");
+                            var drops = record.AmputatedDrop;
 
+                            foreach (var drop in drops)
+                            {
+                                Plugin.Logger.LogWarning($"checking drop: {drop.Item2}");
+
+                                var itemRec = Data.Items.GetRecord(drop.Item2) as CompositeItemRecord;
+                                Plugin.Logger.LogWarning($"itemRec {itemRec == null}");
+
+                                foreach (var rec in itemRec.Records)
+                                {
+                                    var augRec = rec as AugmentationRecord;
+
+                                    if (augRec != null)
+                                    {
+                                        Plugin.Logger.LogWarning($"itemRec is AugmentationRecord");
+                                        creatureData.AugmentationMap[AugmentationMapKey] = augRec.Id;
+                                        replaced = true;
+                                        break;
+                                    }
+                                }
+
+                                if (replaced)
+                                {
+                                    break;
+                                }
+                            }
+
+                            if (replaced == false)
+                            {
+                                creatureData.AugmentationMap.Remove(AugmentationMapKey);
+
+                            }
+                        }
+                    }
                 }
-
-
 
                 foreach (var effect in creatureData.EffectsController.Effects)
                 {
