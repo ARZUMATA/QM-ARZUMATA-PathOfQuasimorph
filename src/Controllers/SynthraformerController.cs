@@ -137,9 +137,9 @@ namespace QM_PathOfQuasimorph.Controllers
                      │
                      ├─▶ Traits (3 Amp + 15 Core)
                      │    │
-                     │    ├─▶ Rarity (2 Traits + 20 Core)
+                     │    ├─▶ Rarity (1 Traits + 20 Core)
                      │    │    │
-                     │    │    ├─▶ Transmuter (2 Rarity + 1 Indestructible)
+                     │    │    ├─▶ Transmuter (1 Rarity + 1 Amplifier + 15 Core)
                      │    │    │
                      │    │    └─▶ Catalyst (3 Rarity + 1 Transmuter + 50 Core)
                      │    │
@@ -186,7 +186,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
                 case SynthraformerType.Rarity:
                     // Tier 3: Roll item rarity
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 2));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 1));
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 20));
                     break;
 
@@ -205,8 +205,9 @@ namespace QM_PathOfQuasimorph.Controllers
 
                 case SynthraformerType.Transmuter:
                     // Mid/late game — enable augments
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Indestructible), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 15));
                     break;
 
                 case SynthraformerType.Catalyst:
