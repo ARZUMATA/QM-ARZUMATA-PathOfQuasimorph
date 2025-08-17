@@ -66,6 +66,7 @@ namespace QM_PathOfQuasimorph.Core
         public const int AMOUNT_PREFIXES = 10; // csv has 10 prefixes per rarity
         public const int AMOUNT_SUFFIXES = 5; // CSV has 5 suffies per rarity param
         private static Logger _logger = new Logger(null, typeof(RaritySystem));
+        public BlackJackRoller blackJackRoller = new BlackJackRoller(5);
 
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls

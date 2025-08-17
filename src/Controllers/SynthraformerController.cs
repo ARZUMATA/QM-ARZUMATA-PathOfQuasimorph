@@ -69,6 +69,10 @@ namespace QM_PathOfQuasimorph.Controllers
 
             foreach (var type in types)
                 CreateItem(type);
+
+            // var stats = BlackJackRollerSimulator.RunSimulation(maxLevel: 5, rollCount: 100000);
+            // BlackJackRollerSimulator.PrintReport(stats);
+
         }
 
         public static string MakeId(SynthraformerType type) => $"{nameBase}_{(int)type}";
@@ -469,13 +473,14 @@ namespace QM_PathOfQuasimorph.Controllers
             Plugin.Logger.Log($"HandleRarity");
 
             // Get current rarity from item 
-            var currentRarity = metadata.RarityClass;
+            var currentRarity = (int)metadata.RarityClass;
 
             // Roll the new rarity using blackjack logic
-            var rolledRarity = TODO();
+            // Draw from blackjack deck
+            var (rolledRarity, wasCritical, didBust) = PathOfQuasimorph.raritySystem.blackJackRoller.Draw();
 
             // We simply roll rarity i.e. just generatin new item rarity and new item for it.
-            __result = CreateNewItem(targetItem, repair, rolledRarity, false, true);
+            __result = CreateNewItem(targetItem, repair, (ItemRarity)rolledRarity, false, true);
             return;
         }
 
