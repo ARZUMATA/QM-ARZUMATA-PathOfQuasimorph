@@ -18,13 +18,46 @@ namespace QM_PathOfQuasimorph.Controllers
         public static List<string> recipesOutputItems = new List<string>();
         const int craftUpgradeCostAmount = 4;
 
+        /*
+         * Synthraformer types
+         * As rainbow colors:
+         * 
+         * Red - rolls random rarity on a item (blackjack game based on rarities and mimic 21 card system)
+         *      Applies to all items where rarity can be applied.
+         *      
+         * Orange - rolls a random ballistic type on ammo
+         * 
+         * Yellow - rerolls a list of traits on item removing existing ones
+         *      Weapons and Ammo
+         *      
+         * Green - tries to roll indestructible flag (rare to drop, 50% chance)
+         *      All items that can break
+         *      
+         * Blue - rerolls a random chosed parameter/stat on item
+         *      All items that can have that roll
+         * 
+         * Indigo - TBA
+         * 
+         * Violet - Catalyst, turns any weapon into augment so its now an integrated augment with random augment stats too.
+         *      Blue can apply and roll weapon stats.
+         *      
+         * Azure - TBA
+         * 
+         * White - basic crafting material that drops from item dissasembly unless there is a different color to drop
+         */
+
+
         public enum SynthraformerType
         {
-            Amplifier,
-            Traits,
-            Rarity,
-            Indestructible,
-            Catalyst,
+            PrimalCore, // White - basic crafting material 
+            Rarity, // Red - applies random rarity onitem
+            Infuser, // Orange - nothing for now
+            Traits, // Yellow - rerolls traits on ite
+            Indestructible, // Green - roll indestructible flag
+            Amplifier, // Blue - rerolls single random stat on item
+            Transmuter,  // Indigo - nothing for now
+            Catalyst, // Violet - turn weapon into augment
+            Azure, // - nothing for now
         }
 
         public static void AddItems()
@@ -32,13 +65,10 @@ namespace QM_PathOfQuasimorph.Controllers
             RemoveExistingSynthraformerRecipes();
             recipesOutputItems.Clear();
 
-            // We don't need all rarities here but why not make them.
+            var types = Enum.GetValues(typeof(SynthraformerType)).OfType<SynthraformerType>().ToArray();
 
-            CreateItem(SynthraformerType.Rarity);
-            CreateItem(SynthraformerType.Amplifier);
-            CreateItem(SynthraformerType.Traits);
-            CreateItem(SynthraformerType.Indestructible);
-            CreateItem(SynthraformerType.Catalyst);
+            foreach (var type in types)
+                CreateItem(type);
         }
 
         public static string MakeId(SynthraformerType type) => $"{nameBase}_{(int)type}";
@@ -70,31 +100,10 @@ namespace QM_PathOfQuasimorph.Controllers
             var itemRecipe = new ItemProduceReceipt
             {
                 OutputItem = itemId,
-                ProduceTimeInHours = 2,
                 RequiredItems = new List<ItemQuantity>()
             };
 
-            // Setup recipe per type
-            switch (type)
-            {
-                case SynthraformerType.Traits:
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 5));
-                    break;
-
-                case SynthraformerType.Rarity:
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 2));
-                    break;
-
-                case SynthraformerType.Indestructible:
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 1));
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Indestructible), 1));
-                    break;
-            }
-
-            if (itemRecipe.RequiredItems.Count > 0)
-            {
-                AddRecipe(itemRecipe);
-            }
+            SetupSynthraformerRecipe(type, itemRecipe);
 
             // Descriptor & Icon
             RepairDescriptor descriptor = ScriptableObject.CreateInstance("RepairDescriptor") as RepairDescriptor;
@@ -113,6 +122,113 @@ namespace QM_PathOfQuasimorph.Controllers
             Localization.DuplicateKey($"item.{nameBase}_{(int)type}.name", "item." + itemId + ".name");
             Localization.DuplicateKey($"item.{nameBase}_{(int)type}.desc", "item." + itemId + ".desc");
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
+        }
+
+        private static void SetupSynthraformerRecipe(SynthraformerType type, ItemProduceReceipt recipe)
+        {
+            /*
+                PrimalCore (drop)
+                │
+                └─▶ Amplifier (10 Core)
+                     │
+                     ├─▶ Traits (3 Amp + 15 Core)
+                     │    │
+                     │    ├─▶ Rarity (2 Traits + 20 Core)
+                     │    │    │
+                     │    │    ├─▶ Transmuter (2 Rarity + 1 Indestructible)
+                     │    │    │
+                     │    │    └─▶ Catalyst (3 Rarity + 1 Transmuter + 50 Core)
+                     │    │
+                     │    └─▶ Indestructible (2 Traits + 5 Amp + 25 Core)
+                     │
+                     └─▶ Infuser (3 Traits + 1 Rarity) → future
+            */
+
+            // Clear any existing requirements (defensive)
+            recipe.RequiredItems.Clear();
+
+            float produceTime = type switch
+            {
+                SynthraformerType.Amplifier => 0.5f,
+                SynthraformerType.Traits => 1.0f,
+                SynthraformerType.Rarity => 1.5f,
+                SynthraformerType.Indestructible => 2.0f,
+                SynthraformerType.Infuser => 2.0f,
+                SynthraformerType.Transmuter => 2.5f,
+                SynthraformerType.Catalyst => 3.0f,
+                SynthraformerType.Azure => 4.0f,
+                _ => 0.0f // PrimalCore = not craftable
+            };
+
+            recipe.ProduceTimeInHours = produceTime;
+
+            // Define recipe per type
+            switch (type)
+            {
+                case SynthraformerType.PrimalCore:
+                    // Not craftable — base material (drop-only)
+                    break;
+
+                case SynthraformerType.Amplifier:
+                    // Tier 1: Stat roller
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 10));
+                    break;
+
+                case SynthraformerType.Traits:
+                    // Tier 2: Reroll traits
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 3));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 15));
+                    break;
+
+                case SynthraformerType.Rarity:
+                    // Tier 3: Roll item rarity
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 2));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 20));
+                    break;
+
+                case SynthraformerType.Indestructible:
+                    // Tier 4: Chance for indestructible
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 2));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 5));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 25));
+                    break;
+
+                case SynthraformerType.Infuser:
+                    // Placeholder / future use
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 3));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 1));
+                    break;
+
+                case SynthraformerType.Transmuter:
+                    // Mid/late game — enable augments
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Indestructible), 1));
+                    break;
+
+                case SynthraformerType.Catalyst:
+                    // Endgame: weapon → augment
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Transmuter), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 3));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 50));
+                    break;
+
+                case SynthraformerType.Azure:
+                    // Legendary-tier (optional)
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Catalyst), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 100));
+                    break;
+
+                default:
+                    // Handle unknown types gracefully
+                    Plugin.Logger.Log($"Unknown SynthraformerType: {type}");
+                    break;
+            }
+
+            // Only add recipe if it has requirements
+            if (recipe.RequiredItems.Count > 0)
+            {
+                AddRecipe(recipe);
+            }
         }
 
         private static void RemoveExistingSynthraformerRecipes()
@@ -142,10 +258,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
             var targetItem = target as PickupItem;
 
-            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(targetItem.Id, out var metadata))
-            {
-                metadata = MetadataWrapper.SplitItemUid(targetItem.Id);
-            }
+            var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(targetItem.Id, MetadataWrapper.SplitItemUid);
 
             Plugin.Logger.Log($"metadata.RarityClass {metadata.RarityClass}");
             Plugin.Logger.Log($"metadata.Id {metadata.Id}");
@@ -155,29 +268,86 @@ namespace QM_PathOfQuasimorph.Controllers
 
             switch (record.Type)
             {
-                case SynthraformerType.Amplifier:
-                    HandleAmplifier(targetItem, repair, record, metadata, obj, ref __result);
+                case SynthraformerType.Rarity:
+                    HandleRarity(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
+                case SynthraformerType.Infuser:
+                    HandleInfuser(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Traits:
                     HandleTraits(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
-                case SynthraformerType.Rarity:
-                    HandleRandomRarity(targetItem, repair, record, metadata, obj, ref __result);
-                    break;
-
                 case SynthraformerType.Indestructible:
                     HandleIndestructible(targetItem, repair, record, metadata, obj, ref __result);
+
+                    break;
+                case SynthraformerType.Amplifier:
+                    HandleAmplifier(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
+                case SynthraformerType.Transmuter:
+                    HandleTransmuter(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Catalyst:
                     HandleCatalyst(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
+                case SynthraformerType.Azure:
+                    HandleAzure(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
                 default:
                     __result = false;
                     break;
+            }
+        }
+
+        private void HandleAzure(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            foreach (var basePickupItemRecord in obj.Records)
+            {
+                switch (basePickupItemRecord)
+                {
+                    case AmmoRecord ammoRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollBallisticType(record, metadata);
+                        __result = true;
+                        return;
+                }
+            }
+        }
+
+        private void HandleTransmuter(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            foreach (var basePickupItemRecord in obj.Records)
+            {
+                switch (basePickupItemRecord)
+                {
+                    case AmmoRecord ammoRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollDamageType(record, metadata);
+                        __result = true;
+                        return;
+                }
+            }
+        }
+
+        private void HandleInfuser(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            foreach (var basePickupItemRecord in obj.Records)
+            {
+                switch (basePickupItemRecord)
+                {
+                    case AmmoRecord ammoRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollAmmoType(record, metadata);
+                        __result = true;
+                        return;
+                }
             }
         }
 
@@ -294,12 +464,21 @@ namespace QM_PathOfQuasimorph.Controllers
         }
 
 
-        private void HandleRandomRarity(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        private void HandleRarity(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
+            Plugin.Logger.Log($"HandleRarity");
+
+            // Get current rarity from item 
+            var currentRarity = metadata.RarityClass;
+
+            // Roll the new rarity using blackjack logic
+            var rolledRarity = TODO();
+
             // We simply roll rarity i.e. just generatin new item rarity and new item for it.
-            __result = CreateNewItem(targetItem, repair, metadata.RarityClass, true, true);
+            __result = CreateNewItem(targetItem, repair, rolledRarity, false, true);
             return;
         }
+
 
         private void HandleIndestructible(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
@@ -392,7 +571,7 @@ namespace QM_PathOfQuasimorph.Controllers
         {
             Plugin.Logger.Log($"Synthraformer CreateNewItem: {target.Id}, Rarity={itemRarity}, SelectRarity={selectRarity}, ApplyRarity={applyRarity}");
 
-            string newId = selectRarity
+            string newId = applyRarity
                 ? PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
                     Id: MetadataWrapper.GetBaseId(target.Id),
                     mobRarityBoost: false,
@@ -402,6 +581,17 @@ namespace QM_PathOfQuasimorph.Controllers
                     randomUidInjected: null,
                     applyRarity: applyRarity)
                 : target.Id;
+
+            // Verify rarity class in metadata
+            var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(newId, MetadataWrapper.SplitItemUid);
+
+            if (metadata.RarityClass != itemRarity)
+            {
+                Plugin.Logger.Log($"Updating metadata rarity: {metadata.RarityClass} > {itemRarity}");
+
+                metadata.UpdateRarityClass(itemRarity);
+                newId = metadata.ReturnItemUid();
+            }
 
             var newItem = ItemFactoryPoq.CreateNewItem(newId);
 

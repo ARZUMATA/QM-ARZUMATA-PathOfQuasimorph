@@ -12,7 +12,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(ItemSlot __instance)
             {
-                if (PathOfQuasimorph.GameLoopGroup == GameLoopGroup.Space)
+                //if (PathOfQuasimorph.GameLoopGroup == GameLoopGroup.Space)
                 {
                     DragController drag = UI.Drag;
                     bool flag = __instance.IsPointerInside && !drag.IsDragging;

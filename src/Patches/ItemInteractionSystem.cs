@@ -26,11 +26,11 @@ namespace QM_PathOfQuasimorph.Core
             {
                 //Plugin.Logger.Log($"ItemInteractionSystem_CanRepair_Patch");
 
-                if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
-                {
-                    // Do original method
-                    return true;
-                }
+                //if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
+                //{
+                //    // Do original method
+                //    return true;
+                //}
 
                 if (!repair.Is<SynthraformerRecord>() || target.Locked)
                 {
@@ -61,11 +61,11 @@ namespace QM_PathOfQuasimorph.Core
 
                 disassembleToTrash = false;
 
-                if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
-                {
-                    // Do original method
-                    return true;
-                }
+                //if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
+                //{
+                //    // Do original method
+                //    return true;
+                //}
 
                 var synthraformerRecord = repair.Record<SynthraformerRecord>();
                 Plugin.Logger.Log($"synthraformerRecord null {synthraformerRecord == null} synthraformerRecord:{synthraformerRecord}");

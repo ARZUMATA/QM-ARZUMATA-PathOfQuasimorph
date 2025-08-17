@@ -18,11 +18,11 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
         {
-            { "BallisticType", true },
+            //{ "BallisticType", true },
             { "MinAmmoAmount", true },
             { "MaxAmmoAmount", true },
-            { "AmmoType", true },
-            { "DmgType", true },
+            //{ "AmmoType", true },
+            //{ "DmgType", true },
             { "DmgCritChance", true },
             { "RangeBonus", true },
             { "AccuracyMult", true },
@@ -116,9 +116,9 @@ namespace QM_PathOfQuasimorph.Processors
             switch (stat.Key)
             {
                 case "BallisticType":
-                    var values = Enum.GetValues(typeof(AmmoBallisticType));
-                    var randEnum = Helpers._random.Next(0, values.Length);
-                    itemRecord.BallisticType = (AmmoBallisticType)values.GetValue(randEnum);
+                    //var values = Enum.GetValues(typeof(AmmoBallisticType));
+                    //var randEnum = Helpers._random.Next(0, values.Length);
+                    //itemRecord.BallisticType = (AmmoBallisticType)values.GetValue(randEnum);
                     break;
 
                 case "MinAmmoAmount":
@@ -135,7 +135,7 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
 
                 case "DmgType":
-                    itemRecord.DmgType = DmgTypes[Helpers._random.Next(0, DmgTypes.Count)];
+                    //itemRecord.DmgType = DmgTypes[Helpers._random.Next(0, DmgTypes.Count)];
                     break;
 
                 case "DmgCritChance":
@@ -285,5 +285,23 @@ namespace QM_PathOfQuasimorph.Processors
         {
             ApplyTraits(true);
         }
+
+        internal void RerollBallisticType(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            var values = Enum.GetValues(typeof(AmmoBallisticType));
+            var randEnum = Helpers._random.Next(0, values.Length);
+            itemRecord.BallisticType = (AmmoBallisticType)values.GetValue(randEnum);
+        }
+
+        internal void RerollDamageType(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            itemRecord.DmgType = DmgTypes[Helpers._random.Next(0, DmgTypes.Count)];
+        }
+
+        internal void RerollAmmoType(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            itemRecord.AmmoType = AmmoTypes[Helpers._random.Next(0, AmmoTypes.Count)];
+        }
+
     }
 }

@@ -119,14 +119,16 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch :: Prefix :: Called by: {formattedStackTrace}");
                 */
                 Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch");
-                Plugin.Logger.Log($"wrapper {itemId}");
-                var wrapper = MetadataWrapper.SplitItemUid(itemId);
-                Plugin.Logger.Log($"wrapper == null {wrapper == null}");
+                Plugin.Logger.Log($"metadata {itemId}");
 
-                if (wrapper != null && (wrapper.PoqItem || wrapper.SerializedStorage))
+                var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(itemId, MetadataWrapper.SplitItemUid);
+
+                Plugin.Logger.Log($"metadata == null {metadata == null}");
+
+                if (metadata != null && (metadata.PoqItem || metadata.SerializedStorage))
                 {
-                    Plugin.Logger.Log($"wrapper.PoqItem {wrapper.PoqItem}");
-                    Plugin.Logger.Log($"wrapper.SerializedStorage {wrapper.SerializedStorage}");
+                    Plugin.Logger.Log($"metadata.PoqItem {metadata.PoqItem}");
+                    Plugin.Logger.Log($"metadata.SerializedStorage {metadata.SerializedStorage}");
 
                     return true;
                 }

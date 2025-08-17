@@ -25,10 +25,10 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"interactable {interactable}");
                 Plugin.Logger.Log($"SynthraformerContext.Process {SynthraformerContext.Process}");
 
-                if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
-                {
-                    return;
-                }
+                //if (PathOfQuasimorph.GameLoopGroup != GameLoopGroup.Space)
+                //{
+                //    return;
+                //}
 
                 if (!interactable || ((ContextMenuCommand)bindedVal != ContextMenuCommand.Repair))
                 {

@@ -33,7 +33,7 @@ namespace QM_PathOfQuasimorph.Core
                  * So we intercept StationSystem.AddItemToStationStorage instead and since it's just a BasePickupItem we create new generic and replace the variable.
                  */
 
-                var metadata = MetadataWrapper.SplitItemUid(item.Id);
+                var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(item.Id, MetadataWrapper.SplitItemUid);
 
                 if (metadata != null && metadata.PoqItem)
                 {

@@ -279,6 +279,13 @@ namespace QM_PathOfQuasimorph.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void UpdateRarityClass(ItemRarity rarity)
+        {
+            RarityClass = rarity;
+            RecordCollection.MetadataWrapperRecords[ReturnItemUid()] = this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSerializedStorage(string uid)
         {
             return TryGetFinishTime(uid, out var finish) &&

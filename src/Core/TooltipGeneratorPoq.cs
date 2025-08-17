@@ -1,24 +1,13 @@
 ﻿using MGSC;
 using QM_PathOfQuasimorph.Controllers;
-using QM_PathOfQuasimorph.Records;
 using QM_PathOfQuasimorph.PoqHelpers;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Numerics;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Profiling;
 using UnityEngine.UI;
 using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
-using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq.CreatureDataPoq;
-using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
-using static UnityEngine.Rendering.DebugUI;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -55,7 +44,7 @@ namespace QM_PathOfQuasimorph.Core
                     _factory._state.Resolve(_factory._itemTooltipBuilder);
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
-                    var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
+                    var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(_factory._lastShowedItem.Id, MetadataWrapper.SplitItemUid);
 
                     if (!RecordCollection.MetadataWrapperRecords.TryGetValue(_factory._lastShowedItem.Id, out MetadataWrapper wrapper))
                     {
@@ -76,35 +65,35 @@ namespace QM_PathOfQuasimorph.Core
                     }
                     else
                     {
-                        _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
+                        _logger.Log($"metadata.CustomId {metadata.ReturnItemUid()}");
 
-                        if (wrappedItem.PoqItem)
+                        if (metadata.PoqItem)
                         {
                             _tooltip = _factory.BuildEmptyTooltip();
-                            //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
+                            //_tooltip.SetCaption1(Localization.Get("item." + metadata.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
 
-                            var localizedStringCaption2 = Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc");
+                            var localizedStringCaption2 = Localization.Get("item." + metadata.ReturnItemUid() + ".shortdesc");
 
                             if (localizedStringCaption2.Length > 35)
                             {
                                 localizedStringCaption2 = $"<size=85%>{localizedStringCaption2}</size>";
                             }
 
-                            PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
+                            PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + metadata.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[metadata.RarityClass]);
 
-                            PropertiesTooltipHelper.SetCaption2(_tooltip, localizedStringCaption2, RaritySystem.Colors[wrappedItem.RarityClass]);
+                            PropertiesTooltipHelper.SetCaption2(_tooltip, localizedStringCaption2, RaritySystem.Colors[metadata.RarityClass]);
 
-                            //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
+                            //_tooltip.SetCaption2(Localization.Get("item." + metadata.ReturnItemUid() + ".shortdesc"));
 
-                            //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
-                            _factory.AddPanelToTooltip().SetValue(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                            //_tooltip.SetCaption1Right(metadata.RarityClass.ToString().WrapInColor(RaritySystem.Colors[metadata.RarityClass].Replace("#", string.Empty)));
+                            _factory.AddPanelToTooltip().SetValue(metadata.RarityClass.ToString().WrapInColor(RaritySystem.Colors[metadata.RarityClass].Replace("#", string.Empty)));
                             //_factory.AddPanelToTooltip().SetValue("Difference");
 
                             //_factory._tooltip.MakeRed();
                             _factory.AddCompareBlock(_factory._lastShowedItem);
                             //_factory.AddCompareBlock(_factory._lastShowedItem);
 
-                            InitItemComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+                            InitItemComparsion(_factory._lastShowedItem as PickupItem, metadata.Id);
 
                             _factory._tooltip.IsAdditionalTooltip = true;
                         }

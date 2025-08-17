@@ -64,17 +64,24 @@ namespace QM_PathOfQuasimorph.Records
             new Dictionary<SynthraformerType, List<AllowedTarget>>
             {
                 {
-                    SynthraformerType.Amplifier,
+                    SynthraformerType.Rarity,
                     new List<AllowedTarget>
                     {
-                        BlockStandard(typeof(WeaponRecord)),
-                        BlockStandard(typeof(HelmetRecord)),
-                        BlockStandard(typeof(ArmorRecord)),
-                        BlockStandard(typeof(LeggingsRecord)),
-                        BlockStandard(typeof(BootsRecord)),
+                        AllowAll(typeof(WeaponRecord)),
+                        AllowAll(typeof(HelmetRecord)),
+                        AllowAll(typeof(ArmorRecord)),
+                        AllowAll(typeof(LeggingsRecord)),
+                        AllowAll(typeof(BootsRecord)),
                         AllowAll(typeof(AmmoRecord)),
-                        //typeof(ImplantRecord),
-                        //typeof(AugmentationRecord),
+                        AllowAll(typeof(ImplantRecord)),
+                        AllowAll(typeof(AugmentationRecord)),
+                    }
+                },
+                {
+                    SynthraformerType.Infuser,
+                    new List<AllowedTarget>
+                    {
+                        BlockStandard(typeof(AmmoRecord)),
                     }
                 },
                 {
@@ -93,17 +100,24 @@ namespace QM_PathOfQuasimorph.Records
                     }
                 },
                 {
-                    SynthraformerType.Rarity,
+                    SynthraformerType.Amplifier,
                     new List<AllowedTarget>
                     {
-                        AllowAll(typeof(WeaponRecord)),
-                        AllowAll(typeof(HelmetRecord)),
-                        AllowAll(typeof(ArmorRecord)),
-                        AllowAll(typeof(LeggingsRecord)),
-                        AllowAll(typeof(BootsRecord)),
-                        AllowAll(typeof(AmmoRecord)),
-                        AllowAll(typeof(ImplantRecord)),
-                        AllowAll(typeof(AugmentationRecord)),
+                        BlockStandard(typeof(WeaponRecord)),
+                        BlockStandard(typeof(HelmetRecord)),
+                        BlockStandard(typeof(ArmorRecord)),
+                        BlockStandard(typeof(LeggingsRecord)),
+                        BlockStandard(typeof(BootsRecord)),
+                        BlockStandard(typeof(AmmoRecord)),
+                        //typeof(ImplantRecord),
+                        //typeof(AugmentationRecord),
+                    }
+                },
+                {
+                    SynthraformerType.Transmuter,
+                    new List<AllowedTarget>
+                    {
+                        BlockStandard(typeof(AmmoRecord)),
                     }
                 },
                 {
@@ -113,6 +127,13 @@ namespace QM_PathOfQuasimorph.Records
                         AllowAll(typeof(WeaponRecord)),
                         AllowAll(typeof(ImplantRecord)),
                         AllowAll(typeof(AugmentationRecord)),
+                    }
+                },
+                {
+                    SynthraformerType.Azure,
+                    new List<AllowedTarget>
+                    {
+                        BlockStandard(typeof(AmmoRecord)),
                     }
                 },
             };
@@ -137,10 +158,7 @@ namespace QM_PathOfQuasimorph.Records
                 return false;
             }
 
-            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(target.Id, out var metadata))
-            {
-                metadata = MetadataWrapper.SplitItemUid(target.Id);
-            }
+            var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(target.Id, MetadataWrapper.SplitItemUid);
 
             ItemRarity targetRarity = metadata.RarityClass;
 

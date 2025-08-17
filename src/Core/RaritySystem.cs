@@ -1171,7 +1171,7 @@ namespace QM_PathOfQuasimorph.Core
         [Obsolete]
         internal void ApplyTraits(ref BasePickupItem item)
         {
-            var wrapper = MetadataWrapper.SplitItemUid(item.Id);
+            var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(item.Id, MetadataWrapper.SplitItemUid);
 
             // We have that item in list so we need to process it and remove later on.
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(item.Id, true) as CompositeItemRecord;
@@ -1183,16 +1183,16 @@ namespace QM_PathOfQuasimorph.Core
                 switch (recordType.Name)
                 {
                     case nameof(WeaponRecord):
-                        ApplyTraits(ref item, wrapper.RarityClass, ItemTraitType.WeaponTrait, compositeItemRecord);
+                        ApplyTraits(ref item, metadata.RarityClass, ItemTraitType.WeaponTrait, compositeItemRecord);
                         break;
                     case nameof(ArmorRecord):
                     case nameof(HelmetRecord):
                     case nameof(LeggingsRecord):
                     case nameof(BootsRecord):
-                        ApplyTraits(ref item, wrapper.RarityClass, ItemTraitType.ArmorTrait, compositeItemRecord);
+                        ApplyTraits(ref item, metadata.RarityClass, ItemTraitType.ArmorTrait, compositeItemRecord);
                         break;
                         //case nameof(AmmoRecord):
-                        //    ApplyTraits(ref item, wrapper.RarityClass, ItemTraitType.ArmorTrait, compositeItemRecord);
+                        //    ApplyTraits(ref item, metadata.RarityClass, ItemTraitType.ArmorTrait, compositeItemRecord);
                         break;
                     default:
                         break;
@@ -1275,7 +1275,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static void AddAffixes(string itemId)
         {
-            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper wrapper))
+            if (!RecordCollection.MetadataWrapperRecords.TryGetValue(itemId, out MetadataWrapper metadata))
             {
                 if (MetadataWrapper.IsPoqItemUid(itemId))
                 {
@@ -1284,27 +1284,27 @@ namespace QM_PathOfQuasimorph.Core
             }
             else
             {
-                wrapper = MetadataWrapper.SplitItemUid(itemId);
+                metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(itemId, MetadataWrapper.SplitItemUid);
 
-                if (wrapper.RarityClass == ItemRarity.Standard)
+                if (metadata.RarityClass == ItemRarity.Standard)
                 {
                     return;
                 }
 
-                var affix = AffixManager.GetAffix(wrapper.RarityClass, itemId);
+                var affix = AffixManager.GetAffix(metadata.RarityClass, itemId);
 
                 if (affix == null)
                 {
                     return;
                 }
 
-                UpdateKey("item." + wrapper.ReturnItemUid() + ".name",
+                UpdateKey("item." + metadata.ReturnItemUid() + ".name",
                     affix[0].Text, "",
-                    wrapper.ReturnItemUid(true));
+                    metadata.ReturnItemUid(true));
 
-                UpdateKey("item." + wrapper.ReturnItemUid() + ".shortdesc",
+                UpdateKey("item." + metadata.ReturnItemUid() + ".shortdesc",
                     "", affix[1].Text,
-                    wrapper.ReturnItemUid(true));
+                    metadata.ReturnItemUid(true));
             }
         }
 
@@ -1337,10 +1337,10 @@ namespace QM_PathOfQuasimorph.Core
                 // We do it here because this method fires earlier than we actually inject item record.
                 //// Since Localization.DuplicateKey just copies key and nothing else, it will do same in inject item record method.
 
-                //Localization.DuplicateKey("item." + wrapper.Id + ".name", "item." + wrapper.ReturnItemUid() + ".name");
-                //Localization.DuplicateKey("item." + wrapper.Id + ".shortdesc", "item." + wrapper.ReturnItemUid() + ".shortdesc");
+                //Localization.DuplicateKey("item." + metadata.Id + ".name", "item." + metadata.ReturnItemUid() + ".name");
+                //Localization.DuplicateKey("item." + metadata.Id + ".shortdesc", "item." + metadata.ReturnItemUid() + ".shortdesc");
 
-                //_logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {wrapper.ReturnItemUid()}");
+                //_logger.LogWarning($"Updating {affix[0].Text} and {affix[1].Text} for {metadata.ReturnItemUid()}");
 
                 // Problem, on game load it doesn't have effect.
                 UpdateKey("item." + wrapper.ReturnItemUid() + ".name",

@@ -63,16 +63,17 @@ namespace QM_PathOfQuasimorph.Core
                 */
 
                 // Update or create imageComponent on the GameObject
-                var rarity = MetadataWrapper.SplitItemUid(item.Id).RarityClass;
 
-                var synthraformerRecord = item.Record<SynthraformerRecord>();
+                var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(item.Id, MetadataWrapper.SplitItemUid);
 
-                if (synthraformerRecord != null)
-                {
-                    rarity = synthraformerRecord.Rarity;
-                }
+                //var synthraformerRecord = item.Record<SynthraformerRecord>();
 
-                ApplyBackground(rarityComponent, rarity);
+                //if (synthraformerRecord != null)
+                //{
+                //    rarity = synthraformerRecord.Rarity;
+                //}
+
+                ApplyBackground(rarityComponent, metadata.RarityClass);
             }
         }
 
