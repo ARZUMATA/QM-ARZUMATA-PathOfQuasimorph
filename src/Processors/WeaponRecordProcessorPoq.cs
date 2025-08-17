@@ -3,6 +3,7 @@ using MGSC;
 using Newtonsoft.Json;
 using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.Core;
+using QM_PathOfQuasimorph.PoQHelpers;
 using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
@@ -339,6 +340,90 @@ namespace QM_PathOfQuasimorph.Processors
 
             itemRecord.RequiredAmmo = requiredAmmo.ElementAt(rndIndx).Key;
             itemRecord.DefaultAmmoId = requiredAmmo.ElementAt(rndIndx).Value;
+        }
+
+        internal void CreateAugmentation(SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj)
+        {
+            _logger.Log($"\tCreateAugmentation");
+            string boostedParamString = string.Empty;
+
+            // Ah here we go again. We got just weapon record and we need to create an augmentation from it retaining all parameters from augmentation.
+            // Weapon record left as is and used as an aug weapon so it's ok here.
+            // We need to add woundslot and augmentation record now that will be rolled on the fly.
+
+            // We may "borrow" augrecord right?
+            //CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
+
+            _logger.Log($"\augmentationRecord Id: {itemId}");
+
+            var augmentationRecord = new AugmentationRecord();
+            augmentationRecord.Id = itemId;
+            augmentationRecord.Categories = new List<string>();
+            augmentationRecord.Categories.Add("CyberAug");
+            augmentationRecord.TechLevel = itemRecord.TechLevel;
+            augmentationRecord.Price = itemRecord.Price;
+            augmentationRecord.Weight = itemRecord.Weight;
+            augmentationRecord.InventoryWidthSize = itemRecord.InventoryWidthSize;
+            augmentationRecord.ItemClass = itemRecord.ItemClass;
+            augmentationRecord.AugmentationClass = AugmentationClass.Combat;
+            augmentationRecord.WoundSlotIds = new List<string>();
+            augmentationRecord.TooltipIconTag = "aug_type_arm";
+
+            //augmentationRecord.ContentDescriptor = itemRecord.ContentDescriptor;
+
+            var legitSlotsArms = Data.WoundSlots._records
+                .Where(kv => kv.Value.SlotType == "Arm")
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            // Now we create new woundSlot record based on these lists
+            var armSlotRecord = Data.WoundSlots.GetRecord(legitSlotsArms.GetRandomItem().Key);
+            var armSlot_NewId = $"{armSlotRecord.Id}_{itemId}";
+
+            _logger.Log($"\armSlot_NewId: {armSlot_NewId}");
+
+            WoundSlotRecord armSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(armSlotRecord, $"{armSlot_NewId}");
+            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(armSlotRecordNew, itemRarity, mobRarityBoost, false, $"{armSlot_NewId}", oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+
+            Data.WoundSlots.AddRecord($"{armSlot_NewId}", armSlotRecordNew);
+            RecordCollection.WoundSlotRecords.Add($"{armSlot_NewId}", armSlotRecordNew);
+            Localization.DuplicateKey("woundslot." + armSlotRecord.Id + ".name", "woundslot." + armSlot_NewId + ".name");
+
+            // Penalty effects
+            armSlotRecordNew.ImplicitPenaltyEffects["arm_slot_unavailable"] = 1;
+            armSlotRecordNew.BareHandWeapon = itemId;
+
+            augmentationRecord.WoundSlotIds.Add(armSlot_NewId);
+
+            var legitSlotsShoulders = Data.WoundSlots._records
+                .Where(kv => kv.Value.SlotType == "Shoulder")
+                .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            var shoulderSlotRecord = Data.WoundSlots.GetRecord(legitSlotsShoulders.GetRandomItem().Key);
+            var shoulderSlot_NewId = $"{shoulderSlotRecord.Id}_{itemId}";
+
+            _logger.Log($"\ashoulderSlot_NewId: {shoulderSlot_NewId}");
+
+            WoundSlotRecord shoulderSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(shoulderSlotRecord, $"{shoulderSlot_NewId}");
+            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(shoulderSlotRecordNew, itemRarity, mobRarityBoost, false, $"{shoulderSlot_NewId}", oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+
+            Data.WoundSlots.AddRecord($"{shoulderSlot_NewId}", shoulderSlotRecordNew);
+            RecordCollection.WoundSlotRecords.Add($"{shoulderSlot_NewId}", shoulderSlotRecordNew);
+            Localization.DuplicateKey("woundslot." + shoulderSlotRecord.Id + ".name", "woundslot." + shoulderSlot_NewId + ".name");
+
+            augmentationRecord.WoundSlotIds.Add(shoulderSlot_NewId);
+
+            obj.Records.Add(augmentationRecord);
+
+            // Finalize
+            Data.Items._records[itemId] = obj;
+
+            //Data.Items.RemoveRecord(itemId);
+            //Data.Items.AddRecord(itemId, obj);
+
+            RecordCollection.ItemRecords[itemId] = obj;
+            //RecordCollection.MetadataWrapperRecords.Add(itemId, wrapper);
         }
     }
 }

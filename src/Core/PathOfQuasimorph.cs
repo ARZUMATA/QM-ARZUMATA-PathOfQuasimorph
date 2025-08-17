@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using MGSC;
+using Newtonsoft.Json;
 using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.Processors;
 using System;
@@ -29,6 +30,7 @@ namespace QM_PathOfQuasimorph.Core
         internal static ItemRecordsControllerPoq itemRecordsControllerPoq = new ItemRecordsControllerPoq();
         private static TooltipGeneratorPoq tooltipGeneratorPoq = new TooltipGeneratorPoq();
         internal static SynthraformerController synthraformerController = new SynthraformerController();
+        internal static MigrationAssistant migrationAssistant = new MigrationAssistant();
         public static RaritySystem raritySystem = new RaritySystem();
         internal static DungeonGameMode dungeonGameMode = null;
         internal static GameCamera gameCamera = null;
@@ -38,6 +40,18 @@ namespace QM_PathOfQuasimorph.Core
         public static IModContext _context;
         public static GameLoopGroup GameLoopGroup;
         public static PerkFactory perkFactoryState { get; private set; }
+
+        [JsonIgnore]
+        public static Version Version
+        {
+            get
+            {
+                if (Plugin.Config.Version == null || !Version.TryParse(Plugin.Config.Version, out var version))
+                    return new Version(1, 0, 0, 0); // fallback
+                return version;
+            }
+            set => Plugin.Config.Version = value?.ToString() ?? "1.0.0.0";
+        }
 
         /* All magnum project are recipes that are always available in the game. You get access to exact recipe via chip.
         * Mod projects are just derivatives from that

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.Core;
 using QM_PathOfQuasimorph.PoQHelpers;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -168,6 +169,10 @@ namespace QM_PathOfQuasimorph.Processors
                     itemRecord.WoundSlotIds = newWoundSlotIds;
                 }
             }
+        }
+
+        internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
+        {
         }
     }
 }

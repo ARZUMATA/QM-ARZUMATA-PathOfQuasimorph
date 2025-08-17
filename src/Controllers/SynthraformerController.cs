@@ -16,12 +16,13 @@ namespace QM_PathOfQuasimorph.Controllers
         private static Sprite[] sprites = Helpers.LoadSpritesFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph");
         private static Logger _logger = new Logger(null, typeof(SynthraformerController));
         public static List<string> recipesOutputItems = new List<string>();
+        const int craftUpgradeCostAmount = 4;
 
         public enum SynthraformerType
         {
             Amplifier,
             Traits,
-            RandomRarity,
+            Rarity,
             Indestructible,
             Catalyst,
         }
@@ -30,29 +31,24 @@ namespace QM_PathOfQuasimorph.Controllers
         {
             RemoveExistingSynthraformerRecipes();
             recipesOutputItems.Clear();
-            var rarities = Enum.GetValues(typeof(ItemRarity)).OfType<ItemRarity>().ToArray();
 
-            // Amplifier: all rarities
-            foreach (var rarity in rarities)
-                CreateItem(SynthraformerType.Amplifier, rarity);
+            // We don't need all rarities here but why not make them.
 
-            // Others: standard only
-            CreateItem(SynthraformerType.Traits, ItemRarity.Standard);
-            CreateItem(SynthraformerType.RandomRarity, ItemRarity.Standard);
-            CreateItem(SynthraformerType.Indestructible, ItemRarity.Standard);
-            //CreateItem(SynthraformerType.Catalyst, ItemRarity.Standard);
-
-            CreateAmplifierUpgradeRecipes(rarities);
+            CreateItem(SynthraformerType.Rarity);
+            CreateItem(SynthraformerType.Amplifier);
+            CreateItem(SynthraformerType.Traits);
+            CreateItem(SynthraformerType.Indestructible);
+            CreateItem(SynthraformerType.Catalyst);
         }
 
-        private static string MakeId(SynthraformerType type, ItemRarity rarity) => $"{nameBase}_{(int)type}_{rarity.ToString().ToLower()}";
+        public static string MakeId(SynthraformerType type) => $"{nameBase}_{(int)type}";
         public static bool Is(BasePickupItem item) => item?.Id != null && Is(item.Id);
         public static bool Is(string item) => item?.Contains(nameBase) == true;
-        public string GetBaseDrop() => MakeId(SynthraformerType.Amplifier, ItemRarity.Standard);
+        public string GetBaseDrop() => MakeId(SynthraformerType.Amplifier);
 
-        private static void CreateItem(SynthraformerType type, ItemRarity rarity)
+        private static void CreateItem(SynthraformerType type)
         {
-            string itemId = MakeId(type, rarity);
+            string itemId = MakeId(type);
 
             var record = new SynthraformerRecord
             {
@@ -69,7 +65,6 @@ namespace QM_PathOfQuasimorph.Controllers
                 UsageCost = 1,
                 MaxUsage = 1,
                 Type = type,
-                Rarity = rarity
             };
 
             var itemRecipe = new ItemProduceReceipt
@@ -83,16 +78,16 @@ namespace QM_PathOfQuasimorph.Controllers
             switch (type)
             {
                 case SynthraformerType.Traits:
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier, ItemRarity.Standard), 5));
+                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 5));
                     break;
 
-                case SynthraformerType.RandomRarity:
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits, ItemRarity.Standard), 2));
+                case SynthraformerType.Rarity:
+                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 2));
                     break;
 
                 case SynthraformerType.Indestructible:
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits, ItemRarity.Standard), 1));
-                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Indestructible, ItemRarity.Standard), 1));
+                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 1));
+                    itemRecipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Indestructible), 1));
                     break;
             }
 
@@ -118,31 +113,6 @@ namespace QM_PathOfQuasimorph.Controllers
             Localization.DuplicateKey($"item.{nameBase}_{(int)type}.name", "item." + itemId + ".name");
             Localization.DuplicateKey($"item.{nameBase}_{(int)type}.desc", "item." + itemId + ".desc");
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
-        }
-
-        private static void CreateAmplifierUpgradeRecipes(ItemRarity[] rarities)
-        {
-            const int costAmount = 5;
-            const SynthraformerType type = SynthraformerType.Amplifier;
-
-            for (int i = 0; i < rarities.Length - 1; i++)
-            {
-                _logger.Log($"{i}");
-                var currentRarity = rarities[i];
-                var nextRarity = rarities[i + 1];
-                _logger.Log($"currentRarity {currentRarity}");
-                _logger.Log($"nextRarity {nextRarity}");
-
-                ItemProduceReceipt itemRecipe = new ItemProduceReceipt();
-                itemRecipe.RequiredItems = new List<ItemQuantity>
-                {
-                    new ItemQuantity(MakeId(type, nextRarity), costAmount)
-                };
-                itemRecipe.OutputItem = MakeId(type, currentRarity);
-                itemRecipe.ProduceTimeInHours = 2;
-
-                AddRecipe(itemRecipe);
-            }
         }
 
         private static void RemoveExistingSynthraformerRecipes()
@@ -193,12 +163,16 @@ namespace QM_PathOfQuasimorph.Controllers
                     HandleTraits(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
-                case SynthraformerType.RandomRarity:
+                case SynthraformerType.Rarity:
                     HandleRandomRarity(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Indestructible:
                     HandleIndestructible(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
+                case SynthraformerType.Catalyst:
+                    HandleCatalyst(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 default:
@@ -287,7 +261,7 @@ namespace QM_PathOfQuasimorph.Controllers
                 return;
             }
 
-            foreach (var basePickupItemRecord in targetItem.Records)
+            foreach (var basePickupItemRecord in obj.Records)
             {
                 switch (basePickupItemRecord)
                 {
@@ -329,19 +303,71 @@ namespace QM_PathOfQuasimorph.Controllers
 
         private void HandleIndestructible(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
+            _logger.Log($"HandleIndestructible")
+                ;
             if (metadata.RarityClass == ItemRarity.Standard)
             {
                 __result = false;
                 return;
             }
 
-            foreach (var basePickupItemRecord in targetItem.Records)
+            foreach (var basePickupItemRecord in obj.Records)
             {
                 switch (basePickupItemRecord)
                 {
                     case BreakableItemRecord breakableItemRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.Init(breakableItemRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata);
+                        break;
+
+                    default:
+                        continue;
+                }
+
+                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+
+                if (__result)
+                {
+                    RecordCollection.ItemRecords.Remove(targetItem.Id);
+                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+                }
+
+                return;
+            }
+
+            __result = false;
+        }
+
+        private void HandleCatalyst(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            _logger.Log($"HandleCatalyst");
+
+            if (metadata.RarityClass == ItemRarity.Standard)
+            {
+                __result = false;
+                return;
+            }
+
+            bool hasWeaponRecord = targetItem.Is<WeaponRecord>();
+            bool hasAugmentationRecord = targetItem.Is<AugmentationRecord>();
+
+            foreach (var basePickupItemRecord in obj.Records)
+            {
+                switch (basePickupItemRecord)
+                {
+                    case WeaponRecord weaponRecord when !hasAugmentationRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.CreateAugmentation(record, metadata, obj);
+                        break;
+
+                    case AugmentationRecord augmentationRecord when !hasWeaponRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.Init(augmentationRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.AddRandomEffect(record, metadata);
+                        break;
+
+                    case ImplantRecord implantRecord when !hasWeaponRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.Init(implantRecord, metadata.RarityClass, false, false, metadata.Id, metadata.ReturnItemUid());
+                        PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.AddRandomEffect(record, metadata);
                         break;
 
                     default:

@@ -83,9 +83,16 @@ namespace QM_PathOfQuasimorph.Core
                             _tooltip = _factory.BuildEmptyTooltip();
                             //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
 
+                            var localizedStringCaption2 = Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc");
+
+                            if (localizedStringCaption2.Length > 35)
+                            {
+                                localizedStringCaption2 = $"<size=85%>{localizedStringCaption2}</size>";
+                            }
+
                             PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
 
-                            PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"), RaritySystem.Colors[wrappedItem.RarityClass]);
+                            PropertiesTooltipHelper.SetCaption2(_tooltip, localizedStringCaption2, RaritySystem.Colors[wrappedItem.RarityClass]);
 
                             //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
 

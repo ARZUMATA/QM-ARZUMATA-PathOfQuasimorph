@@ -88,12 +88,12 @@ namespace QM_PathOfQuasimorph.Records
                 {
                     SynthraformerType.Indestructible,
                     new List<AllowedTarget>
-                    { 
+                    {
                         BlockStandard(typeof(BreakableItemRecord))
                     }
                 },
                 {
-                    SynthraformerType.RandomRarity,
+                    SynthraformerType.Rarity,
                     new List<AllowedTarget>
                     {
                         AllowAll(typeof(WeaponRecord)),
@@ -110,8 +110,9 @@ namespace QM_PathOfQuasimorph.Records
                     SynthraformerType.Catalyst,
                     new List<AllowedTarget>
                     {
-                        //typeof(AugmentationRecord),
-                        //typeof(ImplantRecord)
+                        AllowAll(typeof(WeaponRecord)),
+                        AllowAll(typeof(ImplantRecord)),
+                        AllowAll(typeof(AugmentationRecord)),
                     }
                 },
             };
