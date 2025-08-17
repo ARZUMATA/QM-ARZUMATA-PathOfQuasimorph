@@ -181,6 +181,11 @@ namespace QM_PathOfQuasimorph.Core
                 InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
             }
 
+            if (_factory._lastShowedItem.Is<AmmoRecord>())
+            {
+                InitAmmo(item.Record<AmmoRecord>(), genericId, item);
+            }
+            
             if (_factory._lastShowedItem.Is<WeaponRecord>())
             {
                 InitWeapon(item.Record<WeaponRecord>(), genericId, item);
@@ -205,6 +210,33 @@ namespace QM_PathOfQuasimorph.Core
             if (_factory._lastShowedItem.Is<ItemRecord>())
             {
                 InitWeight(item.Record<ItemRecord>(), genericId, item);
+            }
+        }
+
+        private static void InitAmmo(AmmoRecord ammoRecord, string genericId, PickupItem item)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(genericId, true);
+
+            if (ammoRecord.BallisticType != genericRecord.BallisticType)
+            {
+                _factory.AddPanelToTooltip()
+                    .LocalizeName("poq.ballistictype.label.tooltip")
+                    .SetValue(ammoRecord.BallisticType.ToString(), true);
+            }
+
+            if (ammoRecord.AmmoType != genericRecord.AmmoType)
+            {
+                _factory.AddPanelToTooltip()
+                   .LocalizeName("poq.ammotype.label.tooltip")
+                   .SetValue(ammoRecord.AmmoType.ToString(), true);
+            }
+
+            if (ammoRecord.DmgType != genericRecord.DmgType)
+            {
+                _factory.AddPanelToTooltip()
+                   //.SetIcon("damage_" + ammoRecord.DmgType)
+                   .LocalizeName($"poq.damagetype.label.tooltip")
+                   .SetValue(Localization.Get($"ui.damage.{ammoRecord.DmgType}"), true);
             }
         }
 
@@ -912,7 +944,7 @@ namespace QM_PathOfQuasimorph.Core
                 __instance._tooltip.SetCaption2(Localization.Get("item." + synRec.BaseId + ".shortdesc"));
 
                 // Quote
-                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote")).SetNameColor(Colors.AltGreen);
             }
 
             __instance._tooltip.ShowAdditionalBlock();
