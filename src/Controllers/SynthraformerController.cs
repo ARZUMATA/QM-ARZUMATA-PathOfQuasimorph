@@ -11,12 +11,24 @@ namespace QM_PathOfQuasimorph.Controllers
 {
     public class SynthraformerController
     {
-        public static float DROP_CHANCE = 70;
         public static string nameBase = "synthraformer_poq";
         private static Sprite[] sprites = Helpers.LoadSpritesFromEmbeddedBundle("QM_PathOfQuasimorph.Files.AssetBundles.pathofquasimorph");
         private static Logger _logger = new Logger(null, typeof(SynthraformerController));
         public static List<string> recipesOutputItems = new List<string>();
-        const int craftUpgradeCostAmount = 4;
+
+        // Base drop chances by type
+        private static readonly Dictionary<SynthraformerType, float> DropChances = new()
+        {
+            { SynthraformerType.PrimalCore,         0.70f },
+            { SynthraformerType.Rarity,             0.05f },
+            { SynthraformerType.Infuser,            0.05f },
+            { SynthraformerType.Traits,             0.05f },
+            { SynthraformerType.Indestructible,     0.05f },
+            { SynthraformerType.Amplifier,          0.35f },
+            { SynthraformerType.Transmuter,         0.05f },
+            { SynthraformerType.Catalyst,           0.05f },
+            { SynthraformerType.Azure,              0.05f },
+        };
 
         /*
          * Synthraformer types
@@ -669,6 +681,90 @@ namespace QM_PathOfQuasimorph.Controllers
                     Plugin.Logger.Log($"Failed to copy {prop.Name}: {ex.Message}");
                 }
             }
+        }
+
+        internal static List<string> GetAdditionalDroptems(BasePickupItem item, MetadataWrapper metadata)
+        {
+            _logger.Log($"GetAdditionalDroptems");
+
+            var itemsList = new List<string>();
+
+            var roll = Helpers._random.NextDouble();
+
+            foreach (var kvp in DropChances)
+            {
+                SynthraformerType type = kvp.Key;
+                float baseChance = kvp.Value;
+                float finalChance = baseChance;
+
+                // Adjust chance based on item properties
+                switch (type)
+                {
+                    case SynthraformerType.PrimalCore:
+                        break; // Use base chance
+
+                    case SynthraformerType.Rarity:
+                        finalChance *= (int)metadata.RarityClass;
+                        break;
+
+                    case SynthraformerType.Traits:
+                        if (item.Is<WeaponRecord>())
+                        {
+                            finalChance *= item.Record<WeaponRecord>().Traits.Count;
+                        }
+                        else
+                            continue; // Skip if no traits
+                        break;
+
+                    case SynthraformerType.Indestructible:
+                        if (item.Is<BreakableItemRecord>())
+                        {
+                            if (item.Record<BreakableItemRecord>().Unbreakable)
+                            {
+                                finalChance *= 1.5f;
+                            }
+                        }
+
+                        else
+                            continue; // Skip if not unbreakable
+                        break;
+
+                    case SynthraformerType.Amplifier:
+                        if (item.Is<WeaponRecord>() || item.Is<ResistRecord>() || item.Is<ImplantRecord>() || item.Is<AugmentationRecord>())
+                        {
+                            // Use base chance
+                            break;
+                        }
+                        else
+                            continue; // Skip if not unbreakable
+
+                    case SynthraformerType.Catalyst:
+                        if (item.Is<AugmentationRecord>() || item.Is<ImplantRecord>())
+                        {
+                            // Use base chance
+                            break;
+                        }
+                        else
+                            continue; // Skip if not unbreakable
+
+                    default:
+                        continue; // Skip types that don't drop items (Infuser, Transmuter, Azure, etc.)
+                }
+
+                // Clamp and check roll
+                finalChance = Mathf.Clamp01(finalChance);
+
+                Plugin.Logger.Log($"roll: {roll}, finalChance: {finalChance}, type: {type}");
+
+                if (roll < finalChance)
+                {
+                    Plugin.Logger.Log($"adding {type}");
+
+                    itemsList.Add(MakeId(type));
+                }
+            }
+
+            return itemsList;
         }
     }
 }

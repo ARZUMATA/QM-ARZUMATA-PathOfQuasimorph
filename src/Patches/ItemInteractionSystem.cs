@@ -103,24 +103,35 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (__result)
                 {
-
                     if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out var metadata))
                     {
-                        // We can use transformation record but i want it random, so.
-                        if (metadata.RarityClass != ItemRarity.Standard && (item.Is<WeaponRecord>() || item.Is<ResistRecord>()))
-                        {
-                            // Check amplifier drop chance
-                            var canApplySynthraformerDrop = Helpers._random.Next(0, 100 + 1) < SynthraformerController.DROP_CHANCE;
+                        Plugin.Logger.Log($"metadata ok");
 
-                            if (canApplySynthraformerDrop)
+                        // We can use transformation record but i want it random, so.
+                        if (metadata.RarityClass != ItemRarity.Standard)
+                        {
+                            Plugin.Logger.Log($"metadata.RarityClass: {metadata.RarityClass}");
+
+                            var droptems = SynthraformerController.GetAdditionalDroptems(item, metadata);
+
+                            if (droptems.Count > 0)
                             {
-                                BasePickupItem basePickupItem = SingletonMonoBehaviour<ItemFactory>.Instance.CreateForInventory(PathOfQuasimorph.synthraformerController.GetBaseDrop(), false);
-                                if (inventory == null || !inventory.TakeOrEquip(basePickupItem, false, true))
+                                Plugin.Logger.Log($"SynthraformerController.GetAdditionalDroptems Count: {droptems.Count}");
+
+                                foreach (var entry in droptems)
                                 {
-                                    itemsWithoutStorage.Add(basePickupItem);
+                                    BasePickupItem basePickupItem = SingletonMonoBehaviour<ItemFactory>.Instance.CreateForInventory(entry, false);
+                                    if (inventory == null || !inventory.TakeOrEquip(basePickupItem, false, true))
+                                    {
+                                        itemsWithoutStorage.Add(basePickupItem);
+                                    }
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        Plugin.Logger.Log($"RecordCollection.MetadataWrapperRecords.TryGetValue FAILED for item {item.Id}");
                     }
                 }
             }
