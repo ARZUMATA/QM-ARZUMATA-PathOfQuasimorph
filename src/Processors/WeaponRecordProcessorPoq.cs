@@ -110,6 +110,11 @@ namespace QM_PathOfQuasimorph.Processors
             //"BonusScatterAngle",
         };
 
+        List<HashSet<string>> traitsMutuallyExclusiveGroups = new List<HashSet<string>>
+        {
+            new HashSet<string> { "piercing", "full_piercing" },
+        };
+
         public WeaponRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
@@ -243,7 +248,7 @@ namespace QM_PathOfQuasimorph.Processors
             }
         }
 
-        private List<string> PrepareTraits(bool removeExisting = false)
+        private List<string> PrepareTraits()
         {
             // Determine if the item is a melee weapon
             _logger.Log($"\t\t  isMelee: {itemRecord.IsMelee}");
@@ -267,19 +272,15 @@ namespace QM_PathOfQuasimorph.Processors
             var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count);
 
             // Select traits based on weights
-            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount);
+            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, traitsMutuallyExclusiveGroups);
 
             // Apply blacklists
             selectedTraits.RemoveAll(t =>
                 (itemRecord.IsMelee && meleeTraitsBlacklist.Contains(t)) ||
                 (!itemRecord.IsMelee && rangedTraitsBlacklist.Contains(t)));
 
-            if (removeExisting)
-            {
-                // Remove already present traits
-                selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
-            }
-
+            // Remove already present traits
+            selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
 
             // Filter all traits if they are not in allowed list (just in case)
             selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));

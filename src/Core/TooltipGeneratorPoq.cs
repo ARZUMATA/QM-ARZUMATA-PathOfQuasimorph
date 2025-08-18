@@ -972,34 +972,24 @@ namespace QM_PathOfQuasimorph.Core
             //Plugin.Logger.Log($"synRec.Type: {synRec.Type}");
             __instance._tooltip = __instance._factory.BuildEmptyTooltip(true, false);
 
-            // Amplifiers have rarity
-            if (synRec.Type == SynthraformerController.SynthraformerType.Amplifier)
+            __instance._tooltip.SetCaption1(Localization.Get("item." + synRec.GetId() + ".name"), __instance._factory.FirstLetterColor);
+            __instance._tooltip.SetCaption2(Localization.Get("item." + synRec.BaseId + ".shortdesc"));
+
+            if (!additional)
             {
-                PropertiesTooltipHelper.SetCaption1(__instance._tooltip, Localization.Get($"item.{synRec.GetId()}.name"), __instance._factory.FirstLetterColor, RaritySystem.Colors[synRec.Rarity]);
-                PropertiesTooltipHelper.SetCaption2(__instance._tooltip, Localization.Get($"item.{synRec.BaseId}.shortdesc"), RaritySystem.Colors[synRec.Rarity]);
-
-                // Rarity
-                __instance._factory.AddPanelToTooltip().SetValue(synRec.Rarity.ToString().WrapInColor(RaritySystem.Colors[synRec.Rarity].Replace("#", string.Empty)));
-
                 // Quote
-                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId(true)}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
+
+                // Desc
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
             }
             else
             {
-                __instance._tooltip.SetCaption1(Localization.Get("item." + synRec.GetId() + ".name"), __instance._factory.FirstLetterColor);
-                __instance._tooltip.SetCaption2(Localization.Get("item." + synRec.BaseId + ".shortdesc"));
-
                 // Quote
                 __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote")).SetNameColor(Colors.AltGreen);
             }
 
             __instance._tooltip.ShowAdditionalBlock();
-
-            if (additional)
-            {
-                // Desc
-                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
-            }
         }
     }
 }

@@ -250,7 +250,7 @@ namespace QM_PathOfQuasimorph.Processors
             var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count);
 
             // Select traits based on weights
-            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount);
+            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, traitsMutuallyExclusiveGroups);
 
             if (removeExisting)
             {
@@ -288,6 +288,7 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal void RerollBallisticType(SynthraformerRecord record, MetadataWrapper metadata)
         {
+            // This breaks game as it's unexpected behavior.
             var values = Enum.GetValues(typeof(AmmoBallisticType));
             var randEnum = Helpers._random.Next(0, values.Length);
             itemRecord.BallisticType = (AmmoBallisticType)values.GetValue(randEnum);
@@ -300,6 +301,7 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal void RerollAmmoType(SynthraformerRecord record, MetadataWrapper metadata)
         {
+            // This breaks game as it's unexpected behavior.
             itemRecord.AmmoType = AmmoTypes[Helpers._random.Next(0, AmmoTypes.Count)];
         }
 

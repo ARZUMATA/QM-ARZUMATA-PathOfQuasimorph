@@ -41,13 +41,8 @@ namespace QM_PathOfQuasimorph.Records
                 ItemRarity.Quantum
             );
 
-        public string GetId(bool rarity = false)
+        public string GetId()
         {
-            if (rarity)
-            {
-                return $"{BaseId}_{(int)Type}_{Rarity.ToString().ToLower()}";
-            }
-
             return $"{BaseId}_{(int)Type}";
         }
 
@@ -56,7 +51,6 @@ namespace QM_PathOfQuasimorph.Records
         public override int InventorySortOrder => 40;
 
         public SynthraformerType Type { get; set; }
-        public ItemRarity Rarity { get; set; }
 
         // Whitelist dictionary: maps each SynthraformerType to allowed record types
         // Now includes both type and allowed rarities
