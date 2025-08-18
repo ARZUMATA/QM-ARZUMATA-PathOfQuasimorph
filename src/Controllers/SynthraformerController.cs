@@ -61,15 +61,15 @@ namespace QM_PathOfQuasimorph.Controllers
 
         public enum SynthraformerType
         {
-            PrimalCore, // White - basic crafting material 
-            Rarity, // Red - applies random rarity onitem
-            Infuser, // Orange - nothing for now
-            Traits, // Yellow - rerolls traits on ite
-            Indestructible, // Green - roll indestructible flag
-            Amplifier, // Blue - rerolls single random stat on item
-            Transmuter,  // Indigo - nothing for now
-            Catalyst, // Violet - turn weapon into augment
-            Azure, // - nothing for now
+            PrimalCore, // White - basic crafting material             // In Use
+            Rarity, // Red - applies random rarity onitem              // In Use
+            Infuser, // Orange - nothing for now                       // Nothing
+            Traits, // Yellow - rerolls traits on ite                  // In Use
+            Indestructible, // Green - roll indestructible flag        // In Use
+            Amplifier, // Blue - rerolls single random stat on item    // In Use
+            Transmuter,  // Indigo - nothing for now                   // Nothing
+            Catalyst, // Violet - turn weapon into augment             // In Use
+            Azure, // - nothing for now                                // Nothing
         }
 
         public static void AddItems()
@@ -208,26 +208,25 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Infuser:
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 3));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 4));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 3));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 4));
                     break;
 
                 case SynthraformerType.Transmuter:
-                    // Mid/late: Rarity + Amp + Core
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 1));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 1));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
                     break;
 
                 case SynthraformerType.Catalyst:
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Transmuter), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 1));
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
                     break;
 
                 case SynthraformerType.Azure:
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Catalyst), 1));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 6));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Catalyst), 1));
+                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 6));
                     break;
 
                 default:
@@ -282,7 +281,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Infuser:
-                    HandleInfuser(targetItem, repair, record, metadata, obj, ref __result);
+                    //HandleInfuser(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Traits:
@@ -298,7 +297,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Transmuter:
-                    HandleTransmuter(targetItem, repair, record, metadata, obj, ref __result);
+                    //HandleTransmuter(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Catalyst:
