@@ -1,22 +1,13 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.PoqHelpers;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Numerics;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Profiling;
 using UnityEngine.UI;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq.CreatureDataPoq;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
-using static UnityEngine.Rendering.DebugUI;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -53,7 +44,7 @@ namespace QM_PathOfQuasimorph.Core
                     _factory._state.Resolve(_factory._itemTooltipBuilder);
                     _tooltipBuilder = _factory._itemTooltipBuilder;
 
-                    var wrappedItem = MetadataWrapper.SplitItemUid(_factory._lastShowedItem.Id);
+                    var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(_factory._lastShowedItem.Id, MetadataWrapper.SplitItemUid);
 
                     if (!RecordCollection.MetadataWrapperRecords.TryGetValue(_factory._lastShowedItem.Id, out MetadataWrapper wrapper))
                     {
@@ -74,28 +65,36 @@ namespace QM_PathOfQuasimorph.Core
                     }
                     else
                     {
-                        _logger.Log($"wrappedItem.CustomId {wrappedItem.ReturnItemUid()}");
+                        _logger.Log($"metadata.CustomId {metadata.ReturnItemUid()}");
+                        _logger.Log($"metadata.IsMagnumProduced {metadata.IsMagnumProduced}");
 
-                        if (wrappedItem.PoqItem)
+                        if (metadata.PoqItem)
                         {
                             _tooltip = _factory.BuildEmptyTooltip();
-                            //_tooltip.SetCaption1(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
+                            //_tooltip.SetCaption1(Localization.Get("item." + metadata.ReturnItemUid() + ".name"), _factory.FirstLetterColor);
 
-                            PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[wrappedItem.RarityClass]);
+                            var localizedStringCaption2 = Localization.Get("item." + metadata.ReturnItemUid() + ".shortdesc");
 
-                            PropertiesTooltipHelper.SetCaption2(_tooltip, Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"), RaritySystem.Colors[wrappedItem.RarityClass]);
+                            if (localizedStringCaption2.Length > 35)
+                            {
+                                localizedStringCaption2 = $"<size=85%>{localizedStringCaption2}</size>";
+                            }
 
-                            //_tooltip.SetCaption2(Localization.Get("item." + wrappedItem.ReturnItemUid() + ".shortdesc"));
+                            PropertiesTooltipHelper.SetCaption1(_tooltip, Localization.Get("item." + metadata.ReturnItemUid() + ".name"), _factory.FirstLetterColor, RaritySystem.Colors[metadata.RarityClass]);
 
-                            //_tooltip.SetCaption1Right(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
-                            _factory.AddPanelToTooltip().SetValue(wrappedItem.RarityClass.ToString().WrapInColor(RaritySystem.Colors[wrappedItem.RarityClass].Replace("#", string.Empty)));
+                            PropertiesTooltipHelper.SetCaption2(_tooltip, localizedStringCaption2, RaritySystem.Colors[metadata.RarityClass]);
+
+                            //_tooltip.SetCaption2(Localization.Get("item." + metadata.ReturnItemUid() + ".shortdesc"));
+
+                            //_tooltip.SetCaption1Right(metadata.RarityClass.ToString().WrapInColor(RaritySystem.Colors[metadata.RarityClass].Replace("#", string.Empty)));
+                            _factory.AddPanelToTooltip().SetValue(metadata.RarityClass.ToString().WrapInColor(RaritySystem.Colors[metadata.RarityClass].Replace("#", string.Empty)));
                             //_factory.AddPanelToTooltip().SetValue("Difference");
 
                             //_factory._tooltip.MakeRed();
                             _factory.AddCompareBlock(_factory._lastShowedItem);
                             //_factory.AddCompareBlock(_factory._lastShowedItem);
 
-                            InitItemComparsion(_factory._lastShowedItem as PickupItem, wrappedItem.Id);
+                            InitItemComparsion(_factory._lastShowedItem as PickupItem, metadata);
 
                             _factory._tooltip.IsAdditionalTooltip = true;
                         }
@@ -176,43 +175,75 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitItemComparsion(PickupItem item, string genericId)
+        private static void InitItemComparsion(PickupItem item, MetadataWrapper metadata)
         {
             if (_factory._lastShowedItem.Is<BreakableItemRecord>())
             {
-                InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
+                InitBreakable(item.Record<BreakableItemRecord>(), metadata, item);
+            }
+
+            if (_factory._lastShowedItem.Is<AmmoRecord>())
+            {
+                InitAmmo(item.Record<AmmoRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<WeaponRecord>())
             {
-                InitWeapon(item.Record<WeaponRecord>(), genericId, item);
-                InitTraits(item.Record<WeaponRecord>(), genericId, item);
+                InitWeapon(item.Record<WeaponRecord>(), metadata, item);
+                InitTraits(item.Record<WeaponRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<ResistRecord>())
             {
-                InitArmor(item.Record<ResistRecord>(), genericId, item);
+                InitArmor(item.Record<ResistRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<AugmentationRecord>())
             {
-                InitAugmentation(item.Record<AugmentationRecord>(), genericId, item);
+                InitAugmentation(item.Record<AugmentationRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<ImplantRecord>())
             {
-                InitImplant(item.Record<ImplantRecord>(), genericId, item);
+                InitImplant(item.Record<ImplantRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<ItemRecord>())
             {
-                InitWeight(item.Record<ItemRecord>(), genericId, item);
+                InitWeight(item.Record<ItemRecord>(), metadata, item);
             }
         }
 
-        private static void InitImplant(ImplantRecord implantRecord, string genericId, PickupItem item)
+        private static void InitAmmo(AmmoRecord ammoRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
+
+            if (ammoRecord.BallisticType != genericRecord.BallisticType)
+            {
+                _factory.AddPanelToTooltip()
+                    .LocalizeName("poq.ballistictype.label.tooltip")
+                    .SetValue(ammoRecord.BallisticType.ToString(), true);
+            }
+
+            if (ammoRecord.AmmoType != genericRecord.AmmoType)
+            {
+                _factory.AddPanelToTooltip()
+                   .LocalizeName("poq.ammotype.label.tooltip")
+                   .SetValue(ammoRecord.AmmoType.ToString(), true);
+            }
+
+            if (ammoRecord.DmgType != genericRecord.DmgType)
+            {
+                _factory.AddPanelToTooltip()
+                   //.SetIcon("damage_" + ammoRecord.DmgType)
+                   .LocalizeName($"poq.damagetype.label.tooltip")
+                   .SetValue(Localization.Get($"ui.damage.{ammoRecord.DmgType}"), true);
+            }
+        }
+
+        private static void InitImplant(ImplantRecord implantRecord, MetadataWrapper metadata, PickupItem item)
+        {
+            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(metadata.Id, true);
 
             _logger.Log($"genericRecord ImplantRecord is null {genericRecord == null}");
 
@@ -266,9 +297,9 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitAugmentation(AugmentationRecord augmentationRecord, string genericId, PickupItem item)
+        private static void InitAugmentation(AugmentationRecord augmentationRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(metadata.Id, true);
 
             _logger.Log($"genericRecord AugmentationRecord is {genericRecord == null}");
 
@@ -359,9 +390,20 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitArmor(ResistRecord recordPoq, string genericId, PickupItem item)
+        private static void InitArmor(ResistRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<ResistRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
 
             _logger.Log($"genericRecord ResistRecord is {genericRecord == null}");
 
@@ -384,27 +426,71 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitTraits(WeaponRecord weaponRecord, string genericId, PickupItem item)
+        private static void InitTraits(WeaponRecord weaponRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
             var component = item.Comp<WeaponComponent>();
 
-            foreach (ItemTrait itemTrait in component.Traits)
+            foreach (var id in genericRecord.Traits)
             {
-                if (genericRecord.Traits.Contains(itemTrait.TraitId))
+                //_logger.Log($"InitTraits genericRecord: {id}");
+
+                // We are missing generic traits. Add with strikedout effect.
+                if (!weaponRecord.Traits.Contains(id))
+                {
+                    ItemTraitRecord record = Data.ItemTraits.GetRecord(id);
+                    _factory.AddPanelToTooltip().SetIcon(record.TooltipIconTag).SetName($"<s>{Localization.Get("trait." + id)}</s>")
+                        //.LocalizeName("trait." + id)
+                        .SetNameColor(record.IsNegative ? Helpers.DarkenColor(Colors.Red, 0.75f) : Helpers.DarkenColor(Colors.Yellow, 0.75f));
+                }
+            }
+
+            foreach (var id in weaponRecord.Traits)
+            {
+                //_logger.Log($"InitTraits {id}");
+
+                if (genericRecord.Traits.Contains(id))
                 {
                     continue;
                 }
 
-                _tooltipBuilder.AddItemTraitToTooltip(itemTrait.TraitId);
+                ItemTraitRecord record = Data.ItemTraits.GetRecord(id);
+                _factory.AddPanelToTooltip().SetIcon(record.TooltipIconTag).SetName($"{Localization.Get("trait." + id)}")
+                    //.LocalizeName("trait." + id)
+                    .SetNameColor(record.IsNegative ? Colors.Red : Colors.Yellow);
             }
+
+            //foreach (ItemTrait itemTrait in component.Traits)
+            //{
+            //    if (genericRecord.Traits.Contains(itemTrait.TraitId))
+            //    {
+
+            //        continue;
+            //    }
+
+            //    _tooltipBuilder.AddItemTraitToTooltip(itemTrait.TraitId);
+            //}
+
+            //<strikethrough>
+
         }
 
-        private static void InitWeight(ItemRecord itemRecord, string genericId, PickupItem item)
+        private static void InitWeight(ItemRecord itemRecord, MetadataWrapper metadata, PickupItem item)
         {
             if (item.TotalWeight > 0)
             {
-                var genericRecord = Data.Items.GetSimpleRecord<ItemRecord>(genericId, true);
+                var genericRecord = Data.Items.GetSimpleRecord<ItemRecord>(metadata.Id, true);
+
+                if (metadata.IsMagnumProduced)
+                {
+                    // Compare against magnum project item.
+                    var isMagnumProducedRecord = Data.Items.GetSimpleRecord<ItemRecord>($"{metadata.Id}_custom", true);
+
+                    if (isMagnumProducedRecord != null)
+                    {
+                        genericRecord = isMagnumProducedRecord;
+                    }
+                }
 
                 float singleWeightPoq = itemRecord.Weight;
                 float singleWeightGeneric = genericRecord.Weight;
@@ -421,10 +507,22 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitWeapon(WeaponRecord recordPoq, string genericId, PickupItem item)
+        private static void InitWeapon(WeaponRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            _logger.Log($"genericId {genericId}");
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
+            _logger.Log($"genericId {metadata.Id}");
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<WeaponRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
+
             bool grenadeLauncher = recordPoq.WeaponClass == WeaponClass.GrenadeLauncher;
             string value;
 
@@ -625,15 +723,26 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitBreakable(BreakableItemRecord recordPoq, string genericId, PickupItem item)
+        private static void InitBreakable(BreakableItemRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
 
             // Max durability
             var durabilityDifference = recordPoq.MaxDurability - genericRecord.MaxDurability;
 
-            _logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
-            _logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
+            //_logger.Log($"breakableComponent.MaxDurability {recordPoq.MaxDurability}");
+            //_logger.Log($"genericRecord.MaxDurability {genericRecord.MaxDurability}");
 
             bool unbreakable = false;
 
@@ -854,6 +963,33 @@ namespace QM_PathOfQuasimorph.Core
             DifferenceColorMap["positive"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Positive);
             DifferenceColorMap["negative"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Negative);
             DifferenceColorMap["equal"] = Helpers.AlphaAwareColorToHex(Plugin.Config.DifferenceColor_Equal);
+        }
+
+        internal void BuildSynthraformerTooltip(ItemTooltipBuilder __instance, SynthraformerRecord synRec, bool additional = false)
+        {
+            // Gotta build our own since we use repair record direvatives
+
+            //Plugin.Logger.Log($"synRec.Type: {synRec.Type}");
+            __instance._tooltip = __instance._factory.BuildEmptyTooltip(true, false);
+
+            __instance._tooltip.SetCaption1(Localization.Get("item." + synRec.GetId() + ".name"), __instance._factory.FirstLetterColor);
+            __instance._tooltip.SetCaption2(Localization.Get("item." + synRec.BaseId + ".shortdesc"));
+
+            if (!additional)
+            {
+                // Quote
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
+
+                // Desc
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
+            }
+            else
+            {
+                // Quote
+                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote")).SetNameColor(Colors.AltGreen);
+            }
+
+            __instance._tooltip.ShowAdditionalBlock();
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
 using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,7 @@ using static HarmonyLib.Code;
 using static MGSC.SpawnSystem;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal class WoundSlotRecordProcessorPoq : ItemRecordProcessor<WoundSlotRecord>
     {
@@ -294,7 +296,17 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 _logger.Log($"itemRarity {itemRarity}");
                 _logger.Log($"finishTime.Ticks.ToString() {finishTime.Ticks.ToString()}");
 
-                return PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemRecord.BareHandWeapon, mobRarityBoost, itemRarity, finishTime.Ticks.ToString());
+                // We need just add record as CreatureSystem.SetBareHandSlot creates item for us.
+
+                return PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
+                    Id: itemRecord.BareHandWeapon,
+                    mobRarityBoost: mobRarityBoost,
+                    itemRarity: itemRarity,
+                    selectRarity: false,
+                    ignoreBlacklist: false,
+                    randomUidInjected: finishTime.Ticks.ToString(),
+                    applyRarity: false
+                    );
             }
 
             return string.Empty;

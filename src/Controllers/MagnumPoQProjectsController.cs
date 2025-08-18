@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 using System.Security.Policy;
 using UnityEngine;
 
-namespace QM_PathOfQuasimorph.Core
+namespace QM_PathOfQuasimorph.Controllers
 {
     internal partial class MagnumPoQProjectsController
     {

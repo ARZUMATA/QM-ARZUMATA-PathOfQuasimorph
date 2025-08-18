@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 using System;
 using System.Runtime.CompilerServices;
 using static Rewired.Demos.GamepadTemplateUI.GamepadTemplateUI;
@@ -10,6 +11,7 @@ namespace QM_PathOfQuasimorph.Core
         public string Id { get; set; }
         public string CustomId { get; set; }
         public string BoostedString { get; set; }
+        public bool IsMagnumProduced { get; set; }
         public ItemRarity RarityClass { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime FinishTime { get; set; }
@@ -48,7 +50,7 @@ namespace QM_PathOfQuasimorph.Core
         {
         }
 
-        public MetadataWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime)
+        public MetadataWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime, bool isMagnumProduced = false)
         {
             this.Id = id;
             this.PoqItem = poqItem;
@@ -56,6 +58,7 @@ namespace QM_PathOfQuasimorph.Core
             this.FinishTime = finishTime;
 
             this.CustomId = poqItem ? $"{id}_custom_poq" : $"{id}_custom";
+            this.IsMagnumProduced = isMagnumProduced;
 
             var digitInfo = DigitInfo.GetDigits(finishTime.Ticks);
             this.RarityClass = (ItemRarity)digitInfo.Rarity;
@@ -99,6 +102,12 @@ namespace QM_PathOfQuasimorph.Core
         public static bool IsPoqItemUid(string uid)
         {
             return uid?.Contains("_custom_poq") == true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMagnumProjectItemUid(string uid)
+        {
+            return uid?.EndsWith("_custom") == true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -186,9 +195,15 @@ namespace QM_PathOfQuasimorph.Core
                 return false;
             }
 
-            baseId = uid.Contains("_custom_poq")
-                ? uid.Substring(0, uid.IndexOf("_custom_poq"))
-                : uid.Replace("_custom", "");
+            int customIndex = uid.IndexOf("_custom");
+            if (customIndex != -1)
+            {
+                baseId = uid.Substring(0, customIndex);
+            }
+            else
+            {
+                baseId = uid;
+            }
 
             return !string.IsNullOrEmpty(baseId);
         }
@@ -263,6 +278,13 @@ namespace QM_PathOfQuasimorph.Core
                 return DigitInfo.GetRarityClass(finishTime.Ticks);
             }
             return ItemRarity.Standard;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void UpdateRarityClass(ItemRarity rarity)
+        {
+            RarityClass = rarity;
+            RecordCollection.MetadataWrapperRecords[ReturnItemUid()] = this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

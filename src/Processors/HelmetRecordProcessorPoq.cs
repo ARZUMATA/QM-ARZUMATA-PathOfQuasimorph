@@ -1,6 +1,7 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal class HelmetRecordProcessorPoq : ResistItemProcessor<HelmetRecord>
     {

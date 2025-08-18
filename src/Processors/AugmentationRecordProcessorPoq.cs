@@ -1,6 +1,9 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
 using QM_PathOfQuasimorph.PoQHelpers;
+using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -13,7 +16,7 @@ using UnityEngine.Profiling;
 using static MGSC.SpawnSystem;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal class AugmentationRecordProcessorPoq : ItemRecordProcessor<AugmentationRecord>
     {
@@ -147,7 +150,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
 
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, $"{newId}", oldId);
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost,false, $"{newId}", oldId);
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     //records.Add(augmentationRecordNew);
                     // TODO
@@ -166,6 +169,10 @@ namespace QM_PathOfQuasimorph.Core.Processors
                     itemRecord.WoundSlotIds = newWoundSlotIds;
                 }
             }
+        }
+
+        internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
+        {
         }
     }
 }

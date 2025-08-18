@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -31,6 +31,7 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.LogWarning($"WARNING: WeaponComponent: reverting id to the baseline.");
 
                     var magnumProjectWrapper = MetadataWrapper.SplitItemUid(__instance._weaponId);
+
                     __instance._weaponId = magnumProjectWrapper.Id; // This effectively makes item default.
                     Plugin.Logger.LogWarning($"{magnumProjectWrapper.Id}_magnumProjectWrapper.Id_FIXME");
                 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
 
 namespace QM_PathOfQuasimorph.Core
 {

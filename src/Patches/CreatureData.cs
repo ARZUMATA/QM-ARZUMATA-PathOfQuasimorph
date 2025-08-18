@@ -9,7 +9,7 @@ using MGSC;
 using HarmonyLib;
 using System.Xml;
 using Random = System.Random;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
 using System.Drawing;
 
 namespace QM_PathOfQuasimorph.Core

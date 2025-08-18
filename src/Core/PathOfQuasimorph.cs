@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using MGSC;
-using QM_PathOfQuasimorph.Core.Processors;
+using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Processors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +16,7 @@ using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using static MGSC.Localization;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace QM_PathOfQuasimorph.Core
@@ -27,6 +29,8 @@ namespace QM_PathOfQuasimorph.Core
         internal static CreaturesControllerPoq creaturesControllerPoq = new CreaturesControllerPoq();
         internal static ItemRecordsControllerPoq itemRecordsControllerPoq = new ItemRecordsControllerPoq();
         private static TooltipGeneratorPoq tooltipGeneratorPoq = new TooltipGeneratorPoq();
+        internal static SynthraformerController synthraformerController = new SynthraformerController();
+        internal static MigrationAssistant migrationAssistant = new MigrationAssistant();
         public static RaritySystem raritySystem = new RaritySystem();
         internal static DungeonGameMode dungeonGameMode = null;
         internal static GameCamera gameCamera = null;
@@ -34,8 +38,20 @@ namespace QM_PathOfQuasimorph.Core
         internal static PixelizatorCameraAttachment pixelizatorCameraAttachment = null;
         private static Logger _logger = new Logger(null, typeof(PathOfQuasimorph));
         public static IModContext _context;
-
+        public static GameLoopGroup GameLoopGroup;
         public static PerkFactory perkFactoryState { get; private set; }
+
+        [JsonIgnore]
+        public static Version Version
+        {
+            get
+            {
+                if (Plugin.Config.Version == null || !Version.TryParse(Plugin.Config.Version, out var version))
+                    return new Version(1, 0, 0, 0); // fallback
+                return version;
+            }
+            set => Plugin.Config.Version = value?.ToString() ?? "1.0.0.0";
+        }
 
         /* All magnum project are recipes that are always available in the game. You get access to exact recipe via chip.
         * Mod projects are just derivatives from that
@@ -102,12 +118,14 @@ namespace QM_PathOfQuasimorph.Core
             _context = context;
             _logger.Log($"MainMenuStarted");
             perkFactoryState = context.State.Get<PerkFactory>();
+            GameLoopGroup = GameLoopGroup.MainMenu;
         }
 
         [Hook(ModHookType.MainMenuDestroyed)]
         public static void MainMenuDestroyed(IModContext context)
         {
             _logger.Log($"MainMenuDestroyed");
+            GameLoopGroup = GameLoopGroup.None;
             ApplyModConfigs();
         }
         private static void ApplyModConfigs()
@@ -121,6 +139,7 @@ namespace QM_PathOfQuasimorph.Core
         public static void DungeonStarted(IModContext context)
         {
             _logger.Log($"DungeonStarted");
+            GameLoopGroup = GameLoopGroup.Dungeon;
             Initialize();
         }
 
@@ -130,6 +149,14 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"SpaceStarted");
             //CleanupSystem.CleanObsoleteProjects(context, true);
             creaturesControllerPoq.CleanCreatureDataPoq();
+            GameLoopGroup = GameLoopGroup.Space;
+        }
+
+        [Hook(ModHookType.SpaceFinished)]
+        public static void SpaceFinished(IModContext context)
+        {
+            _logger.Log($"SpaceFinished");
+            GameLoopGroup = GameLoopGroup.None;
         }
 
         [Hook(ModHookType.DungeonFinished)]
@@ -142,6 +169,7 @@ namespace QM_PathOfQuasimorph.Core
             gameCamera = null;
             camera = null;
             pixelizatorCameraAttachment = null;
+            GameLoopGroup = GameLoopGroup.None;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Controllers;
+using QM_PathOfQuasimorph.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +10,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using static MGSC.SpawnSystem;
 using static MGSC.TurnDebugLogger;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
 using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core.Processors
+namespace QM_PathOfQuasimorph.Processors
 {
     internal abstract class ItemRecordProcessor<T>
     {
@@ -22,6 +25,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
         public abstract Dictionary<string, bool> parameters { get; }
         protected ItemRarity itemRarity;
         protected bool mobRarityBoost;
+        protected bool amplifierRarityBoost;
         protected string itemId;
         protected string oldId;
 
@@ -30,11 +34,12 @@ namespace QM_PathOfQuasimorph.Core.Processors
             this.itemRecordsControllerPoq = itemRecordsControllerPoq;
         }
 
-        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, string itemId, string oldId)
+        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, bool amplifierRarityBoost, string itemId, string oldId)
         {
             this.itemRecord = itemRecord;
             this.itemRarity = itemRarity;
             this.mobRarityBoost = mobRarityBoost;
+            this.amplifierRarityBoost = amplifierRarityBoost;
             this.itemId = itemId;
             this.oldId = oldId;
         }
@@ -57,7 +62,7 @@ namespace QM_PathOfQuasimorph.Core.Processors
             _logger.Log($"Updating {statStr}");
 
             // Apply boost
-            if (statStr == boostedParamString)
+            if (statStr != string.Empty && statStr == boostedParamString)
             {
                 finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
 
@@ -91,6 +96,15 @@ namespace QM_PathOfQuasimorph.Core.Processors
                 _logger.Log($"\t\t boosting final modifier from {baseModifier} to {mobModifier}");
 
                 baseModifier = mobModifier;
+            }
+
+            if (amplifierRarityBoost)
+            {
+                float ampModifier = baseModifier * PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
+                _logger.Log($"\t\t amplifierRarityBoost exist, Rarity: {itemRarity}");
+                _logger.Log($"\t\t boosting final modifier from {baseModifier} to {ampModifier}");
+
+                baseModifier = ampModifier;
             }
 
             finalModifier = 0;
@@ -132,5 +146,63 @@ namespace QM_PathOfQuasimorph.Core.Processors
         //protected abstract void SetWeight(float value);
         //protected abstract int GetMaxDurability();
         //protected abstract void SetMaxDurability(int value);
+
+        // internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count
+        internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count, List<HashSet<string>> exclusiveGroups = null)
+        {
+            var availableTraits = traitWeights
+                .Where(t => t.Value > 0) // Skip traits with 0 or negative weight
+                .ToDictionary(t => t.Key, t => t.Value);
+
+            // Normalize exclusiveGroups to avoid null checks
+            var groups = exclusiveGroups;
+
+            if (groups == null)
+            {
+                groups = new List<HashSet<string>>();
+            }
+
+            var selected = new List<string>();
+
+            // for (int i = 0; i < count && availableTraits.Count > 0; i++)
+            // {
+            //     string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
+            //     selected.Add(selectedTrait);
+
+            //     // Remove already selected trait to prevent duplicates
+            //     availableTraits = availableTraits
+            //         .Where(t => t.Key != selectedTrait)
+            //         .ToDictionary(t => t.Key, t => t.Value);
+            // }
+
+
+            while (selected.Count < count && availableTraits.Count > 0)
+            {
+                // Select one trait using weighted randomness
+                string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
+                selected.Add(selectedTrait);
+
+                // Remove the selected trait from pool
+                availableTraits.Remove(selectedTrait);
+
+                // Remove all conflicting traits from the same exclusive group
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    var group = groups[i];
+                    if (group.Contains(selectedTrait))
+                    {
+                        // Remove all members of this group from available traits
+                        foreach (var conflict in group)
+                        {
+                            availableTraits.Remove(conflict);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return selected;
+        }
+
     }
 }

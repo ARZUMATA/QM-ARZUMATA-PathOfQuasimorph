@@ -38,7 +38,7 @@ public static class DataSerializerHelper
     {
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
         NullValueHandling = NullValueHandling.Include,
-        Formatting = Formatting.Indented,
+        Formatting = Formatting.None,
         ObjectCreationHandling = ObjectCreationHandling.Replace,
         TypeNameHandling = TypeNameHandling.Objects,
         MissingMemberHandling = MissingMemberHandling.Error,

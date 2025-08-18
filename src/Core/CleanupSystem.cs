@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngineInternal;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static UnityEngine.Rendering.CoreUtils;
 
 namespace QM_PathOfQuasimorph.Core
@@ -77,6 +77,7 @@ namespace QM_PathOfQuasimorph.Core
             var listMapObstacles = CleanupItemsMapObstacles(context); // This is valid only for in-dungeon per floor... bad
             var listItemsOnFloor = CleanupItemsItemsOnFloor(context); // This is valid only for in-dungeon per floor... bad
             var listBarehandweapons = CleanupItemsBarehandWeapons();
+            var listMercSlotMaps = CleanupMercSlotMaps(context);
 
             _logger.Log($"Lists count:");
             _logger.Log($"\t listMagnumCargo {listMagnumCargo.Count}");
@@ -88,6 +89,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"\t listMapObstacles {listMapObstacles.Count}");
             _logger.Log($"\t listItemsOnFloor {listItemsOnFloor.Count}");
             _logger.Log($"\t listBarehandweapons {listBarehandweapons.Count}");
+            _logger.Log($"\t listMercSlotMaps {listMercSlotMaps.Count}");
 
             // Dedupe? There are not many entries anyway.
             idsToKeep.AddRange(listMagnumCargo);
@@ -99,6 +101,7 @@ namespace QM_PathOfQuasimorph.Core
             idsToKeep.AddRange(listMapObstacles);
             idsToKeep.AddRange(listItemsOnFloor);
             idsToKeep.AddRange(listBarehandweapons);
+            idsToKeep.AddRange(listMercSlotMaps);
 
             _logger.Log($"\t idsToKeep {idsToKeep.Count}");
 
@@ -109,6 +112,57 @@ namespace QM_PathOfQuasimorph.Core
             {
                 CleanupMagnumProjects(context, idsToKeep, force);
             }
+        }
+
+        private static List<string> CleanupMercSlotMaps(IModContext context)
+        {
+            /* CreatureData:
+                WoundSlotMap
+                    Key/Value: we need key like: CyborgArm_cyborg_hand_custom_poq_1337_2605024953000001
+                    it resides in woundslot records and cleaned if associated item is missing from item records
+                 
+                AugmentationMap
+                    Key: CyborgArm_cyborg_hand_custom_poq_1337_2605024953000001
+                    Value: cyborg_hand_custom_poq_1337_2605024953000001
+                    we add values as if item is "in the body" it's gone so it's removed from item records
+                    this ensures item will persist
+                    
+                ImplantActivesMap
+                    collect all the items there
+            */
+
+            Mercenaries mercenaries = context.State.Get<Mercenaries>();
+            List<string> records = new List<string>();
+
+            _logger.Log($"[CleanupMercSlotMaps]");
+            _logger.Log($"[CleanupMercSlotMaps] mercenaries null {mercenaries == null}");
+
+            if (mercenaries != null)
+            {
+                _logger.Log("mercenaries != null");
+
+                foreach (var merc in mercenaries.Values)
+                {
+                    _logger.Log($"merc {merc.ProfileId}");
+
+                    foreach (var entry in merc.CreatureData.AugmentationMap)
+                    {
+                        records.Add(entry.Value.ToString());
+                    }
+
+
+                    foreach (var entry in merc.CreatureData.WoundSlotMap)
+                    {
+                        var implantSocketData = entry.Value;
+                        if (implantSocketData.InstalledImplants.Count > 0)
+                        {
+                            records.AddRange(implantSocketData.InstalledImplants);
+                        }
+                    }
+                }
+            }
+
+            return records;
         }
 
         private static List<string> CleanupItemsBarehandWeapons()

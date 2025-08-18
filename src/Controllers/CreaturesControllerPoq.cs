@@ -1,6 +1,7 @@
 ﻿using JetBrains.Annotations;
 using MGSC;
 using Newtonsoft.Json;
+using QM_PathOfQuasimorph.Core;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -11,10 +12,10 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
 using Random = System.Random;
 
-namespace QM_PathOfQuasimorph.Core
+namespace QM_PathOfQuasimorph.Controllers
 {
     /* This class is for controlling created creatures that have extra */
     internal partial class CreaturesControllerPoq
@@ -379,10 +380,10 @@ namespace QM_PathOfQuasimorph.Core
         private void FillCreatureData(Monster monster, Dictionary<string, float> statsPanel)
         {
             var health = monster.CreatureData.Health.MaxValue;
-            var actionPoints = monster.CreatureData.BaseActionPoints;
+            var actionPoints = monster.ActionPoints;
 
             var rangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
-            var losLevel = monster.CreatureData.GetLosLevel();
+            var losLevel = monster.CreatureData.BaseLosLevel;
             var weaponsDamageBonus = monster.CreatureData.GetTotalPerkRangeDamageBonus();
 
             var hitChance = monster.CreatureData.GetMeleeAccuracyNorm(null, false, false);
@@ -552,7 +553,7 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"Updating {prop}");
 
                 // Hinder or not
-                bool hinder = PathOfQuasimorph.raritySystem.ShouldHinderParameter(ref hinderedCount, ref improvedCount, numToHinder, numToImprove);
+                bool increase = PathOfQuasimorph.raritySystem.ShouldHinderParameter(ref hinderedCount, ref improvedCount, numToHinder, numToImprove) == false;
 
                 // Apply boost
                 if (prop == statsToModify.ElementAt(boostedParam))
@@ -567,7 +568,7 @@ namespace QM_PathOfQuasimorph.Core
                     //Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : FALSE");
                 }
 
-                Plugin.Logger.Log($"\t\t finalModifier: {finalModifier} hinder: {hinder} boosted: {finalModifier != baseModifier}");
+                Plugin.Logger.Log($"\t\t finalModifier: {finalModifier} hinder: {increase} boosted: {finalModifier != baseModifier}");
 
                 float outOldValue = -1;
                 float outNewValue = -1;
@@ -575,7 +576,7 @@ namespace QM_PathOfQuasimorph.Core
                 switch (prop)
                 {
                     case "Health":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.BaseHealth, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseHealth, finalModifier, increase, out outOldValue, out outNewValue);
                         outOldValue = monster.CreatureData.Health.MaxValue;
 
                         // Get health bonus from perks
@@ -587,44 +588,44 @@ namespace QM_PathOfQuasimorph.Core
                         break;
 
                     case "ActionPoints":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.BaseActionPoints, finalModifier, hinder, out outOldValue, out outNewValue);
+                        var ap = monster.ActionPoints;
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref ap, finalModifier, increase, out outOldValue, out outNewValue);
+                        monster.ActionPoints = ap;
                         break;
 
                     case "RangeAccuracy":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.BaseRangeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseRangeAccuracy, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
                     case "LosLevel":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.BaseLosLevel, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseLosLevel, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
-
-
                     case "MeleeAccuracy":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.BaseMeleeAccuracy, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseMeleeAccuracy, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_MinMax":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.MeleeDamage.minDmg, finalModifier, hinder, out outOldValue, out outNewValue);
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref monster.CreatureData.MeleeDamage.maxDmg, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.MeleeDamage.minDmg, finalModifier, increase, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.MeleeDamage.maxDmg, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_CritChance":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.MeleeDamage.critChance, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.MeleeDamage.critChance, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeDamage_CritDmg":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.MeleeDamage.critDmg, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.MeleeDamage.critDmg, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
                     case "MeleeThrowbackChance":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.MeleeThrowbackChance, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.MeleeThrowbackChance, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
 
 
 
                     case "Dodge":
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref monster.CreatureData.BaseDodge, finalModifier, hinder, out outOldValue, out outNewValue);
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseDodge, finalModifier, increase, out outOldValue, out outNewValue);
                         break;
                 }
 

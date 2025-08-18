@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace QM_PathOfQuasimorph.Core
+namespace QM_PathOfQuasimorph.Components
 {
     [Serializable]
     internal class RarityBackgroundComponent : MonoBehaviour

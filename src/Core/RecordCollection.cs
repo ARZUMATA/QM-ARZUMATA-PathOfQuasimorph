@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static UnityEngine.EventSystems.EventTrigger;
 
 namespace QM_PathOfQuasimorph.Core
@@ -19,6 +19,8 @@ namespace QM_PathOfQuasimorph.Core
         public static Dictionary<string, PerkRecord> PerkRecords { get; private set; } = new Dictionary<string, PerkRecord>();
 
         public static Dictionary<string, MetadataWrapper> MetadataWrapperRecords { get; private set; } = new Dictionary<string, MetadataWrapper>();
+        public static Dictionary<string, MigrationData> MigrationData { get; private set; } = new Dictionary<string, MigrationData>();
+
 
         private static Logger _logger = new Logger(null, typeof(RecordCollection));
 
@@ -42,17 +44,20 @@ namespace QM_PathOfQuasimorph.Core
             var woundSlotRecords = DataSerializerHelper.SerializeData<Dictionary<string, WoundSlotRecord>>(WoundSlotRecords, DataSerializerHelper._jsonSettingsPoq);
             var metadataWrapperRecords = DataSerializerHelper.SerializeData<Dictionary<string, MetadataWrapper>>(MetadataWrapperRecords, DataSerializerHelper._jsonSettingsPoq);
             var perkRecords = DataSerializerHelper.SerializeData<Dictionary<string, PerkRecord>>(PerkRecords, DataSerializerHelper._jsonSettingsPoq);
+            var migrationData = DataSerializerHelper.SerializeData<Dictionary<string, MigrationData>>(MigrationData, DataSerializerHelper._jsonSettingsPoq);
 
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Clear();
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("ItemRecords", itemRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("WoundSlotRecords", woundSlotRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("MetadataWrapperRecords", metadataWrapperRecords);
             PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("PerkRecords", perkRecords);
+            PathOfQuasimorph.magnumProjectsController.dataPlaceholderProject.UpcomingModifications.Add("MigrationData", migrationData);
 
             _logger.Log($"List_ItemRecords: {ItemRecords.Count}");
             _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
             _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
             _logger.Log($"List_PerkRecords: {PerkRecords.Count}");
+            _logger.Log($"List_MigrationData: {MigrationData.Count}");
             //_logger.Log($"itemRecords: {itemRecords}");
 
             foreach (var id in ItemRecords.Keys.ToList())
@@ -106,6 +111,15 @@ namespace QM_PathOfQuasimorph.Core
                         }
 
                         break;
+
+                    case "MigrationData":
+                        _logger.Log($"Deserialize PerkReMigrationDatacord");
+                        if (dataPlaceholderProject.UpcomingModifications.ContainsKey(key))
+                        {
+                            MigrationData = DataSerializerHelper.DeserializeData<Dictionary<string, MigrationData>>(dataPlaceholderProject.UpcomingModifications[key], DataSerializerHelper._jsonSettingsPoq);
+                        }
+
+                        break;
                 }
             }
 
@@ -113,6 +127,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"List_WoundSlotRecords: {WoundSlotRecords.Count}");
             _logger.Log($"List_MetadataWrapperRecords: {MetadataWrapperRecords.Count}");
             _logger.Log($"List_PerkRecords: {PerkRecords.Count}");
+            _logger.Log($"List_MigrationData: {MigrationData.Count}");
 
             _logger.Log($"Verify records");
 

@@ -7,8 +7,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using UnityEngine;
-using static QM_PathOfQuasimorph.Core.CreaturesControllerPoq;
-using static QM_PathOfQuasimorph.Core.MagnumPoQProjectsController;
+using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
+using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
+using static QM_PathOfQuasimorph.Controllers.MagnumPoQProjectsController;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace QM_PathOfQuasimorph.Core
@@ -47,6 +48,15 @@ namespace QM_PathOfQuasimorph.Core
                     {
                         return true;
                     }
+                }
+
+                if (ItemFactoryContext.CanDo == false)
+                {
+                    // Flag to block rarity apply for that item, skip and reset flag.
+                    ItemFactoryContext.CanDo = true;
+                    ItemFactoryContext.Context = "None";
+                    Plugin.Logger.Log($"ItemFactoryContext.CanDo == {ItemFactoryContext.CanDo}. Context {ItemFactoryContext.Context}. Reverting flag back to original (true).");
+                    return true;
                 }
 
                 //MagnumProject project = MagnumPoQProjectsController.GetProjectById(itemId);
@@ -109,14 +119,16 @@ namespace QM_PathOfQuasimorph.Core
                 Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch :: Prefix :: Called by: {formattedStackTrace}");
                 */
                 Plugin.Logger.Log($"ItemFactory_CreateForInventory_Patch");
-                Plugin.Logger.Log($"wrapper {itemId}");
-                var wrapper = MetadataWrapper.SplitItemUid(itemId);
-                Plugin.Logger.Log($"wrapper == null {wrapper == null}");
+                Plugin.Logger.Log($"metadata {itemId}");
 
-                if (wrapper.PoqItem || wrapper.SerializedStorage)
+                var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(itemId, MetadataWrapper.SplitItemUid);
+
+                Plugin.Logger.Log($"metadata == null {metadata == null}");
+
+                if (metadata != null && (metadata.PoqItem || metadata.SerializedStorage))
                 {
-                    Plugin.Logger.Log($"wrapper.PoqItem {wrapper.PoqItem}");
-                    Plugin.Logger.Log($"wrapper.SerializedStorage {wrapper.SerializedStorage}");
+                    Plugin.Logger.Log($"metadata.PoqItem {metadata.PoqItem}");
+                    Plugin.Logger.Log($"metadata.SerializedStorage {metadata.SerializedStorage}");
 
                     return true;
                 }
@@ -145,7 +157,15 @@ namespace QM_PathOfQuasimorph.Core
                     }
 
                     // Create new item record
-                    itemId = PathOfQuasimorph.itemRecordsControllerPoq.CreateNew(itemId, mobRarityBoost);
+                    itemId = PathOfQuasimorph.itemRecordsControllerPoq.InterceptAndReplaceItemId(
+                        Id: itemId,
+                        mobRarityBoost: mobRarityBoost,
+                        itemRarity: ItemRarity.Standard,
+                        selectRarity: true,
+                        ignoreBlacklist: false,
+                        randomUidInjected: null,
+                        applyRarity: false
+                        );
                 }
 
                 return true;  // Allow original method.
