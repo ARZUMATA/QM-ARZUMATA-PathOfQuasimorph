@@ -6,10 +6,10 @@
     </a>
 </p>
 
-<details>
+<!-- <details>
   <summary style="color: #448aff; font-weight: bold;">
     <h3 style="margin: 0; font-size: 24px;"> Click for more</h3>
-  </summary>
+  </summary> -->
 
 <p>
   <a href="media/160601.jpg" data-sub-html="160601">
@@ -108,4 +108,4 @@
 </p>
 
 
-</details>
+<!-- </details> -->

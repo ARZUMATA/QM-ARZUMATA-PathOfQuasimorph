@@ -1,12 +1,12 @@
 # QM_PathOfQuasimorph
 
 <p align="center">
-  <a href="readme.md">English</a> ·
-  <a href="readme_ru.md">Русский</a>
+  <a href="README.md">English</a> ·
+  <a href="README_RU.md">Русский</a>
 </p>
 
 <p align="center">
-  <a href="gallery.md">Скриншоты</a>
+  <a href="GALLERY.md">Скриншоты</a>
 </p>
 
 Задумался, почему твои предметы так плохи?

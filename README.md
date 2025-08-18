@@ -1,13 +1,12 @@
 # QM_PathOfQuasimorph
 
 <p align="center">
-  <a href="readme.md">English</a> ·
-  <a href="readme_ru.md">Русский</a>
-  <a href="gallery.md">Screenshots</a>
+  <a href="README.md">English</a> ·
+  <a href="README_RU.md">Русский</a>
 </p>
 
 <p align="center">
-  <a href="gallery.md">Screenshots</a>
+  <a href="GALLERY.md">Screenshots</a>
 </p>
 
 Ever wondered why your items so bad?
@@ -27,6 +26,7 @@ Well this is the mod for you!
 ### **Forge Your Legend with Path of Quasimorph!**
 
 ## Path of Quasimorph
+
 <div align="center">
   <img src="media/thumbnail.png" alt="thumbnail icon">
 </div>
