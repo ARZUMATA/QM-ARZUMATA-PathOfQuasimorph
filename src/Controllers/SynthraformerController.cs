@@ -131,21 +131,23 @@ namespace QM_PathOfQuasimorph.Controllers
         private static void SetupSynthraformerRecipe(SynthraformerType type, ItemProduceReceipt recipe)
         {
             /*
+                Revised Recipe Tree (Total items per recipe ≤ 7)
+
                 PrimalCore (drop)
                 │
-                └─▶ Amplifier (10 Core)
+                └─▶ Amplifier (7 Core) 
                      │
-                     ├─▶ Traits (3 Amp + 15 Core)
+                     ├─▶ Traits (3 Amp + 4 Core = 7)
                      │    │
-                     │    ├─▶ Rarity (1 Traits + 20 Core)
+                     │    ├─▶ Rarity (3 Traits + 4 Amp = 7)
                      │    │    │
-                     │    │    ├─▶ Transmuter (1 Rarity + 1 Amplifier + 15 Core)
+                     │    │    ├─▶ Transmuter (2 Rarity + 1 Amp + 4 Core = 7)
                      │    │    │
-                     │    │    └─▶ Catalyst (3 Rarity + 1 Transmuter + 50 Core)
+                     │    │    └─▶ Catalyst (2 Rarity + 1 Transmuter + 4 Core = 7)
                      │    │
-                     │    └─▶ Indestructible (2 Traits + 5 Amp + 25 Core)
+                     │    └─▶ Indestructible (2 Traits + 2 Amp + 3 Core = 7)
                      │
-                     └─▶ Infuser (3 Traits + 1 Rarity) → future
+                     └─▶ Infuser (3 Traits + 4 Rarity = 7) → future
             */
 
             // Clear any existing requirements (defensive)
@@ -174,68 +176,58 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Amplifier:
-                    // Tier 1: Stat roller
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 10));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 7));
                     break;
 
                 case SynthraformerType.Traits:
-                    // Tier 2: Reroll traits
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 3));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 15));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
                     break;
 
                 case SynthraformerType.Rarity:
-                    // Tier 3: Roll item rarity
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 1));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 20));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 3));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 4));
                     break;
 
                 case SynthraformerType.Indestructible:
-                    // Tier 4: Chance for indestructible
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 2));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 5));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 25));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 2));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 3));
                     break;
 
                 case SynthraformerType.Infuser:
-                    // Placeholder / future use
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 3));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 1));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 4));
                     break;
 
                 case SynthraformerType.Transmuter:
-                    // Mid/late game — enable augments
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 1));
+                    // Mid/late: Rarity + Amp + Core
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 1));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 15));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
                     break;
 
                 case SynthraformerType.Catalyst:
-                    // Endgame: weapon → augment
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Transmuter), 1));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 3));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 50));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
                     break;
 
                 case SynthraformerType.Azure:
-                    // Legendary-tier (optional)
                     recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Catalyst), 1));
-                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 100));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 6));
                     break;
 
                 default:
-                    // Handle unknown types gracefully
                     Plugin.Logger.Log($"Unknown SynthraformerType: {type}");
                     break;
             }
 
-            // Only add recipe if it has requirements
             if (recipe.RequiredItems.Count > 0)
             {
                 AddRecipe(recipe);
             }
         }
-
         private static void RemoveExistingSynthraformerRecipes()
         {
             int removedCount = Data.ProduceReceipts.RemoveAll(recipe =>
