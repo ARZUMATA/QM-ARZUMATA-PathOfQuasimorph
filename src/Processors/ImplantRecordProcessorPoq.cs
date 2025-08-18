@@ -27,56 +27,58 @@ namespace QM_PathOfQuasimorph.Processors
         {
         };
 
-        internal List<string> implicitBonusEffects = new List<string>()
+        // True - increase, False - decreqse
+        // They al lcome from wound records
+        internal Dictionary<string, bool> implicitBonusEffects = new Dictionary<string, bool>()
         {
-            "backpack_weight",
-            "crit_damage",
-            "critchance_reduce",
-            "food_calories",
-            "implant_cooldown",
-            "income_pain",
-            "max_health",
-            "melee_dmg_reduce",
-            "melee_throw_range",
-            "pain_to_melee_dmg",
-            "passive_regen",
-            "perk_cooldown",
-            "perk_exp_modifier",
-            "qmorph",
-            "ranged_accuracy",
-            "reload_duration",
-            "resist_beam",
-            "resist_blunt",
-            "resist_fire",
-            "resist_lacer",
-            "resist_pierce",
-            "resist_poison",
-            "resist_shock",
-            "satiety",
-            "status_immune_shockEffect",
-            "wound_chance_mult",
-            "wound_immune_lacer",
-            "wound_immune_pierce",
+            { "backpack_weight",              false },
+            { "crit_damage",                  true },
+            { "critchance_reduce",            true },
+            { "food_calories",                true },
+            { "implant_cooldown",             true },
+            { "income_pain",                  true },
+            { "max_health",                   true },
+            { "melee_dmg_reduce",             true },
+            { "melee_throw_range",            true },
+            { "pain_to_melee_dmg",            true },
+            { "passive_regen",                true },
+            { "perk_cooldown",                true },
+            { "perk_exp_modifier",            true },
+            { "qmorph",                       true },
+            { "ranged_accuracy",              true },
+            { "reload_duration",              true },
+            { "resist_beam",                  true },
+            { "resist_blunt",                 true },
+            { "resist_fire",                  true },
+            { "resist_lacer",                 true },
+            { "resist_pierce",                true },
+            { "resist_poison",                true },
+            { "resist_shock",                 true },
+            { "satiety",                      true },
+            { "status_immune_shockEffect",    true },
+            { "wound_chance_mult",            true },
+            { "wound_immune_lacer",           true },
+            { "wound_immune_pierce",          true },
         };
 
-        internal List<string> implicitPenaltyEffects = new List<string>()
+        internal Dictionary<string, bool> implicitPenaltyEffects = new Dictionary<string, bool>()
         {
-            "addiction_chance",
-            "food_calories",
-            "income_pain",
-            "max_health",
-            "ranged_accuracy",
-            "regen_efficacy",
-            "resist_beam",
-            "resist_blunt",
-            "resist_fire",
-            "resist_lacer",
-            "resist_pierce",
-            "resist_shock",
-            "satiety",
-            "scatter_angle",
-            "wound_chance",
-            "wound_chance_mult",
+            { "addiction_chance",             true },
+            { "food_calories",                true },
+            { "income_pain",                  true },
+            { "max_health",                   true },
+            { "ranged_accuracy",              true },
+            { "regen_efficacy",               true },
+            { "resist_beam",                  true },
+            { "resist_blunt",                 true },
+            { "resist_fire",                  true },
+            { "resist_lacer",                 true },
+            { "resist_pierce",                true },
+            { "resist_shock",                 true },
+            { "satiety",                      true },
+            { "scatter_angle",                true },
+            { "wound_chance",                 true },
+            { "wound_chance_mult",            true },
         };
 
         public ImplantRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
@@ -188,8 +190,6 @@ namespace QM_PathOfQuasimorph.Processors
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
 
-
-
             if (itemRecord.IsActive == true)
             {
                 // Add new perk copying same perk under new id (yeah that's how game works)
@@ -224,12 +224,83 @@ namespace QM_PathOfQuasimorph.Processors
                 Localization.DuplicateKey("perk." + baseId + ".desc", "perk." + itemId + ".desc");
                 RaritySystem.AddAffixes(itemId);
             }
-
-
         }
 
         internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
         {
+            _logger.Log($"AddRandomEffect");
+
+            var positive = Helpers._random.NextDouble() > 0.5f;
+            var removeRandom = Helpers._random.NextDouble() > 0.8f;
+
+            _logger.Log($"positive: {positive}");
+            _logger.Log($"posremoveRandomitive: {removeRandom}");
+
+            var effect = woundEffects.Keys.ToArray()[Helpers._random.Next(0, woundEffects.Count - 1)];
+            _logger.Log($"effect: {effect}");
+
+            var (sign, value) = woundEffects[effect];
+
+            float finalValue = value;
+
+            // Now pick random value in [finalValue * 0.5, finalValue * 1.5]
+            float minValue = finalValue * 0.5f;
+            float maxValue = finalValue * 1.5f;
+            _logger.Log($"minValue: {minValue}");
+            _logger.Log($"maxValue: {maxValue}");
+
+            // Handle negative values: ensure min/max are correctly ordered
+            float lowerBound = Math.Min(minValue, maxValue);
+            float upperBound = Math.Max(minValue, maxValue);
+
+            float randomizedValue = (float)(Helpers._random.NextDouble() * (upperBound - lowerBound) + lowerBound);
+
+            if (removeRandom)
+            {
+                var effects = positive ? itemRecord.ImplicitBonusEffects : itemRecord.ImplicitPenaltyEffects;
+                if (effects != null && effects.Count > 0)
+                {
+                    var keys = effects.Keys.ToArray();
+                    var randomKey = keys[Helpers._random.Next(keys.Length)];
+                    effects.Remove(randomKey);
+                }
+            }
+
+            if (positive)
+            {
+                var bonuses = itemRecord.ImplicitBonusEffects;
+                _logger.Log($"randomizedValue: {randomizedValue}");
+
+                if (bonuses.ContainsKey(effect))
+                {
+                    return;
+                }
+
+                if (bonuses.Count >= 5) // If already 5 or more, replace random
+                {
+                    var keys = bonuses.Keys.ToArray();
+                    var randomKey = keys[Helpers._random.Next(keys.Length)];
+                    bonuses.Remove(randomKey);
+                }
+
+                bonuses.Add(effect, finalValue);
+
+            }
+            else
+            {
+                var penalties = itemRecord.ImplicitPenaltyEffects;
+                randomizedValue = -randomizedValue;
+                _logger.Log($"randomizedValue: {randomizedValue}");
+
+                if (penalties.Count >= 5)
+                {
+                    var keys = penalties.Keys.ToArray();
+                    var randomKey = keys[Helpers._random.Next(keys.Length)];
+                    penalties.Remove(randomKey);
+                }
+
+                penalties.Add(effect, finalValue);
+            }
         }
     }
 }
