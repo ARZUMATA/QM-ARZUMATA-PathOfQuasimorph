@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,7 +85,7 @@ namespace QM_PathOfQuasimorph.Controllers
             return InterceptAndReplaceItemId(Id, mobRarityBoost, itemRarity, applyRarity, randomUidInjected);
         }
 
-        internal string InterceptAndReplaceItemId(string itemIdOrigin, bool mobRarityBoost, ItemRarity itemRarity, bool applyRarity, string randomUidInjected)
+        internal string InterceptAndReplaceItemId(string Id, bool mobRarityBoost, ItemRarity itemRarity, bool applyRarity, string randomUidInjected)
         {
             // Generate a new UID
             if (randomUidInjected == null)
@@ -92,21 +93,24 @@ namespace QM_PathOfQuasimorph.Controllers
                 randomUidInjected = GenerateUid(itemRarity);
             }
 
-            Plugin.Logger.Log($"CompositeItemRecord for: {itemIdOrigin}");
-            CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
-            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(itemIdOrigin);
+            _logger.Log($"CompositeItemRecord for: {Id}");
+            CompositeItemRecord obj = Data.Items.GetRecord(Id) as CompositeItemRecord;
+            ItemTransformationRecord itemTransformationRecord = Data.ItemTransformation.GetRecord(Id);
 
-            if (itemIdOrigin.EndsWith("_custom"))
+            bool isMagnumProduced = false;
+
+            if (Id.EndsWith("_custom"))
             {
-                itemIdOrigin.Replace("_custom", string.Empty);
+                Id = Id.Replace("_custom", string.Empty);
+                _logger.Log($"Trimming Id, result: {Id}");
+                isMagnumProduced = true;
             }
 
             MetadataWrapper wrapper;
             string newId;
-            GetNewId(itemIdOrigin, randomUidInjected, out wrapper, out newId);
+            GetNewId(Id, randomUidInjected, isMagnumProduced, out wrapper, out newId);
 
             _logger.Log($"\t newId: {newId}");
-           
 
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
 
@@ -114,7 +118,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
             if (itemTransformationRecord == null)
             {
-                _logger.Log($"ItemTransformationRecord is missing for Id: {itemIdOrigin}.");
+                _logger.Log($"ItemTransformationRecord is missing for Id: {Id}.");
                 _logger.Log($"Need a placeholder");
 
                 // Item breaks into this, unless it has it's own itemTransformationRecord.
@@ -130,7 +134,7 @@ namespace QM_PathOfQuasimorph.Controllers
             _logger.Log($"ItemTransformationRecord: result will be item count {itemTransformationRecord.OutputItems.Count}");
 
             string boostedParamString = string.Empty;
-            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, itemIdOrigin, ref boostedParamString);
+            ApplyRarityStats(obj.Records, newObj.Records, itemRarity, mobRarityBoost, newId, Id, ref boostedParamString);
             wrapper.BoostedString = boostedParamString;
 
             _logger.Log($"");
@@ -173,10 +177,10 @@ namespace QM_PathOfQuasimorph.Controllers
             RecordCollection.MetadataWrapperRecords.Add(newId, wrapper);
 
             _logger.Log($"itemId {Data.Items._records.Keys.Contains(newId)}");
-            _logger.Log($"oldId {Data.Items._records.Keys.Contains(itemIdOrigin)}");
+            _logger.Log($"oldId {Data.Items._records.Keys.Contains(Id)}");
 
-            Localization.DuplicateKey("item." + itemIdOrigin + ".name", "item." + newId + ".name");
-            Localization.DuplicateKey("item." + itemIdOrigin + ".shortdesc", "item." + newId + ".shortdesc");
+            Localization.DuplicateKey("item." + Id + ".name", "item." + newId + ".name");
+            Localization.DuplicateKey("item." + Id + ".shortdesc", "item." + newId + ".shortdesc");
             RaritySystem.AddAffixes(newId);
 
             return newId;
@@ -192,18 +196,19 @@ namespace QM_PathOfQuasimorph.Controllers
             _logger.Log($"\t randomUidInjected: {randomUidInjected}");
             return randomUidInjected;
         }
-        
-        private static void GetNewId(string itemIdOrigin, string randomUidInjected, out MetadataWrapper wrapper, out string newId)
+
+        private static void GetNewId(string Id, string randomUidInjected, bool isMagnumProduced, out MetadataWrapper wrapper, out string newId)
         {
             // Resulting UID
             // We don't need custom suffix anyway since we create own records for magnum crafted projects.
             // So we replace it here as we need _custom one to get item record
             wrapper = new MetadataWrapper(
-                 id: itemIdOrigin,
+                 id: Id,
                  poqItem: true,
                  startTime: new DateTime(MAGNUM_PROJECT_START_TIME),
                  finishTime: new DateTime(long.Parse(randomUidInjected))
                  );
+
             newId = wrapper.ReturnItemUid();
         }
 
@@ -434,11 +439,11 @@ namespace QM_PathOfQuasimorph.Controllers
                     "none"
                 };
 
-            _logger.Log($"CanProcessItemRecord: id: {id}");
+            _logger.Log($"CanProcessItemRecord id: {id}");
 
             CompositeItemRecord compositeItemRecord = Data.Items.GetRecord(id, true) as CompositeItemRecord;
 
-            if (compositeItemRecord == null) 
+            if (compositeItemRecord == null)
             {
                 _logger.Log($"compositeItemRecord == null. Break.");
                 return false;
