@@ -125,7 +125,7 @@ Thanks community for feedback.
 
 # Changelog
 
-## 1.9.1 (in development)
+## 1.9.1 (d42c08f)
 
 ### Changes
 - **Tooltip improvements**:
