@@ -380,7 +380,7 @@ namespace QM_PathOfQuasimorph.Controllers
         private void FillCreatureData(Monster monster, Dictionary<string, float> statsPanel)
         {
             var health = monster.CreatureData.Health.MaxValue;
-            var actionPoints = monster.CreatureData.BaseActionPoints;
+            var actionPoints = monster.ActionPoints;
 
             var rangeAccuracy = monster.CreatureData.GetRangeAccuracyNorm(null, false, false, false);
             var losLevel = monster.CreatureData.GetLosLevel();
