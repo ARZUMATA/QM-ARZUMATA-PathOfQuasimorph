@@ -682,6 +682,20 @@ namespace QM_PathOfQuasimorph.Controllers
             }
         }
 
+        public static string FixOldId(string id)
+        {
+            var array = id.Split('_');
+            // synthraformer_poq_1 = count 3
+            // synthraformer_poq_1_standard = count 4
+
+            if (array.Length == 4)
+            {
+                return string.Join("_", array[0], array[1], array[2]);
+            }
+
+            return id;
+        }
+
         internal static List<string> GetAdditionalDroptems(BasePickupItem item, MetadataWrapper metadata)
         {
             _logger.Log($"GetAdditionalDroptems");
