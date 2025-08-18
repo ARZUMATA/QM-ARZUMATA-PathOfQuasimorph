@@ -64,7 +64,7 @@ poq.weapon.suffix.damage.2.tooltip,of Armor Penetration,Бронепробити
 poq.weapon.suffix.damage.3.tooltip,of High Impact,Мощного удара,von Hoher Wirkung,d'Impact Élevé,de Alto Impacto,Wysokiego Uderzenia,Yüksek Etki,do Alto Impacto,의 높은 충격,の高衝撃,的高冲击
 poq.weapon.suffix.damage.4.tooltip,of Devastating Force,Разрушительной силы,von Verheerender Kraft,de Force Dévastatrice,de Fuerza Devastadora,Rujnującej Siły,Yıkıcı Güç,da Força Devastadora,의 재앙의 힘,の壊滅的な力,的毁灭力量
 poq.weapon.suffix.damage.5.tooltip,of Annihilation,Аннигиляции,von Vernichtung,d'Annihilation,de Aniquilación,Anihilacji,Yok Olma,da Aniquilação,의 전멸,の完全破壊,的消灭
-poq.weapon.suffix.crit_damage.1.tooltip,of Basic Overload,Базовой перегрузки,von Grundüberlastung,de Surcharge de Base,de Sobrecarga Básica,Podstawowej Przeładowania,Temel Aşırı Yük,do Sobrecarga Básica,의 기본 과부하,の基本オーバーロード,的基本过载
+poq.weapon.suffix.crit_damage.1.tooltip,of Basic Overload,Базовой перегрузки,von Grundüberlastung,de Surcharge de Base,de Sobrecarga Básica,Podstawowego Przeładowania,Temel Aşırı Yük,do Sobrecarga Básica,의 기본 과부하,の基本オーバーロード,的基本过载
 poq.weapon.suffix.crit_damage.2.tooltip,of Critical Overload,Критической перегрузки,von Kritischer Überlastung,de Surcharge Critique,de Sobrecarga Crítica,Krytycznej Przeładowania,Kritik Aşırı Yük,da Sobrecarga Crítica,의 치명적인 과부하,のクリティカルオーバーロード,的临界过载
 poq.weapon.suffix.crit_damage.3.tooltip,of Critical Mass,Критической массы,von Kritischer Masse,de Masse Critique,de Masa Crítica,Krytycznej Masie,Kritik Kütle,da Massa Crítica,의 임계 질량,のクリティカルマス,的临界质量
 poq.weapon.suffix.crit_damage.4.tooltip,of Precision Strike,Точного удара,von Präzisionsschlag,de Frappe de Précision,de Golpe de Precisión,Precyzyjnego Uderzenia,Hassas Vuruş,do Golpe de Precisão,의 정밀 스트라이크,の精密打撃,的精准打击
@@ -120,7 +120,7 @@ poq.armor.prefix.3.power_armor.tooltip,Solarmend,Солнечное исцеле
 poq.armor.prefix.4.power_armor.tooltip,Plasma-Touched,Затронутый плазмой,Plasmakontakt,Touché par le plasma,Tocado por plasma,Dotknięty plazmą,Plazma ile temas etmiş,Tocado por plasma,플라즈마에 닿은,プラズマに触れた,触及等离子的
 poq.armor.prefix.5.power_armor.tooltip,Prototype-Adamantium,Прототип-адамант,Prototyp-Adamantium,Prototype-Adamantium,Prototipo-de-Adamantium,Prototyp-Adamantium,Prototip-Adamantium,Protótipo de adamantium,프로토타입 아다만티움,プロトタイプアダマンチウム,原型亚当
 poq.weapon.prefix.1.industrial.tooltip,Shredder,Резак,Zerschneider,Déchireur,Desgarrador,Rozdzieracz,Parçalayıcı,Destruidor,파괴기,裂け目,剪切者
-poq.weapon.prefix.1.firearm.tooltip,Overpressure,Избыточное давление,Überdruck,Surpression,Sobrecarga,Nadciśnienie,Aşırı Basınç,Sobrecarga,과압,過圧,超压
+poq.weapon.prefix.1.firearm.tooltip,Overpressure,Избыточное давление,Überdruck,Surpression,Sobrecarga,Nadciśniony,Aşırı Basınç,Sobrecarga,과압,過圧,超压
 poq.weapon.prefix.1.rail.tooltip,Resonant,Резонирующий,Resonant,Résonnant,Resonante,Rezonansowy,Yankı,Resonante,공명하는,共鳴する,共鸣
 poq.weapon.prefix.1.laser.tooltip,Focused,Сфокусированный,Fokussiert,Focalisé,Enfocado,Skoncentrowany,Odaklanmış,Focalizado,집중된,集中した,集中
 poq.weapon.prefix.1.toxic.tooltip,Venenous,Ядовитый,Giftig,Vénéneux,Venenoso,Trujący,Zehirli,Venenoso,독성을 가진,毒のある,有毒的
