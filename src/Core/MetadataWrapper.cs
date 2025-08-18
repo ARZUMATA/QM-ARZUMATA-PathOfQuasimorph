@@ -11,6 +11,7 @@ namespace QM_PathOfQuasimorph.Core
         public string Id { get; set; }
         public string CustomId { get; set; }
         public string BoostedString { get; set; }
+        public bool IsMagnumProduced { get; set; }
         public ItemRarity RarityClass { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime FinishTime { get; set; }
@@ -49,7 +50,7 @@ namespace QM_PathOfQuasimorph.Core
         {
         }
 
-        public MetadataWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime)
+        public MetadataWrapper(string id, bool poqItem, DateTime startTime, DateTime finishTime, bool isMagnumProduced = false)
         {
             this.Id = id;
             this.PoqItem = poqItem;
@@ -57,6 +58,7 @@ namespace QM_PathOfQuasimorph.Core
             this.FinishTime = finishTime;
 
             this.CustomId = poqItem ? $"{id}_custom_poq" : $"{id}_custom";
+            this.IsMagnumProduced = isMagnumProduced;
 
             var digitInfo = DigitInfo.GetDigits(finishTime.Ticks);
             this.RarityClass = (ItemRarity)digitInfo.Rarity;

@@ -66,6 +66,7 @@ namespace QM_PathOfQuasimorph.Core
                     else
                     {
                         _logger.Log($"metadata.CustomId {metadata.ReturnItemUid()}");
+                        _logger.Log($"metadata.IsMagnumProduced {metadata.IsMagnumProduced}");
 
                         if (metadata.PoqItem)
                         {
@@ -93,7 +94,7 @@ namespace QM_PathOfQuasimorph.Core
                             _factory.AddCompareBlock(_factory._lastShowedItem);
                             //_factory.AddCompareBlock(_factory._lastShowedItem);
 
-                            InitItemComparsion(_factory._lastShowedItem as PickupItem, metadata.Id);
+                            InitItemComparsion(_factory._lastShowedItem as PickupItem, metadata);
 
                             _factory._tooltip.IsAdditionalTooltip = true;
                         }
@@ -174,48 +175,48 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitItemComparsion(PickupItem item, string genericId)
+        private static void InitItemComparsion(PickupItem item, MetadataWrapper metadata)
         {
             if (_factory._lastShowedItem.Is<BreakableItemRecord>())
             {
-                InitBreakable(item.Record<BreakableItemRecord>(), genericId, item);
+                InitBreakable(item.Record<BreakableItemRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<AmmoRecord>())
             {
-                InitAmmo(item.Record<AmmoRecord>(), genericId, item);
+                InitAmmo(item.Record<AmmoRecord>(), metadata, item);
             }
-            
+
             if (_factory._lastShowedItem.Is<WeaponRecord>())
             {
-                InitWeapon(item.Record<WeaponRecord>(), genericId, item);
-                InitTraits(item.Record<WeaponRecord>(), genericId, item);
+                InitWeapon(item.Record<WeaponRecord>(), metadata, item);
+                InitTraits(item.Record<WeaponRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<ResistRecord>())
             {
-                InitArmor(item.Record<ResistRecord>(), genericId, item);
+                InitArmor(item.Record<ResistRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<AugmentationRecord>())
             {
-                InitAugmentation(item.Record<AugmentationRecord>(), genericId, item);
+                InitAugmentation(item.Record<AugmentationRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<ImplantRecord>())
             {
-                InitImplant(item.Record<ImplantRecord>(), genericId, item);
+                InitImplant(item.Record<ImplantRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<ItemRecord>())
             {
-                InitWeight(item.Record<ItemRecord>(), genericId, item);
+                InitWeight(item.Record<ItemRecord>(), metadata, item);
             }
         }
 
-        private static void InitAmmo(AmmoRecord ammoRecord, string genericId, PickupItem item)
+        private static void InitAmmo(AmmoRecord ammoRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
 
             if (ammoRecord.BallisticType != genericRecord.BallisticType)
             {
@@ -240,9 +241,9 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitImplant(ImplantRecord implantRecord, string genericId, PickupItem item)
+        private static void InitImplant(ImplantRecord implantRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(metadata.Id, true);
 
             _logger.Log($"genericRecord ImplantRecord is null {genericRecord == null}");
 
@@ -296,9 +297,9 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitAugmentation(AugmentationRecord augmentationRecord, string genericId, PickupItem item)
+        private static void InitAugmentation(AugmentationRecord augmentationRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(metadata.Id, true);
 
             _logger.Log($"genericRecord AugmentationRecord is {genericRecord == null}");
 
@@ -389,9 +390,20 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitArmor(ResistRecord recordPoq, string genericId, PickupItem item)
+        private static void InitArmor(ResistRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<ResistRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
 
             _logger.Log($"genericRecord ResistRecord is {genericRecord == null}");
 
@@ -414,9 +426,9 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitTraits(WeaponRecord weaponRecord, string genericId, PickupItem item)
+        private static void InitTraits(WeaponRecord weaponRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
             var component = item.Comp<WeaponComponent>();
 
             foreach (var id in genericRecord.Traits)
@@ -460,14 +472,25 @@ namespace QM_PathOfQuasimorph.Core
             //}
 
             //<strikethrough>
-            
+
         }
 
-        private static void InitWeight(ItemRecord itemRecord, string genericId, PickupItem item)
+        private static void InitWeight(ItemRecord itemRecord, MetadataWrapper metadata, PickupItem item)
         {
             if (item.TotalWeight > 0)
             {
-                var genericRecord = Data.Items.GetSimpleRecord<ItemRecord>(genericId, true);
+                var genericRecord = Data.Items.GetSimpleRecord<ItemRecord>(metadata.Id, true);
+
+                if (metadata.IsMagnumProduced)
+                {
+                    // Compare against magnum project item.
+                    var isMagnumProducedRecord = Data.Items.GetSimpleRecord<ItemRecord>($"{metadata.Id}_custom", true);
+
+                    if (isMagnumProducedRecord != null)
+                    {
+                        genericRecord = isMagnumProducedRecord;
+                    }
+                }
 
                 float singleWeightPoq = itemRecord.Weight;
                 float singleWeightGeneric = genericRecord.Weight;
@@ -484,10 +507,22 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitWeapon(WeaponRecord recordPoq, string genericId, PickupItem item)
+        private static void InitWeapon(WeaponRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            _logger.Log($"genericId {genericId}");
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(genericId, true);
+            _logger.Log($"genericId {metadata.Id}");
+            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<WeaponRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
+
             bool grenadeLauncher = recordPoq.WeaponClass == WeaponClass.GrenadeLauncher;
             string value;
 
@@ -688,9 +723,20 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitBreakable(BreakableItemRecord recordPoq, string genericId, PickupItem item)
+        private static void InitBreakable(BreakableItemRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>(genericId, true);
+            var genericRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
 
             // Max durability
             var durabilityDifference = recordPoq.MaxDurability - genericRecord.MaxDurability;

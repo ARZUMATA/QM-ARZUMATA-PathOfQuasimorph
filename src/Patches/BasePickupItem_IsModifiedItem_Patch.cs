@@ -15,9 +15,18 @@ namespace QM_PathOfQuasimorph.Core
         {
             public static void Postfix(PickupItem __instance, ref bool __result)
             {
+                var metadata = RecordCollection.MetadataWrapperRecords.GetOrAdd(__instance.Id, MetadataWrapper.SplitItemUid);
+
+                if (metadata.IsMagnumProduced)
+                {
+                    __result = true;
+                    return;
+                }
+
                 if (__instance.Id.Contains("_poq_"))
                 {
                     __result = false;
+                    return;
                 }
             }
         }

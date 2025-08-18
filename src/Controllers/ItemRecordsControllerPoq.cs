@@ -111,6 +111,7 @@ namespace QM_PathOfQuasimorph.Controllers
             GetNewId(Id, randomUidInjected, isMagnumProduced, out wrapper, out newId);
 
             _logger.Log($"\t newId: {newId}");
+            _logger.Log($"isMagnumProduced: {isMagnumProduced}");
 
             CompositeItemRecord newObj = new CompositeItemRecord(newId);
 
@@ -205,6 +206,7 @@ namespace QM_PathOfQuasimorph.Controllers
             wrapper = new MetadataWrapper(
                  id: Id,
                  poqItem: true,
+                 isMagnumProduced: isMagnumProduced,
                  startTime: new DateTime(MAGNUM_PROJECT_START_TIME),
                  finishTime: new DateTime(long.Parse(randomUidInjected))
                  );
