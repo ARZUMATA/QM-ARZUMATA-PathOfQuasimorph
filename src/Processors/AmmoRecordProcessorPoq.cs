@@ -281,7 +281,7 @@ namespace QM_PathOfQuasimorph.Processors
             ApplyStat(finalModifier, increase, stat, genericRecord);
         }
 
-        internal void ReplaceWeaponTraits(SynthraformerRecord record, MetadataWrapper metadata)
+        internal void ReplaceAmmoTraits(SynthraformerRecord record, MetadataWrapper metadata)
         {
             ApplyTraits(true);
         }

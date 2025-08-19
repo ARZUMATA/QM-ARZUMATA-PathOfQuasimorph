@@ -355,7 +355,7 @@ namespace QM_PathOfQuasimorph.Processors
             // We may "borrow" augrecord right?
             //CompositeItemRecord obj = Data.Items.GetRecord(itemIdOrigin) as CompositeItemRecord;
 
-            _logger.Log($"\augmentationRecord Id: {itemId}");
+            _logger.Log($"\taugmentationRecord Id: {itemId}");
 
             var augmentationRecord = new AugmentationRecord();
             augmentationRecord.Id = itemId;
@@ -380,7 +380,7 @@ namespace QM_PathOfQuasimorph.Processors
             var armSlotRecord = Data.WoundSlots.GetRecord(legitSlotsArms.GetRandomItem().Key);
             var armSlot_NewId = $"{armSlotRecord.Id}_{itemId}";
 
-            _logger.Log($"\armSlot_NewId: {armSlot_NewId}");
+            _logger.Log($"\tarmSlot_NewId: {armSlot_NewId}");
 
             WoundSlotRecord armSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(armSlotRecord, $"{armSlot_NewId}");
             itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(armSlotRecordNew, itemRarity, mobRarityBoost, false, $"{armSlot_NewId}", oldId);
@@ -403,7 +403,7 @@ namespace QM_PathOfQuasimorph.Processors
             var shoulderSlotRecord = Data.WoundSlots.GetRecord(legitSlotsShoulders.GetRandomItem().Key);
             var shoulderSlot_NewId = $"{shoulderSlotRecord.Id}_{itemId}";
 
-            _logger.Log($"\ashoulderSlot_NewId: {shoulderSlot_NewId}");
+            _logger.Log($"\tashoulderSlot_NewId: {shoulderSlot_NewId}");
 
             WoundSlotRecord shoulderSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(shoulderSlotRecord, $"{shoulderSlot_NewId}");
             itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(shoulderSlotRecordNew, itemRarity, mobRarityBoost, false, $"{shoulderSlot_NewId}", oldId);
