@@ -242,6 +242,7 @@ namespace QM_PathOfQuasimorph.Core
             bool inArbitrarySection = false;
             bool inRaritySection = false;
             bool inMonsterMasteriesSection = false;
+            bool inSynthraformersSection = false;
             string[] headers = null;
 
             Dictionary<string, float> arbitraryValues = new Dictionary<string, float>();
@@ -271,6 +272,13 @@ namespace QM_PathOfQuasimorph.Core
                         continue;
                     }
 
+                    if (line.StartsWith("Synthraformers"))
+                    {
+                        inSynthraformersSection = true;
+                        headers = line.Split(',');
+                        continue;
+
+                    }
                     // Check if the line starts the Arbitrary Values section
                     if (line.StartsWith("Arbitrary"))
                     {
@@ -310,6 +318,27 @@ namespace QM_PathOfQuasimorph.Core
                                 float.Parse(parts[2], CultureInfo.InvariantCulture));
 
                             PathOfQuasimorph.creaturesControllerPoq._masteryTierWeights[mastery] = int.Parse(parts[3], CultureInfo.InvariantCulture);
+
+                            PathOfQuasimorph.creaturesControllerPoq._masteryModifiers_Health[mastery] =
+                             (float.Parse(parts[4], CultureInfo.InvariantCulture),
+                             float.Parse(parts[5], CultureInfo.InvariantCulture));
+
+                            PathOfQuasimorph.creaturesControllerPoq._masteryModifiers_Resists[mastery] =
+                             (float.Parse(parts[6], CultureInfo.InvariantCulture),
+                             float.Parse(parts[7], CultureInfo.InvariantCulture));
+                        }
+                    }
+
+                    //DropChances
+                    if (inSynthraformersSection)
+                    {
+                        string[] parts = line.Split(',');
+                        string rarityName = parts[0].Trim();
+
+                        if (Enum.TryParse(rarityName, out SynthraformerController.SynthraformerType type))
+                        {
+                            PathOfQuasimorph.synthraformerController.DropChances[type] = float.Parse(parts[0], CultureInfo.InvariantCulture);
+                            PathOfQuasimorph.synthraformerController.ProduceTimeMap[type] = float.Parse(parts[1], CultureInfo.InvariantCulture);
                         }
                     }
 
@@ -322,6 +351,9 @@ namespace QM_PathOfQuasimorph.Core
 
                         arbitraryValues[key] = value;
                     }
+
+
+
                 }
             }
 

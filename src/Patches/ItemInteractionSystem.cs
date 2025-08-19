@@ -112,7 +112,7 @@ namespace QM_PathOfQuasimorph.Core
                         {
                             Plugin.Logger.Log($"metadata.RarityClass: {metadata.RarityClass}");
 
-                            var droptems = SynthraformerController.GetAdditionalDroptems(item, metadata);
+                            var droptems = PathOfQuasimorph.synthraformerController.GetAdditionalDroptems(item, metadata);
 
                             if (droptems.Count > 0)
                             {

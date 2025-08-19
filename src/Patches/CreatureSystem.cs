@@ -80,7 +80,7 @@ namespace QM_PathOfQuasimorph.Core
             public static void Postfix(ref Monster __result)
             {
                 Plugin.Logger.Log($"SpawnMonsterFromMobClass: creatureUniqueId: {__result.CreatureData.UniqueId}");
-
+                
                 if (!Plugin.Config.EnableMobs)
                 {
                     return;

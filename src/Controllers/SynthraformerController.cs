@@ -17,7 +17,7 @@ namespace QM_PathOfQuasimorph.Controllers
         public static List<string> recipesOutputItems = new List<string>();
 
         // Base drop chances by type
-        private static readonly Dictionary<SynthraformerType, float> DropChances = new()
+        public Dictionary<SynthraformerType, float> DropChances = new()
         {
             { SynthraformerType.PrimalCore,         0.70f },
             { SynthraformerType.Rarity,             0.05f },
@@ -29,6 +29,20 @@ namespace QM_PathOfQuasimorph.Controllers
             { SynthraformerType.Catalyst,           0.05f },
             { SynthraformerType.Azure,              0.05f },
         };
+
+        public Dictionary<SynthraformerType, float> ProduceTimeMap = new Dictionary<SynthraformerType, float>
+        {
+            { SynthraformerType.Rarity, 1.5f },
+            { SynthraformerType.Infuser, 2.0f },
+            { SynthraformerType.Traits, 1.0f },
+            { SynthraformerType.Indestructible, 2.0f },
+            { SynthraformerType.Amplifier, 0.5f },
+            { SynthraformerType.Transmuter, 2.5f },
+            { SynthraformerType.Catalyst, 3.0f },
+            { SynthraformerType.Azure, 4.0f }
+            // PrimalCore - not craftable
+        };
+
 
         /*
          * Synthraformer types
@@ -72,7 +86,7 @@ namespace QM_PathOfQuasimorph.Controllers
             Azure, // - nothing for now                                // Nothing
         }
 
-        public static void AddItems()
+        public void AddItems()
         {
             RemoveExistingSynthraformerRecipes();
             recipesOutputItems.Clear();
@@ -92,7 +106,7 @@ namespace QM_PathOfQuasimorph.Controllers
         public static bool Is(string item) => item?.Contains(nameBase) == true;
         public string GetBaseDrop() => MakeId(SynthraformerType.Amplifier);
 
-        private static void CreateItem(SynthraformerType type)
+        private void CreateItem(SynthraformerType type)
         {
             string itemId = MakeId(type);
 
@@ -140,7 +154,7 @@ namespace QM_PathOfQuasimorph.Controllers
             Localization.DuplicateKey($"item.{nameBase}.shortdesc", "item." + itemId + ".shortdesc");
         }
 
-        private static void SetupSynthraformerRecipe(SynthraformerType type, ItemProduceReceipt recipe)
+        private void SetupSynthraformerRecipe(SynthraformerType type, ItemProduceReceipt recipe)
         {
             /*
                 Revised Recipe Tree (Total items per recipe ≤ 7)
@@ -165,18 +179,20 @@ namespace QM_PathOfQuasimorph.Controllers
             // Clear any existing requirements (defensive)
             recipe.RequiredItems.Clear();
 
-            float produceTime = type switch
-            {
-                SynthraformerType.Amplifier => 0.5f,
-                SynthraformerType.Traits => 1.0f,
-                SynthraformerType.Rarity => 1.5f,
-                SynthraformerType.Indestructible => 2.0f,
-                SynthraformerType.Infuser => 2.0f,
-                SynthraformerType.Transmuter => 2.5f,
-                SynthraformerType.Catalyst => 3.0f,
-                SynthraformerType.Azure => 4.0f,
-                _ => 0.0f // PrimalCore = not craftable
-            };
+            // float produceTime = type switch
+            // {
+            //     SynthraformerType.Amplifier => 0.5f,
+            //     SynthraformerType.Traits => 1.0f,
+            //     SynthraformerType.Rarity => 1.5f,
+            //     SynthraformerType.Indestructible => 2.0f,
+            //     SynthraformerType.Infuser => 2.0f,
+            //     SynthraformerType.Transmuter => 2.5f,
+            //     SynthraformerType.Catalyst => 3.0f,
+            //     SynthraformerType.Azure => 4.0f,
+            //     _ => 0.0f // PrimalCore = not craftable
+            // };
+
+            float produceTime = ProduceTimeMap.TryGetValue(type, out var time) ? time : 0.0f;
 
             recipe.ProduceTimeInHours = produceTime;
 
@@ -697,7 +713,7 @@ namespace QM_PathOfQuasimorph.Controllers
             return id;
         }
 
-        internal static List<string> GetAdditionalDroptems(BasePickupItem item, MetadataWrapper metadata)
+        internal List<string> GetAdditionalDroptems(BasePickupItem item, MetadataWrapper metadata)
         {
             _logger.Log($"GetAdditionalDroptems");
 
