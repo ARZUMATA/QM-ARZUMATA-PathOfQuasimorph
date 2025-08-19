@@ -988,21 +988,34 @@ namespace QM_PathOfQuasimorph.Core
                 // Quote
                 __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
 
-                if (synRec.Type == SynthraformerController.SynthraformerType.Traits)
-                {
-                    // Desc
-                    var value = $"{SynthraformerController.TRAIT_CLEAN_CHANCE * 100}%";
+                // Desc
 
-                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
-                        {
-                            $"{value.WrapInColor(Color.yellow)}"
-                        }
-                        )).SetNameColor(Colors.DarkYellow);
-                }
-                else
+                switch (synRec.Type)
                 {
-                    // Desc
-                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
+                    case SynthraformerController.SynthraformerType.Traits:
+
+                        var value1 = $"{SynthraformerController.TRAIT_CLEAN_CHANCE * 100}%";
+
+                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
+                            {
+                            $"{value1.WrapInColor(Color.yellow)}"
+                            }
+                            )).SetNameColor(Colors.DarkYellow);
+                        break;
+                    case SynthraformerController.SynthraformerType.Indestructible:
+                        var value2 = $"{SynthraformerController.TRAIT_CLEAN_CHANCE * 100}%";
+
+                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
+                            {
+                            $"{value2.WrapInColor(Color.yellow)}"
+                            }
+                            )).SetNameColor(Colors.DarkYellow);
+
+                        break;
+
+                    default:
+                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
+                        break;
                 }
             }
             else

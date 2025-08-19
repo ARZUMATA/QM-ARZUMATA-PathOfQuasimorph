@@ -17,7 +17,8 @@ namespace QM_PathOfQuasimorph.Controllers
         public static List<string> recipesOutputItems = new List<string>();
 
         public const float TRAIT_CLEAN_CHANCE = 0.5f;
-
+        public const float UNBREAKABLE_CHANCE = 0.5f;
+        
         // Base drop chances by type
         public Dictionary<SynthraformerType, float> DropChances = new()
         {
@@ -523,7 +524,7 @@ namespace QM_PathOfQuasimorph.Controllers
                 {
                     case BreakableItemRecord breakableItemRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.Init(breakableItemRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata, 0.5f);
+                        PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata, UNBREAKABLE_CHANCE);
                         break;
 
                     default:
