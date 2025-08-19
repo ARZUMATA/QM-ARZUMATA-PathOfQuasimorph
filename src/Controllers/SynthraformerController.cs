@@ -16,6 +16,8 @@ namespace QM_PathOfQuasimorph.Controllers
         private static Logger _logger = new Logger(null, typeof(SynthraformerController));
         public static List<string> recipesOutputItems = new List<string>();
 
+        public const float TRAIT_CLEAN_CHANCE = 0.5f;
+
         // Base drop chances by type
         public Dictionary<SynthraformerType, float> DropChances = new()
         {

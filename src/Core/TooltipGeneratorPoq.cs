@@ -988,8 +988,22 @@ namespace QM_PathOfQuasimorph.Core
                 // Quote
                 __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"ui.quote.{synRec.GetId()}.quote.nahuatl")).SetNameColor(Colors.AltGreen);
 
-                // Desc
-                __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
+                if (synRec.Type == SynthraformerController.SynthraformerType.Traits)
+                {
+                    // Desc
+                    var value = $"{SynthraformerController.TRAIT_CLEAN_CHANCE * 100}%";
+
+                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
+                        {
+                            $"{value.WrapInColor(Color.yellow)}"
+                        }
+                        )).SetNameColor(Colors.DarkYellow);
+                }
+                else
+                {
+                    // Desc
+                    __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc")).SetNameColor(Colors.DarkYellow);
+                }
             }
             else
             {
