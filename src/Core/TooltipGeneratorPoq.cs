@@ -301,7 +301,15 @@ namespace QM_PathOfQuasimorph.Core
         {
             var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(metadata.Id, true);
 
+            if (genericRecord == null)
+            {
+                // It can be null if we create our own augmentation so the generic record is simply missing from vanilla records.
+                // Since we got nothing to compare againts, we just quit.
+                return;
+            }
+
             _logger.Log($"genericRecord AugmentationRecord is {genericRecord == null}");
+            _logger.Log($"metadata.Id {metadata.Id}");
 
             WoundSlotRecord[] records = (from id in augmentationRecord.WoundSlotIds select Data.WoundSlots.GetRecord(id, true)).ToArray<WoundSlotRecord>();
             WoundSlotRecord[] recordsGeneric = (from id in genericRecord.WoundSlotIds select Data.WoundSlots.GetRecord(id, true)).ToArray<WoundSlotRecord>();
