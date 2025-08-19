@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace QM_PathOfQuasimorph.Core
 {
-    [ConsoleCommand(new string[] { "poqclean" })]
+    [ConsoleCommand(new string[] { "poqcleanup" })]
     internal class ConsoleCommandPoqClean
     {
         public static string Help(string command, bool verbose)
