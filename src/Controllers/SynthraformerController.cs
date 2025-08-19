@@ -521,7 +521,7 @@ namespace QM_PathOfQuasimorph.Controllers
                 {
                     case BreakableItemRecord breakableItemRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.Init(breakableItemRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata, 0.5f);
                         break;
 
                     default:
