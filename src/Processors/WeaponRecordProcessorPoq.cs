@@ -125,7 +125,7 @@ namespace QM_PathOfQuasimorph.Processors
                 return;
             }
 
-            ApplyTraits();
+            ApplyTraits(false);
             ApplyParameters(ref boostedParamString);
         }
 
@@ -216,25 +216,39 @@ namespace QM_PathOfQuasimorph.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void ApplyTraits(bool replaceTraits = false)
+        internal void ApplyTraits(bool clearTraits, float removeChance = 0.2f, bool keepGeneric = false)
         {
             if (itemRarity == ItemRarity.Standard)
             {
                 return;
             }
 
+            var genericRecord = Data.Items.GetRecord(oldId) as WeaponRecord;
+            var genericTraitsCount = genericRecord.Traits.Count;
+
             List<string> selectedTraits = PrepareTraits();
 
             // Apply traits to record
             // Should we remove existing traits?
-            if (replaceTraits)
+            if (clearTraits)
             {
                 itemRecord.Traits.Clear();
+
+                if (keepGeneric)
+                {
+                    if (genericRecord != null)
+                    {
+                        if (Helpers._random.NextDouble() < removeChance)
+                        {
+                            itemRecord.Traits.AddRange(genericRecord.Traits);
+                        }
+                    }
+                }
             }
             else
             {
                 // Randomly decide whether to remove existing traits (20% chance)
-                if (Helpers._random.NextDouble() < 0.2)
+                if (Helpers._random.NextDouble() < removeChance)
                 {
                     itemRecord.Traits.Clear();
                 }
@@ -303,9 +317,9 @@ namespace QM_PathOfQuasimorph.Processors
             ApplyStat(finalModifier, increase, stat, genericRecord);
         }
 
-        internal void ReplaceWeaponTraits(SynthraformerRecord recomb, MetadataWrapper metadata)
+        internal void ReplaceWeaponTraits(SynthraformerRecord recomb, MetadataWrapper metadata, float removeChance, bool keepGeneric)
         {
-            ApplyTraits(true);
+            ApplyTraits(true, removeChance, keepGeneric);
 
             //weaponComponent.Traits.Clear();
 
