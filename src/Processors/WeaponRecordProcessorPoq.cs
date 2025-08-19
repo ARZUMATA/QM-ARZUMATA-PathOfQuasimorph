@@ -52,39 +52,38 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal Dictionary<string, int> positiveTraits = new Dictionary<string, int>()
         {
-            { "perfect_throw", 5 },
-            { "piercing_throw", 5 },
-            { "mutiliating", 5 },
-            { "cleave", 5 },
-            { "offhand", 5 },
-            { "extra_knockback", 5 },
-            { "painful_crits", 5 },
-            { "suppressor", 5 },
-            { "wounding_pierce", 5 },
-            { "piercing", 5 },
-            { "full_piercing", 5 },
-            { "ramp_up", 5 },
-            { "selfcharging", 5 },
-            { "critical_throw", 5 },
-            { "overclock", 5 },
-            { "bipod", 5 },
-            { "optic_sight", 5 },
-            { "collimator", 5 },
-            { "laser_sight", 5 },
-            { "backstab", 5 },
-            { "suppressive_fire", 5 },
+            { "perfect_throw", 500 },
+            { "piercing_throw", 500 },
+            { "mutiliating", 500 },
+            { "cleave", 500 },
+            { "offhand", 500 },
+            { "extra_knockback", 500 },
+            { "painful_crits", 500 },
+            { "suppressor", 500 },
+            { "wounding_pierce", 500 },
+            { "piercing", 500 },
+            { "full_piercing", 500 },
+            { "ramp_up", 600 },
+            { "selfcharging", 600 },
+            { "critical_throw", 500 },
+            { "overclock", 500 },
+            { "bipod", 500 },
+            { "optic_sight", 500 },
+            { "collimator", 500 },
+            { "laser_sight", 500 },
+            { "backstab", 500 },
+            { "suppressive_fire", 500 },
         };
 
         internal Dictionary<string, int> negativeTraits = new Dictionary<string, int>()
         {
-            { "single_load", 5 },
-            { "unthrowable", 5 },
-            { "fragile", 5 },
-            { "unwieldy", 5 },
-            { "heavy_weapon", 5 },
-            { "overheat", 5 },
+            { "single_load", 200 },
+            { "unthrowable", 500 },
+            { "fragile", 350 },
+            { "unwieldy", 350 },
+            { "heavy_weapon", 350 },
+            { "overheat", 350 },
         };
-
 
 
         // bool = should we increase the stat or decrease for benefits
