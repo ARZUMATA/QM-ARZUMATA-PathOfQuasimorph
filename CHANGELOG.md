@@ -157,3 +157,17 @@ Thanks community for feedback.
 - **Drop chances**: Tweaked and balanced for consistency with intended loot distribution.
 
 > **Note**: This version introduces foundational changes for future features. Please report any unexpected behavior with save files or synthraformer behavior using logs and reproducible cases.
+
+### v1.9.2 (c02b853)
+
+### Added
+  - Added percentage indicators to **Traits Recombinator** and **Indestructible Activator** tooltips for transparency on success chances.
+  - Traits Synthraformer now have a **50% chance to retain generic traits** when recombining, preserving useful base effects.
+  - Rarity Synthraformer didn't roll condition on item.
+  - Added creature **HP and resistance values** based on mastery scaling. Also fully configurable via CSV.   
+  - New parameters for **Synthraformer Drop Chance** and **Production Time** are now fully configurable via CSV.
+  - Augmentation tooltips now display **stat comparisons vs original weapon** when no generic augmentation counterpart exists.
+  - Introduced `ConsoleCommand` `poqcleanup` support to clean the savefile from POQ data (just like Cleanup Mode).  
+
+### Tweaks
+  - Slight rebalancing of weapon trait weights to improve distribution and reduce overpowered and bad combinations.
