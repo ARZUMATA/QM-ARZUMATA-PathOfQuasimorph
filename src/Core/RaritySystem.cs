@@ -337,8 +337,8 @@ namespace QM_PathOfQuasimorph.Core
 
                         if (Enum.TryParse(rarityName, out SynthraformerController.SynthraformerType type))
                         {
-                            PathOfQuasimorph.synthraformerController.DropChances[type] = float.Parse(parts[0], CultureInfo.InvariantCulture);
-                            PathOfQuasimorph.synthraformerController.ProduceTimeMap[type] = float.Parse(parts[1], CultureInfo.InvariantCulture);
+                            PathOfQuasimorph.synthraformerController.DropChances[type] = float.Parse(parts[1], CultureInfo.InvariantCulture);
+                            PathOfQuasimorph.synthraformerController.ProduceTimeMap[type] = float.Parse(parts[2], CultureInfo.InvariantCulture);
                         }
                     }
 

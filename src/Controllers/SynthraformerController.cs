@@ -651,8 +651,16 @@ namespace QM_PathOfQuasimorph.Controllers
 
             foreach (PickupItemComponent newComp in pickupItemNew.Components)
             {
+                if (newComp.GetType().Name == "BreakableItemComponent")
+                {
+                    _logger.Log($"BreakableItemComponent skip");
+                    continue;
+                }
+           
                 // Find old component with same concrete type
                 var oldComp = pickupItemOld.Components.FirstOrDefault(c => c?.GetType() == newComp.GetType());
+
+                _logger.Log($"newComp: {newComp.GetType().Name}, old is null: {oldComp == null}");
 
                 if (oldComp == null)
                 {
@@ -691,6 +699,9 @@ namespace QM_PathOfQuasimorph.Controllers
                 {
                     var value = prop.GetValue(source);
                     prop.SetValue(target, value);
+
+                    _logger.Log($"prop: {prop.Name}, value: {value}");
+
                 }
                 catch (Exception ex)
                 {
