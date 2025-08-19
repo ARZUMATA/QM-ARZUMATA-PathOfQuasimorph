@@ -1,4 +1,5 @@
 ﻿using MGSC;
+using QM_PathOfQuasimorph.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace QM_PathOfQuasimorph.Core
         private static float lastIntervalCheckTime = 0f;
         private static readonly float interval = 60f; // e.g., every 5 seconds
         private static Logger _logger = new Logger(null, typeof(CleanupSystem));
+        private static bool cleanupMode;
 
         internal static List<string> CleanItemsInAutonomousCapsuleDepartment(AutonomousCapsuleDepartment department)
         {
@@ -63,7 +65,7 @@ namespace QM_PathOfQuasimorph.Core
             return items;
         }
 
-        internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects = false, bool force = false)
+        internal static void CleanObsoleteProjects(IModContext context, bool cleanProjects, bool force)
         {
             _logger.Log($"CleanObsoleteProjects");
             List<string> idsToKeep = new List<string>();
@@ -150,19 +152,189 @@ namespace QM_PathOfQuasimorph.Core
                         records.Add(entry.Value.ToString());
                     }
 
-
                     foreach (var entry in merc.CreatureData.WoundSlotMap)
                     {
+                        records.Add(entry.Key.ToString());
+
                         var implantSocketData = entry.Value;
+
                         if (implantSocketData.InstalledImplants.Count > 0)
                         {
                             records.AddRange(implantSocketData.InstalledImplants);
                         }
                     }
+
+                    if (cleanupMode)
+                    {
+                        CleanCreatureData(merc.CreatureData);
+                    }
                 }
             }
 
             return records;
+        }
+
+        public static void CleanCreatureData(CreatureData creatureData)
+        {
+            Dictionary<string, (string, string)> replacedData = new Dictionary<string, (string, string)>();
+
+            // This is old save safe-load if we have some missing record so we reset id and effects to the generics.
+
+            foreach (string WoundSlotMapKey in creatureData.WoundSlotMap.Keys.ToList())
+            {
+                WoundSlotRecord record = Data.WoundSlots.GetRecord(WoundSlotMapKey, true);
+
+                if (cleanupMode)
+                {
+                    // Also check Installed Implants
+                    for (int i = creatureData.WoundSlotMap[WoundSlotMapKey].InstalledImplants.Count - 1; i >= 0; i--)
+                    {
+                        Plugin.Logger.LogWarning($"Cleaning: {creatureData.WoundSlotMap[WoundSlotMapKey].InstalledImplants[i]}");
+
+                        creatureData.WoundSlotMap[WoundSlotMapKey].InstalledImplants[i] = CleanupItemString(creatureData.WoundSlotMap[WoundSlotMapKey].InstalledImplants[i]);
+                    }
+                }
+
+                if (record == null || cleanupMode)
+                {
+                    // We missing wouldslot record, we can't reset to baseline as this record used along the json,
+                    // so need to get a baseline and clone the record.
+                    Plugin.Logger.LogWarning($"Record missing for {WoundSlotMapKey} FIXME. cleanupMode: {cleanupMode}");
+
+                    string WoundSlot_BaseId, Item_BaseId;
+                    GetWoundSlotAndItemBaseId(WoundSlotMapKey, out WoundSlot_BaseId, out Item_BaseId);
+
+                    creatureData.WoundSlotMap[WoundSlot_BaseId] = creatureData.WoundSlotMap[WoundSlotMapKey];
+
+                    if (WoundSlot_BaseId != WoundSlotMapKey)
+                    {
+                        creatureData.WoundSlotMap.Remove(WoundSlotMapKey);
+                    }
+
+                    if (!replacedData.ContainsKey(WoundSlotMapKey))
+                    {
+                        replacedData.Add(WoundSlotMapKey, (WoundSlot_BaseId, Item_BaseId));
+                    }
+
+                    Plugin.Logger.LogWarning($"Reverting to baseid WoundSlotMap Key: {WoundSlot_BaseId}");
+                }
+            }
+
+            foreach (string AugmentationMapKey in creatureData.AugmentationMap.Keys.ToList())
+            {
+                WoundSlotRecord record = Data.WoundSlots.GetRecord(AugmentationMapKey, true);
+                bool replaced = false;
+
+                if (record == null || cleanupMode)
+                {
+                    // We missing wouldslot record, we can't reset to baseline as this record used along the json,
+                    // so need to get a baseline and clone the record.
+                    Plugin.Logger.LogWarning($"Record missing for {AugmentationMapKey} FIXME. cleanupMode: {cleanupMode}");
+
+                    var baseIdExist = MetadataWrapper.TryGetBaseId(AugmentationMapKey, out string WoundSlot_BaseId);
+                    var strArray = WoundSlot_BaseId.Split('_');
+                    WoundSlot_BaseId = strArray[0];
+                    var Item_BaseId = string.Join("_", strArray.Skip(1));
+
+                    var AugmentationMapKeyValue_BaseId = string.Join("_", strArray.Skip(1));
+
+                    Plugin.Logger.LogWarning($"AugmentationMapKeyValue_BaseId: {AugmentationMapKeyValue_BaseId}");
+
+                    creatureData.AugmentationMap[WoundSlot_BaseId] = AugmentationMapKeyValue_BaseId;
+                    creatureData.AugmentationMap.Remove(AugmentationMapKey);
+
+                    if (!replacedData.ContainsKey(AugmentationMapKey))
+                    {
+                        replacedData.Add(AugmentationMapKey, (WoundSlot_BaseId, Item_BaseId));
+                    }
+
+                    Plugin.Logger.LogWarning($"Reverting to baseid AugmentationMap Key: {WoundSlot_BaseId}");
+                    Plugin.Logger.LogWarning($"Reverting to baseid AugmentationMap Value: {AugmentationMapKeyValue_BaseId}");
+                }
+                else
+                {
+                    if (creatureData.AugmentationMap[AugmentationMapKey] == null)
+                    {
+                        Plugin.Logger.LogWarning($"creatureData.AugmentationMap[AugmentationMapKey] is NULL.");
+                        var drops = record.AmputatedDrop;
+
+                        foreach (var drop in drops)
+                        {
+                            Plugin.Logger.LogWarning($"checking drop: {drop.Item2}");
+
+                            var itemRec = Data.Items.GetRecord(drop.Item2) as CompositeItemRecord;
+                            Plugin.Logger.LogWarning($"itemRec {itemRec == null}");
+
+                            foreach (var rec in itemRec.Records)
+                            {
+                                var augRec = rec as AugmentationRecord;
+
+                                if (augRec != null)
+                                {
+                                    Plugin.Logger.LogWarning($"itemRec is AugmentationRecord");
+                                    creatureData.AugmentationMap[AugmentationMapKey] = augRec.Id;
+                                    replaced = true;
+                                    break;
+                                }
+                            }
+
+                            if (replaced)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (replaced == false)
+                        {
+                            creatureData.AugmentationMap.Remove(AugmentationMapKey);
+
+                        }
+                    }
+                }
+            }
+
+            foreach (var effect in creatureData.EffectsController.Effects)
+            {
+                if (effect is WoundEffect woundEffect)
+                {
+                    // Now you can access SlotType and ParentWoundId directly
+                    // Example:
+                    // woundEffect.SlotType = "newSlot";
+                    // woundEffect.ParentWoundId = "newWoundId";
+
+                    if (replacedData.ContainsKey(woundEffect.ParentWoundId))
+                    {
+                        var (woundslot, item) = replacedData[woundEffect.ParentWoundId];
+                        woundEffect.ParentWoundId = woundslot;
+                    }
+
+                    if (replacedData.ContainsKey(woundEffect.SlotType))
+                    {
+                        var (woundslot, item) = replacedData[woundEffect.SlotType];
+                        woundEffect.SlotType = woundslot;
+                    }
+
+                }
+                else if (effect is ImplicitAugEffect implicitEffect)
+                {
+                    if (replacedData.ContainsKey(implicitEffect._woundSlotId))
+                    {
+                        var (woundslot, item) = replacedData[implicitEffect._woundSlotId];
+                        implicitEffect._woundSlotId = woundslot;
+                    }
+                }
+
+            }
+
+        }
+
+        private static void GetWoundSlotAndItemBaseId(string WoundSlotMapKey, out string WoundSlot_BaseId, out string Item_BaseId)
+        {
+            // RecreationCyborgShoulder_recreationCyborg_hand_custom_poq_1337_1907898024000002
+            var baseIdExist = MetadataWrapper.TryGetBaseId(WoundSlotMapKey, out WoundSlot_BaseId);
+            var strArray = WoundSlot_BaseId.Split('_');
+            WoundSlot_BaseId = strArray[0];
+            Item_BaseId = string.Join("_", strArray.Skip(1));
         }
 
         private static List<string> CleanupItemsBarehandWeapons()
@@ -174,6 +346,11 @@ namespace QM_PathOfQuasimorph.Core
                 if (rec.Value.BareHandWeapon != string.Empty)
                 {
                     items.Add(rec.Value.BareHandWeapon);
+
+                    if (cleanupMode)
+                    {
+                        rec.Value.BareHandWeapon = CleanupItemString(rec.Value.BareHandWeapon);
+                    }
                 }
             }
 
@@ -299,12 +476,32 @@ namespace QM_PathOfQuasimorph.Core
             return items;
         }
 
+
+        internal static string CleanupItemString(string item)
+        {
+            var result = string.Empty;
+
+            if (RecordCollection.MetadataWrapperRecords.TryGetValue(item, out MetadataWrapper wrapper))
+            {
+                result = wrapper.Id;
+            }
+            else
+            {
+                if (MetadataWrapper.IsPoqItemUid(item))
+                {
+                    throw new Exception($"CleanupItem: trying to cleanup poq item but record is missing.");
+                }
+            }
+
+            return result;
+        }
+
         internal static void CleanupItem(PickupItem item)
         {
             if (RecordCollection.MetadataWrapperRecords.TryGetValue(item.Id, out MetadataWrapper wrapper))
             {
                 item.Id = wrapper.Id;
-                _logger.Log($"CleanupItem");
+                _logger.Log($"CleanupItem: {item.Id}");
                 _logger.Log($"Reverting item to baseline: {item.Id} to {wrapper.Id}");
 
                 foreach (var component in item.Components)
@@ -314,6 +511,22 @@ namespace QM_PathOfQuasimorph.Core
                     if (weaponComponent != null)
                     {
                         weaponComponent._weaponId = item.Id;
+                    }
+
+                    var augmentationComponent = component as AugmentationComponent;
+
+                    if (augmentationComponent != null)
+                    {
+                        augmentationComponent._augmentationId = item.Id;
+
+                        foreach (var socket in augmentationComponent._rolledImplantSockets.ToList())
+                        {
+                            string WoundSlot_BaseId, Item_BaseId;
+                            GetWoundSlotAndItemBaseId(socket.Key, out WoundSlot_BaseId, out Item_BaseId);
+
+                            augmentationComponent._rolledImplantSockets[WoundSlot_BaseId] = augmentationComponent._rolledImplantSockets[socket.Key];
+                            augmentationComponent._rolledImplantSockets.Remove(socket.Key);
+                        }
                     }
 
                     var breakableItemComponent = component as BreakableItemComponent;
@@ -328,7 +541,7 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (MetadataWrapper.IsPoqItemUid(item.Id))
                 {
-                    throw new Exception($"CleanupItem: trying to cleanup poq item but record is missing.");
+                    throw new Exception($"CleanupItem: trying to cleanup poq item but record is missing for item.Id: {item.Id}.");
                 }
             }
         }
@@ -479,6 +692,11 @@ namespace QM_PathOfQuasimorph.Core
 
                                 magnumProjects.Values.Remove(project); // Remove the item if it doesn't meet the condition
                             }
+
+                            if (wrapper.SerializedStorage && cleanupMode)
+                            {
+                                magnumProjects.Values.Remove(project);
+                            }
                         }
 
                     }
@@ -538,12 +756,18 @@ namespace QM_PathOfQuasimorph.Core
             {
                 foreach (var misson in missions.Values)
                 {
+                    _logger.Log($"[CleanupMissionRewards] Clean mission: {misson.StationId} {misson.CreationTime.Ticks}");
+                    _logger.Log($"[CleanupMissionRewards] misson.Values.RewardItems: {misson.RewardItems.Count}");
+                    _logger.Log($"[CleanupMissionRewards] misson.Values.RewardItemsExample: {misson.RewardItemsExample.Count}");
+
                     items.AddRange(CleanupPickupItem(misson.RewardItems));
                     items.AddRange(CleanupPickupItem(misson.RewardItemsExample));
                 }
 
                 foreach (var misson in missions.Reversed)
                 {
+                    _logger.Log($"[CleanupMissionRewards] misson.Reversed.RewardItems: {misson.RewardItems.Count}");
+                    _logger.Log($"[CleanupMissionRewards] misson.Reversed.RewardItemsExample: {misson.RewardItemsExample.Count}");
                     items.AddRange(CleanupPickupItem(misson.RewardItems));
                     items.AddRange(CleanupPickupItem(misson.RewardItemsExample));
                 }
@@ -554,7 +778,7 @@ namespace QM_PathOfQuasimorph.Core
 
         internal static List<string> CleanupPickupItem(List<BasePickupItem> basePickupItemsList)
         {
-            //_logger.Log($"CleanupPickupItem");
+            _logger.Log($"CleanupPickupItem");
 
             List<string> itemsToReturn = new List<string>();
 
@@ -562,19 +786,44 @@ namespace QM_PathOfQuasimorph.Core
             {
                 if (item.Id.Contains("_poq"))
                 {
-                    itemsToReturn.Add(item.Id);
-                    _logger.Log($"CleanupPickupItem Keeping item: item.Id {item.Id}");
+                    _logger.Log($"[CleanupPickupItem] Keeping item: item.Id {item.Id}");
 
-                    if (Plugin.Config.CleanupMode)
+                    if (item.Id.Contains("synthraformer_poq"))
                     {
-                        _logger.Log($"\t\t Skipped");
-
-                        CleanupItem(item);
+                        item.Id = SynthraformerController.FixOldId(item.Id);
                     }
+
+                    itemsToReturn.Add(item.Id);
+                }
+
+                if (cleanupMode)
+                {
+                    CleanupItem(item);
                 }
             }
 
+            if (cleanupMode)
+            {
+                CleanupItem(basePickupItemsList);
+            }
+
             return itemsToReturn;
+        }
+
+        private static void CleanupItem(List<BasePickupItem> basePickupItemsList)
+        {
+            for (int i = basePickupItemsList.Count - 1; i >= 0; i--)
+            {
+                if (basePickupItemsList[i].Id.Contains("synthraformer_poq"))
+                {
+                    basePickupItemsList.RemoveAt(i);
+                }
+            }
+        }
+
+        internal static void SetCleanupMode(bool v)
+        {
+            cleanupMode = v;
         }
     }
 }

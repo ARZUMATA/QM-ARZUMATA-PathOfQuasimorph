@@ -66,10 +66,10 @@ namespace QM_PathOfQuasimorph.Core
                 );
 
                 // Log the resulting opcode list for debugging
-                foreach (var ci in matcher.InstructionEnumeration())
-                {
-                    Plugin.Logger.Log($"{ci.opcode} {(ci.operand == null ? "" : $", {ci.operand}")}");
-                }
+                //foreach (var ci in matcher.InstructionEnumeration())
+                //{
+                //    Plugin.Logger.Log($"{ci.opcode} {(ci.operand == null ? "" : $", {ci.operand}")}");
+                //}
 
                 return matcher.InstructionEnumeration().ToList();
             }

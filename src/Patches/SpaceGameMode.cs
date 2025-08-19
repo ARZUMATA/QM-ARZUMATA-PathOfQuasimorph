@@ -21,6 +21,13 @@ namespace QM_PathOfQuasimorph.Core
                     Plugin.Logger.Log($"EscScreen.Mode.Spacemode : Can clean obsolete projects.");
                     CleanupSystem.CleanObsoleteProjects(_context, true, true);
                     RecordCollection.SerializeCollection();
+
+                    if (Plugin.Config.CleanupMode)
+                    {
+                        CleanupSystem.SetCleanupMode(true);
+                        CleanupSystem.CleanObsoleteProjects(PathOfQuasimorph._context, true, true);
+                        CleanupSystem.SetCleanupMode(false);
+                    }
                 }
                 else
                 {
