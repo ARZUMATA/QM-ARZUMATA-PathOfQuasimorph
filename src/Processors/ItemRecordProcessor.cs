@@ -258,7 +258,7 @@ namespace QM_PathOfQuasimorph.Processors
         //protected abstract void SetMaxDurability(int value);
 
         // internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count
-        internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count, List<HashSet<string>> exclusiveGroups = null)
+        internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count, List<string> itemTraitsExisting, List<HashSet<string>> exclusiveGroups = null)
         {
             var availableTraits = traitWeights
                 .Where(t => t.Value > 0) // Skip traits with 0 or negative weight
@@ -290,7 +290,6 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 // Select one trait using weighted randomness
                 string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
-                selected.Add(selectedTrait);
 
                 // Remove the selected trait from pool
                 availableTraits.Remove(selectedTrait);
@@ -309,6 +308,15 @@ namespace QM_PathOfQuasimorph.Processors
                         break;
                     }
                 }
+
+                // Only add the trait if it's not already in itemTraitsExisting
+                if (!itemTraitsExisting.Contains(selectedTrait))
+                {
+                    selected.Add(selectedTrait);
+                }
+
+                // Even if it exists, we still remove it and it's group members as we don't need them no more.
+
             }
 
             return selected;

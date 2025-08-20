@@ -267,15 +267,6 @@ namespace QM_PathOfQuasimorph.Processors
                 Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
             }
 
-            List<string> selectedTraits = PrepareTraits(extraTraitCount);
-
-            Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
-
-            foreach (var trait in selectedTraits)
-            {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-
             // Apply traits to record
             // Should we remove existing traits?
             if (clearTraits)
@@ -306,6 +297,17 @@ namespace QM_PathOfQuasimorph.Processors
 
                 }
             }
+
+            // Select traits
+            List<string> selectedTraits = PrepareTraits(extraTraitCount);
+
+            Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
+
+            foreach (var trait in selectedTraits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
+
 
             // Add traits
             for (int i = 0; i < selectedTraits.Count; i++)
@@ -345,15 +347,15 @@ namespace QM_PathOfQuasimorph.Processors
             var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
 
             // Select traits based on weights
-            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, traitsMutuallyExclusiveGroups);
+            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
 
             // Apply blacklists
             selectedTraits.RemoveAll(t =>
                 (itemRecord.IsMelee && meleeTraitsBlacklist.Contains(t)) ||
                 (!itemRecord.IsMelee && rangedTraitsBlacklist.Contains(t)));
 
-            // Remove already present traits
-            selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
+            // // Remove already present traits
+            // selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
 
             // Filter all traits if they are not in allowed list (just in case)
             selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
