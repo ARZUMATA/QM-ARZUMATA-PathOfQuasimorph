@@ -156,8 +156,6 @@ Thanks community for feedback.
 - **Ammo & Metadata records**: Now fully supported in the synthraformer processing pipeline.
 - **Drop chances**: Tweaked and balanced for consistency with intended loot distribution.
 
-> **Note**: This version introduces foundational changes for future features. Please report any unexpected behavior with save files or synthraformer behavior using logs and reproducible cases.
-
 ### v1.9.2 (c02b853)
 
 ### Added
@@ -179,3 +177,13 @@ Thanks community for feedback.
 
 ### Fixes
   - Trait recombination now keeps generic traits if check passes, or adds extra traits based on generic traits count if generics are removed so keep up with generic count.
+
+## v1.9.4 (56137a0)
+
+### Fixes
+- **Weapon / Ammo trait handling**: Prevented duplicate trait application when a weapon/ammo already has a preserved generic trait. Mutually exclusive traits are now removed from the available pool during trait recombination, ensuring no conflicting traits are added.
+- **Synthraformer drop logic**: Fixed inconsistent drop chances. Global Synthraformer drop chance reduced to **2.5%** for balance. Items with the *Indestructible* trait now have a **100% chance** to drop an *Indestructible Activator* Synthraformer, reinforcing their rarity and value.
+
+---
+
+> **Note**: This version introduces foundational changes for future features. Please report any unexpected behavior with save files or synthraformer behavior using logs and reproducible cases.
