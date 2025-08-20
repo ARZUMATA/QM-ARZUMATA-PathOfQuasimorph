@@ -23,14 +23,14 @@ namespace QM_PathOfQuasimorph.Controllers
         public Dictionary<SynthraformerType, float> DropChances = new()
         {
             { SynthraformerType.PrimalCore,         0.70f },
-            { SynthraformerType.Rarity,             0.05f },
-            { SynthraformerType.Infuser,            0.05f },
-            { SynthraformerType.Traits,             0.05f },
-            { SynthraformerType.Indestructible,     0.05f },
+            { SynthraformerType.Rarity,             0.025f },
+            { SynthraformerType.Infuser,            0.025f },
+            { SynthraformerType.Traits,             0.025f },
+            { SynthraformerType.Indestructible,     0.025f },
             { SynthraformerType.Amplifier,          0.35f },
-            { SynthraformerType.Transmuter,         0.05f },
-            { SynthraformerType.Catalyst,           0.05f },
-            { SynthraformerType.Azure,              0.05f },
+            { SynthraformerType.Transmuter,         0.025f },
+            { SynthraformerType.Catalyst,           0.025f },
+            { SynthraformerType.Azure,              0.025f },
         };
 
         public Dictionary<SynthraformerType, float> ProduceTimeMap = new Dictionary<SynthraformerType, float>
@@ -746,10 +746,10 @@ namespace QM_PathOfQuasimorph.Controllers
 
             var itemsList = new List<string>();
 
-            var roll = Helpers._random.NextDouble();
-
             foreach (var kvp in DropChances)
             {
+                var roll = Helpers._random.NextDouble();
+
                 SynthraformerType type = kvp.Key;
                 float baseChance = kvp.Value;
                 float finalChance = baseChance;
@@ -778,7 +778,7 @@ namespace QM_PathOfQuasimorph.Controllers
                         {
                             if (item.Record<BreakableItemRecord>().Unbreakable)
                             {
-                                finalChance *= 1.5f;
+                                finalChance = 1f; // 100% chance
                             }
                         }
 
