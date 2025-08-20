@@ -295,6 +295,10 @@ namespace QM_PathOfQuasimorph.Controllers
 
             switch (record.Type)
             {
+                case SynthraformerType.PrimalCore:
+                    HandlePrimalCore(targetItem, repair, record, metadata, obj, ref __result);
+                    break;
+
                 case SynthraformerType.Rarity:
                     HandleRarity(targetItem, repair, record, metadata, obj, ref __result);
                     break;
@@ -331,6 +335,15 @@ namespace QM_PathOfQuasimorph.Controllers
                     __result = false;
                     break;
             }
+        }
+
+        private void HandlePrimalCore(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
+        {
+            Plugin.Logger.Log($"HandlePrimalCore");
+
+            // We simply roll rarity i.e. just generatin new item rarity and new item for it.
+            __result = CreateNewItem(targetItem, repair, ItemRarity.Standard, false, true);
+            return;
         }
 
         private void HandleAzure(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
