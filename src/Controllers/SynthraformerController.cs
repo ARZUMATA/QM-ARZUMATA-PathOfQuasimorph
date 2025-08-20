@@ -482,7 +482,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
                     case AmmoRecord ammoRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.ReplaceAmmoTraits(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.ReplaceAmmoTraits(record, metadata, 0.5f, true);
                         break;
 
                     default:

@@ -184,56 +184,107 @@ namespace QM_PathOfQuasimorph.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-
-
-        internal void ApplyTraits(bool replaceTraits = false)
+        internal void ApplyTraits(bool clearTraits = false, float removeChance = 0.2f, bool keepGeneric = false)
         {
-            List<string> selectedTraits = PrepareTraits();
-            //var Traits = new List<string>
-            //{
-            //    "armor_pen",
-            //    "corrosive",
-            //    "explosive",
-            //    "explosive_fire",
-            //    "explosive_flak",
-            //    "explosive_hfg",
-            //    "explosive_light_flak",
-            //    "explosive_poison",
-            //    "explosive_quasi",
-            //    "heavy_fires",
-            //    "heavy_incendiary",
-            //    "heavy_knockback",
-            //    "heavy_knockdown",
-            //    "heavy_toxic",
-            //    "incendiary",
-            //    "knockback",
-            //    "knockdown",
-            //    "painful",
-            //    "ricochet",
-            //    "toxic",
-            //    "wounding",
-            //};
+            Plugin.Logger.Log($"ApplyTraits: clearTraits args: {clearTraits}, removeChance: {removeChance}, keepGeneric: {keepGeneric}");
 
-            if (replaceTraits)
+            var ammoRecord = Data.Items.GetSimpleRecord<AmmoRecord>(oldId, true);
+
+            Plugin.Logger.Log($"ammoRecord null: {ammoRecord == null}");
+            Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
+
+            var extraTraitCount = 0;
+
+            // If we keep generic, recheck chance.
+            if (keepGeneric && ammoRecord != null)
+            {
+                keepGeneric = Helpers._random.NextDouble() < removeChance;
+            }
+            else
+            {
+                keepGeneric = false;
+            }
+
+            Plugin.Logger.Log($"Keeping generic? {keepGeneric}");
+
+            // Existing traits
+            Plugin.Logger.Log($"\tExisting traits: {itemRecord.Traits.Count}");
+
+            foreach (var trait in itemRecord.Traits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
+
+            // Generic traits
+            if (ammoRecord != null)
+            {
+                Plugin.Logger.Log($"\tGeneric traits: {ammoRecord.Traits.Count}");
+
+                foreach (var trait in ammoRecord.Traits)
+                {
+                    Plugin.Logger.Log($"\t\t {trait}");
+                }
+
+                extraTraitCount = keepGeneric ? 0 : ammoRecord.Traits.Count;
+                Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
+            }
+
+            // Apply traits to record
+            // Should we remove existing traits?
+            if (clearTraits)
             {
                 itemRecord.Traits.Clear();
+
+                if (keepGeneric && ammoRecord != null)
+                {
+                    Plugin.Logger.Log($"Keeping generic? Yes.");
+                    itemRecord.Traits.AddRange(ammoRecord.Traits);
+                }
+                else
+                {
+                    Plugin.Logger.Log($"Keeping generic? No.");
+                }
             }
             else
             {
                 // Randomly decide whether to remove existing traits (20% chance)
-                if (Helpers._random.NextDouble() < 0.2)
+                if (Helpers._random.NextDouble() < removeChance)
                 {
+                    Plugin.Logger.Log($"Keeping existing? Yes.");
                     itemRecord.Traits.Clear();
                 }
+                else
+                {
+                    Plugin.Logger.Log($"Keeping existing? No.");
+
+                }
             }
+
+            // Select traits
+            List<string> selectedTraits = PrepareTraits(extraTraitCount);
+
+            Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
+
+            foreach (var trait in selectedTraits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
+
 
             // Add traits
             for (int i = 0; i < selectedTraits.Count; i++)
             {
                 itemRecord.Traits.Add(selectedTraits[i]);
             }
+
+            Plugin.Logger.Log($"\tNew traits: {itemRecord.Traits.Count}");
+
+            foreach (var trait in itemRecord.Traits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
         }
-        private List<string> PrepareTraits(bool removeExisting = false)
+        private List<string> PrepareTraits(int extraTraitCount)
         {
             // Allowed traits for item type
             var allowedTraits = itemRecordsControllerPoq.GetAddeableTraits(ItemTraitType.AmmoTrait);
@@ -247,16 +298,16 @@ namespace QM_PathOfQuasimorph.Processors
             );
 
             // Determine total number of traits to add based on rarity
-            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count);
+            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
 
             // Select traits based on weights
-            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, traitsMutuallyExclusiveGroups);
+            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
 
-            if (removeExisting)
-            {
-                // Remove already present traits
-                selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
-            }
+            //if (removeExisting)
+            //{
+            //    // Remove already present traits
+            //    selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
+            //}
 
 
             // Filter all traits if they are not in allowed list (just in case)
@@ -281,9 +332,9 @@ namespace QM_PathOfQuasimorph.Processors
             ApplyStat(finalModifier, increase, stat, genericRecord);
         }
 
-        internal void ReplaceAmmoTraits(SynthraformerRecord record, MetadataWrapper metadata)
+        internal void ReplaceAmmoTraits(SynthraformerRecord record, MetadataWrapper metadata, float removeChance, bool keepGeneric)
         {
-            ApplyTraits(true);
+            ApplyTraits(true, removeChance, keepGeneric);
         }
 
         internal void RerollBallisticType(SynthraformerRecord record, MetadataWrapper metadata)
