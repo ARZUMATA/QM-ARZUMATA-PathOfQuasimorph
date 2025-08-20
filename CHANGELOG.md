@@ -171,3 +171,11 @@ Thanks community for feedback.
 
 ### Tweaks
   - Slight rebalancing of weapon trait weights to improve distribution and reduce overpowered and bad combinations.
+
+### v1.9.3 (29e12ef)
+
+### Added
+  - PrimalCore can downgrade item to vanilla one now
+
+### Fixes
+  - Trait recombination now keeps generic traits if check passes, or adds extra traits based on generic traits count if generics are removed so keep up with generic count.
