@@ -93,6 +93,25 @@ namespace QM_PathOfQuasimorph.Controllers
             { MonsterMasteryTier.Grandmaster, ( 2.0f,   2.5f ) },  // Grandmaster = Legendary
         };
 
+        public Dictionary<MonsterMasteryTier, (float Min, float Max)> _masteryModifiers_Health = new Dictionary<MonsterMasteryTier, (float Min, float Max)>
+        {
+            { MonsterMasteryTier.None,     ( 1.0f,   1.0f  ) },
+            { MonsterMasteryTier.Novice,   ( 1.15f,  1.25f ) },
+            { MonsterMasteryTier.Skilled,  ( 1.3f,   1.4f ) },
+            { MonsterMasteryTier.Expert,   ( 1.5f,   1.6f ) },
+            { MonsterMasteryTier.Grandmaster, ( 2.0f,   2.5f ) },
+        };
+
+        public Dictionary<MonsterMasteryTier, (float Min, float Max)> _masteryModifiers_Resists = new Dictionary<MonsterMasteryTier, (float Min, float Max)>
+        {
+            { MonsterMasteryTier.None,     ( 1.0f,   1.0f  ) },
+            { MonsterMasteryTier.Novice,   ( 1.15f,  1.25f ) },
+            { MonsterMasteryTier.Skilled,  ( 1.3f,   1.4f ) },
+            { MonsterMasteryTier.Expert,   ( 1.5f,   1.6f ) },
+            { MonsterMasteryTier.Grandmaster, ( 2.0f,   2.5f ) },
+        };
+
+
         private List<string> resistsToModify = new List<string> { "blunt", "pierce", "lacer", "fire", "cold", "poison", "shock", "beam" };
 
         private List<string> talentsList = new List<string>
@@ -172,7 +191,6 @@ namespace QM_PathOfQuasimorph.Controllers
                 float diffVal = newVal - oldVal;
 
                 return (oldVal, newVal, diffVal);
-
             }
             public float GetCreatureStat(CreatureDataPoq creatureData, string key, DiffType type)
             {
@@ -348,10 +366,10 @@ namespace QM_PathOfQuasimorph.Controllers
             ApplyPerks(monster, rarity);
 
             // Resists
-            ApplyResists(monster, baseModifier);
+            ApplyResists(monster, baseModifier, rarity);
 
             // Stats
-            ApplyStats(monster, baseModifier);
+            ApplyStats(monster, baseModifier, rarity);
 
             // Save new stats
             if (creatureData != null)
@@ -455,7 +473,7 @@ namespace QM_PathOfQuasimorph.Controllers
             }
         }
 
-        private void ApplyResists(Monster monster, float baseModifier)
+        private void ApplyResists(Monster monster, float baseModifier, MonsterMasteryTier rarity)
         {
             int improvedCount = 0;
             int hinderedCount = 0;
@@ -506,7 +524,13 @@ namespace QM_PathOfQuasimorph.Controllers
                         Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : FALSE");
                     }
 
-                    Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}");
+                    var resistModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity, _masteryModifiers_Resists);
+
+                    Plugin.Logger.Log($"\t\t finalModifier Before: {finalModifier}, resistModifier: {resistModifier}, ");
+
+                    finalModifier *= resistModifier;
+
+                    Plugin.Logger.Log($"\t\t finalModifier After: {finalModifier}");
 
                     Plugin.Logger.Log($"Updating {resistType} with {value} and finalModifier {finalModifier}, hinder: {hinder}");
 
@@ -534,7 +558,7 @@ namespace QM_PathOfQuasimorph.Controllers
             }
         }
 
-        private void ApplyStats(Monster monster, float baseModifier)
+        private void ApplyStats(Monster monster, float baseModifier, MonsterMasteryTier rarity)
         {
             int improvedCount = 0;
             int hinderedCount = 0;
@@ -568,7 +592,9 @@ namespace QM_PathOfQuasimorph.Controllers
                     //Plugin.Logger.Log($"\t\t boosting final modifier from {baseModifier} to {finalModifier} : FALSE");
                 }
 
-                Plugin.Logger.Log($"\t\t finalModifier: {finalModifier} hinder: {increase} boosted: {finalModifier != baseModifier}");
+                var hpModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(rarity, _masteryModifiers_Health);
+
+                Plugin.Logger.Log($"\t\t finalModifier: {finalModifier}, hpModifier: {hpModifier}, hinder: {increase} boosted: {finalModifier != baseModifier}");
 
                 float outOldValue = -1;
                 float outNewValue = -1;
@@ -576,7 +602,10 @@ namespace QM_PathOfQuasimorph.Controllers
                 switch (prop)
                 {
                     case "Health":
-                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseHealth, finalModifier, increase, out outOldValue, out outNewValue);
+                        var tempMod = finalModifier * hpModifier;
+                        Plugin.Logger.Log($"\t\t finalModifier Health: {tempMod}");
+
+                        PathOfQuasimorph.raritySystem.ApplyModifier(ref monster.CreatureData.BaseHealth, tempMod, increase, out outOldValue, out outNewValue);
                         outOldValue = monster.CreatureData.Health.MaxValue;
 
                         // Get health bonus from perks

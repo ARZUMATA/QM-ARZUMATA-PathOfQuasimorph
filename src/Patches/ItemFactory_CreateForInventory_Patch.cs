@@ -24,7 +24,7 @@ namespace QM_PathOfQuasimorph.Core
             public static bool Prefix(ref string itemId, bool randomizeConditionAndCapacity, ref BasePickupItem __result, ItemFactory __instance)
             {
                 // If mod not enabled, don't create any more items.
-                if (!Plugin.Config.Enable || Plugin.Config.CleanupMode)
+                if (!Plugin.Config.Enable)
                 {
                     return true;
                 }

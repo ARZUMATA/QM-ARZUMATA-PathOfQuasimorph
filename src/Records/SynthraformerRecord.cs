@@ -58,6 +58,20 @@ namespace QM_PathOfQuasimorph.Records
             new Dictionary<SynthraformerType, List<AllowedTarget>>
             {
                 {
+                    SynthraformerType.PrimalCore,
+                    new List<AllowedTarget>
+                    {
+                        AllowAll(typeof(WeaponRecord)),
+                        AllowAll(typeof(HelmetRecord)),
+                        AllowAll(typeof(ArmorRecord)),
+                        AllowAll(typeof(LeggingsRecord)),
+                        AllowAll(typeof(BootsRecord)),
+                        AllowAll(typeof(AmmoRecord)),
+                        AllowAll(typeof(ImplantRecord)),
+                        AllowAll(typeof(AugmentationRecord)),
+                    }
+                },
+                {
                     SynthraformerType.Rarity,
                     new List<AllowedTarget>
                     {

@@ -156,4 +156,34 @@ Thanks community for feedback.
 - **Ammo & Metadata records**: Now fully supported in the synthraformer processing pipeline.
 - **Drop chances**: Tweaked and balanced for consistency with intended loot distribution.
 
+### v1.9.2 (c02b853)
+
+### Added
+  - Added percentage indicators to **Traits Recombinator** and **Indestructible Activator** tooltips for transparency on success chances.
+  - Traits Synthraformer now have a **50% chance to retain generic traits** when recombining, preserving useful base effects.
+  - Rarity Synthraformer didn't roll condition on item.
+  - Added creature **HP and resistance values** based on mastery scaling. Also fully configurable via CSV.   
+  - New parameters for **Synthraformer Drop Chance** and **Production Time** are now fully configurable via CSV.
+  - Augmentation tooltips now display **stat comparisons vs original weapon** when no generic augmentation counterpart exists.
+  - Introduced `ConsoleCommand` `poqcleanup` support to clean the savefile from POQ data (just like Cleanup Mode).  
+
+### Tweaks
+  - Slight rebalancing of weapon trait weights to improve distribution and reduce overpowered and bad combinations.
+
+### v1.9.3 (29e12ef)
+
+### Added
+  - PrimalCore can downgrade item to vanilla one now
+
+### Fixes
+  - Trait recombination now keeps generic traits if check passes, or adds extra traits based on generic traits count if generics are removed so keep up with generic count.
+
+## v1.9.4 (56137a0)
+
+### Fixes
+- **Weapon / Ammo trait handling**: Prevented duplicate trait application when a weapon/ammo already has a preserved generic trait. Mutually exclusive traits are now removed from the available pool during trait recombination, ensuring no conflicting traits are added.
+- **Synthraformer drop logic**: Fixed inconsistent drop chances. Global Synthraformer drop chance reduced to **2.5%** for balance. Items with the *Indestructible* trait now have a **100% chance** to drop an *Indestructible Activator* Synthraformer, reinforcing their rarity and value.
+
+---
+
 > **Note**: This version introduces foundational changes for future features. Please report any unexpected behavior with save files or synthraformer behavior using logs and reproducible cases.

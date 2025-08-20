@@ -150,7 +150,7 @@ namespace QM_PathOfQuasimorph.Processors
 
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost,false, $"{newId}", oldId);
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     //records.Add(augmentationRecordNew);
                     // TODO
@@ -173,6 +173,18 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
         {
+            if (itemRecord.WoundSlotIds.Count == 0)
+            {
+                return;
+            }
+
+            var anyWoundSlot = itemRecord.WoundSlotIds[0];
+            var woundSlotRecord = Data.WoundSlots.GetRecord(anyWoundSlot);
+            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomEffect(record, metadata);
+
+            Data.WoundSlots._records[woundSlotRecord.Id] = woundSlotRecord;
+            RecordCollection.WoundSlotRecords[woundSlotRecord.Id] = woundSlotRecord;
         }
     }
 }
