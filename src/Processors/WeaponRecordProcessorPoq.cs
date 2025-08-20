@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using MGSC;
+using ModConfigMenu;
 using Newtonsoft.Json;
 using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.Core;
@@ -223,10 +224,57 @@ namespace QM_PathOfQuasimorph.Processors
                 return;
             }
 
-            var genericRecord = Data.Items.GetRecord(oldId) as WeaponRecord;
-            var genericTraitsCount = genericRecord.Traits.Count;
+            Plugin.Logger.Log($"ApplyTraits: clearTraits args: {clearTraits}, removeChance: {removeChance}, keepGeneric: {keepGeneric}");
 
-            List<string> selectedTraits = PrepareTraits();
+            var weaponRecord = Data.Items.GetSimpleRecord<WeaponRecord>(oldId, true);
+
+            Plugin.Logger.Log($"weaponRecord null: {weaponRecord == null}");
+            Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
+
+            var extraTraitCount = 0;
+
+            // If we keep generic, recheck chance.
+            if (keepGeneric && weaponRecord != null)
+            {
+                keepGeneric = Helpers._random.NextDouble() < removeChance;
+            }
+            else
+            {
+                keepGeneric = false;
+            }
+
+            Plugin.Logger.Log($"Keeping generic? {keepGeneric}");
+
+            // Existing traits
+            Plugin.Logger.Log($"\tExisting traits: {itemRecord.Traits.Count}");
+
+            foreach (var trait in itemRecord.Traits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
+
+            // Generic traits
+            if (weaponRecord != null)
+            {
+                Plugin.Logger.Log($"\tGeneric traits: {weaponRecord.Traits.Count}");
+
+                foreach (var trait in weaponRecord.Traits)
+                {
+                    Plugin.Logger.Log($"\t\t {trait}");
+                }
+
+                extraTraitCount = keepGeneric ? 0 : weaponRecord.Traits.Count;
+                Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
+            }
+
+            List<string> selectedTraits = PrepareTraits(extraTraitCount);
+
+            Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
+
+            foreach (var trait in selectedTraits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
 
             // Apply traits to record
             // Should we remove existing traits?
@@ -234,15 +282,14 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 itemRecord.Traits.Clear();
 
-                if (keepGeneric)
+                if (keepGeneric && weaponRecord != null)
                 {
-                    if (genericRecord != null)
-                    {
-                        if (Helpers._random.NextDouble() < removeChance)
-                        {
-                            itemRecord.Traits.AddRange(genericRecord.Traits);
-                        }
-                    }
+                    Plugin.Logger.Log($"Keeping generic? Yes.");
+                    itemRecord.Traits.AddRange(weaponRecord.Traits);
+                }
+                else
+                {
+                    Plugin.Logger.Log($"Keeping generic? No.");
                 }
             }
             else
@@ -250,7 +297,13 @@ namespace QM_PathOfQuasimorph.Processors
                 // Randomly decide whether to remove existing traits (20% chance)
                 if (Helpers._random.NextDouble() < removeChance)
                 {
+                    Plugin.Logger.Log($"Keeping existing? Yes.");
                     itemRecord.Traits.Clear();
+                }
+                else
+                {
+                    Plugin.Logger.Log($"Keeping existing? No.");
+
                 }
             }
 
@@ -259,9 +312,16 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 itemRecord.Traits.Add(selectedTraits[i]);
             }
+
+            Plugin.Logger.Log($"\tNew traits: {itemRecord.Traits.Count}");
+
+            foreach (var trait in itemRecord.Traits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
         }
 
-        private List<string> PrepareTraits()
+        private List<string> PrepareTraits(int extraTraitCount)
         {
             // Determine if the item is a melee weapon
             _logger.Log($"\t\t  isMelee: {itemRecord.IsMelee}");
@@ -282,7 +342,7 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             // Determine total number of traits to add based on rarity
-            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count);
+            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
 
             // Select traits based on weights
             var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, traitsMutuallyExclusiveGroups);
