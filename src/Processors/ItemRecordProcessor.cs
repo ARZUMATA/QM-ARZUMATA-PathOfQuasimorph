@@ -123,7 +123,7 @@ namespace QM_PathOfQuasimorph.Processors
             { "run_ap",                       new WoundEffectData(true,  4f,   35) }, // Run AP
             { "los_reduce",                   new WoundEffectData(true,  1f,   45) }, // Vision range — situational
             { "spotted_radius",               new WoundEffectData(false, -1f,  50) }, // Smaller player detection radius
-            { "no_spotted_signal",            new WoundEffectData(null,  1f,   35) }, // No enemy detection (>1 = Enabled - negative stat)
+            { "no_spotted_signal",            new WoundEffectData(null,  0f,   35) }, // No enemy detection (>1 = Enabled - negative stat)
             { "run_spotted_signal",           new WoundEffectData(null,  1f,   35) }, // Detect others when running (>1 = Enabled - positive stat))
             { "walk_spotted_signal",          new WoundEffectData(null,  1f,   40) }, // Detection while walking — (>1 = Enabled - positive stat)
 
@@ -162,13 +162,13 @@ namespace QM_PathOfQuasimorph.Processors
             // { "arm_slot_unavailable",       new WoundEffectData(null,  1f,   5) },  // Weapon slot blocked
             // { "food_unavailable",           new WoundEffectData(null,  1f,   10) }, // Food unavailable
             { "throwback_immune",           new WoundEffectData(null,  1f,   15) }, // Knockback immunity
-            // { "no_stealth",                 new WoundEffectData(null,  1f,   10) }, // Stealth is unavailable
-            // { "frozen_stun",                new WoundEffectData(null,  1f,   5)  }, // Freeze
-            // { "shock_stun",                 new WoundEffectData(null,  1f,   5)  }, // Shock
-            { "self_heal",                  new WoundEffectData(null,  0f,   15) }, // Self-healing regen toggle — strong
-            // { "death",                      new WoundEffectData(null,  1f,   1)  }, // Instant death — extremely rare
-            { "run_unavailable",            new WoundEffectData(null,  1f,   10) }, // Running is unavailable          >1 = Enabled
-            { "consume_regen",              new WoundEffectData(null,  1f,   15) }, // Regeneration is unavailable     0 = Unavail
+            { "no_stealth",                 new WoundEffectData(null,  0f,   10) }, // Stealth is unavailable
+            // { "frozen_stun",                new WoundEffectData(null,  0f,   5)  }, // Freeze
+            // { "shock_stun",                 new WoundEffectData(null,  0f,   5)  }, // Shock
+            { "self_heal",                  new WoundEffectData(null,  1f,   10) }, // Self-healing regen toggle — strong
+            // { "death",                      new WoundEffectData(null,  0f,   1)  }, // Instant death — extremely rare
+            { "run_unavailable",            new WoundEffectData(null,  0f,   10) }, // Running is unavailable          >1 = Enabled
+            { "consume_regen",              new WoundEffectData(null,  0f,   15) }, // Regeneration is unavailable     0 = Unavail
             
             // Immunities (very rare / powerful)
             { "wound_immune_blunt",         new WoundEffectData(null,  1f,  8)  },  // Immune to Blunt Wounds
@@ -632,43 +632,45 @@ namespace QM_PathOfQuasimorph.Processors
 
             float randomizedValue = (float)(Helpers._random.NextDouble() * (upperBound - lowerBound) + lowerBound);
 
-            if (positive)
+            // We got boolean value, override.
+            if (selectedEffect.Sign == null)
             {
-                _logger.Log($"\t\t randomizedValue (bonus): {randomizedValue}");
-
-                if (bonusEffects.ContainsKey(selectedEffectName))
+                if (positive)
                 {
-                    // Effect already exists, let's fail.
-                    return false;
+                    randomizedValue = selectedEffect.Value;
                 }
-
-                // Enforce cap: remove random if at limit (5)
-                while (bonusEffects.Count >= extraEffectsAvailableCount) // If already 5 or more, replace random
+                else
                 {
-                    var keys = bonusEffects.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    bonusEffects.Remove(randomKey);
-
-                    _logger.Log($"\t bonusEffects.Count > extraEffectsAvailableCount {bonusEffects.Count} {extraEffectsAvailableCount}");
-                    _logger.LogWarning($"\t\t REMOVING: {randomKey}");
+                    // invert: 0 becomes 1, 1 becomes 0
+                    randomizedValue = 1 - selectedEffect.Value;
                 }
-
-                bonusEffects[selectedEffectName] = randomizedValue;
             }
             else
             {
-                randomizedValue = -randomizedValue;
-                _logger.Log($"\t\t randomizedValue (penalty): {randomizedValue}");
-
-                if (penaltyEffects.Count >= 5)
-                {
-                    var keys = penaltyEffects.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    penaltyEffects.Remove(randomKey);
-                }
-
-                penaltyEffects[selectedEffectName] = randomizedValue;
+                randomizedValue = positive ? randomizedValue : -randomizedValue;
+                _logger.Log($"\t\t randomizedValue ({(positive ? "bonus" : "penalty")}): {randomizedValue}");
             }
+
+            var targetEffects = positive ? bonusEffects : penaltyEffects;
+
+            if (targetEffects.ContainsKey(selectedEffectName))
+            {
+                // Effect already exists, let's fail.
+                return false;
+            }
+
+            // Enforce cap: remove random if at limit
+            while (targetEffects.Count >= extraEffectsAvailableCount)
+            {
+                var keys = targetEffects.Keys.ToArray();
+                var randomKey = keys[Helpers._random.Next(keys.Length)];
+                targetEffects.Remove(randomKey);
+
+                _logger.Log($"\t targetEffects > extraEffectsAvailableCount {targetEffects.Count} {extraEffectsAvailableCount}");
+                _logger.LogWarning($"\t\t REMOVING: {randomKey}");
+            }
+
+            targetEffects[selectedEffectName] = randomizedValue;
 
             return true;
         }
