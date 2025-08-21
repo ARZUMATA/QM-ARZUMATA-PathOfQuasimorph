@@ -753,6 +753,21 @@ namespace QM_PathOfQuasimorph.Controllers
 
             var itemsList = new List<string>();
 
+            var record = Data.Items.GetSimpleRecord<WeaponRecord>(item.Id);
+
+            if (record != null)
+            {
+                if (record.IsImplicit || record.Categories.Count == 0)
+                {
+                    return itemsList;
+                }
+
+                if (new[] { "Possessed", "PossessedAug", "QuasiAug", "none", }.Any(record.Categories.Contains))
+                {
+                    return itemsList;
+                }
+            }
+
             foreach (var kvp in DropChances)
             {
                 var roll = Helpers._random.NextDouble();
