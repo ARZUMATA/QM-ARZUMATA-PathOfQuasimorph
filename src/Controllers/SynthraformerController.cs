@@ -568,10 +568,11 @@ namespace QM_PathOfQuasimorph.Controllers
                 return;
             }
 
+            bool success = false;
             bool hasWeaponRecord = targetItem.Is<WeaponRecord>();
             bool hasAugmentationRecord = targetItem.Is<AugmentationRecord>();
             _logger.Log($"hasWeaponRecord: {hasWeaponRecord}, hasAugmentationRecord: {hasAugmentationRecord}");
-
+            
             foreach (var basePickupItemRecord in obj.Records)
             {
                 switch (basePickupItemRecord)
@@ -583,16 +584,22 @@ namespace QM_PathOfQuasimorph.Controllers
 
                     case AugmentationRecord augmentationRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.Init(augmentationRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.AddRandomEffect(record, metadata);
+                        success = PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.AddRandomEffect(record, metadata);
                         break;
 
                     case ImplantRecord implantRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.Init(implantRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.AddRandomImplicitEffect(record, metadata, implantRecord.ImplicitBonusEffects, implantRecord.ImplicitPenaltyEffects);
+                        success = PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.AddRandomImplicitEffect(record, metadata, implantRecord.ImplicitBonusEffects, implantRecord.ImplicitPenaltyEffects);
                         break;
 
                     default:
                         continue;
+                }
+
+                if (!success)
+                {
+                    __result = false;
+                    return;
                 }
 
                 __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);

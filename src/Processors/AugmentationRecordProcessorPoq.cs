@@ -136,7 +136,6 @@ namespace QM_PathOfQuasimorph.Processors
                 //}
             }
 
-
             if (randomizeSlotsStats)
             {
                 Plugin.Logger.Log($"\t randomizeSlotsStats");
@@ -152,8 +151,6 @@ namespace QM_PathOfQuasimorph.Processors
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
-                    //records.Add(augmentationRecordNew);
-                    // TODO
 
                     newWoundSlotIds.Add($"{newId}");
 
@@ -171,20 +168,39 @@ namespace QM_PathOfQuasimorph.Processors
             }
         }
 
-        internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
+        internal bool AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
         {
             if (itemRecord.WoundSlotIds.Count == 0)
             {
-                return;
+                return false;
             }
 
-            var anyWoundSlot = itemRecord.WoundSlotIds[0];
-            var woundSlotRecord = Data.WoundSlots.GetRecord(anyWoundSlot);
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomImplicitEffect(record, metadata, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects);
+            // Determine wound slot we can process
+            var slotIdxToProcess = Helpers._random.Next(0, itemRecord.WoundSlotIds.Count);
 
-            Data.WoundSlots._records[woundSlotRecord.Id] = woundSlotRecord;
-            RecordCollection.WoundSlotRecords[woundSlotRecord.Id] = woundSlotRecord;
+            for (int i = 0; i < itemRecord.WoundSlotIds.Count; i++)
+            {
+                if (i == slotIdxToProcess)
+                {
+                    var woundSlotString = itemRecord.WoundSlotIds[i];
+                
+                    var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlotString);
+
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
+                    var success = itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomImplicitEffect(record, metadata, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects);
+
+                    if (!success)
+                    {
+                        return false;
+                    }
+
+                    Data.WoundSlots._records[woundSlotRecord.Id] = woundSlotRecord;
+                    RecordCollection.WoundSlotRecords[woundSlotRecord.Id] = woundSlotRecord;
+                    break;
+                }
+            }
+
+            return true;
         }
     }
 }

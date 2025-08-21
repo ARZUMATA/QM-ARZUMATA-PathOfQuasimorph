@@ -225,6 +225,5 @@ namespace QM_PathOfQuasimorph.Processors
                 RaritySystem.AddAffixes(itemId);
             }
         }
-
     }
 }

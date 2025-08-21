@@ -202,6 +202,7 @@ namespace QM_PathOfQuasimorph.Processors
             { "status_immune_shockEffect",        new WoundEffectData(null,  1f,  12) }, // Immune to Shock Status
         };
 
+
         public List<HashSet<string>> woundEffectsExclusiveGroups = new List<HashSet<string>>
         {
             new HashSet<string>
@@ -251,6 +252,34 @@ namespace QM_PathOfQuasimorph.Processors
                 "walk_spotted_signal"
             },
         };
+
+        public static Dictionary<string, (int positive, int negative)> effectsPerSlot = new Dictionary<string, (int positive, int negative)>()
+        {
+            // Average number of effects slot for vanilla items i.e. we can increase the number with the rarity.
+            { "Arm",      (2, 1) },
+            { "Body",     (2, 1) },
+            { "Chest",    (3, 3) },
+            { "Feet",     (1, 1) },
+            { "Head",     (1, 1) },
+            { "Knee",     (2, 2) },
+            { "Shoulder", (2, 2) },
+            { "Stomach",  (2, 1) },
+            { "Thigh",    (1, 2) },
+        };
+
+
+        public Dictionary<ItemRarity, (int Min, int Max)> extraEffectsPerRarity = new Dictionary<ItemRarity, (int Min, int Max)>
+        {
+            // Extra slots we can add but don't exceed total sum of negatives/positives per slot type.
+            { ItemRarity.Standard,  (0,  0) },     // 
+            { ItemRarity.Enhanced,  (0,  0) },     // 
+            { ItemRarity.Advanced,  (1,  3) },     // 
+            { ItemRarity.Premium,   (1,  4) },     // 
+            { ItemRarity.Prototype, (2,  5) },     // 
+            { ItemRarity.Quantum,   (3,  6) },     // 
+        };
+
+
 
         internal ItemRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq)
         {
@@ -499,14 +528,55 @@ namespace QM_PathOfQuasimorph.Processors
             return selected;
         }
 
-        internal void AddRandomImplicitEffect(SynthraformerRecord record, MetadataWrapper metadata, IDictionary<string, float> bonusEffects, IDictionary<string, float> penaltyEffects)
+        private interface IHasSlotType
+        {
+            string SlotType { get; }
+        }
+
+        internal virtual bool AddRandomImplicitEffect(
+            SynthraformerRecord record,
+            MetadataWrapper metadata,
+            IDictionary<string, float> bonusEffects,
+            IDictionary<string, float> penaltyEffects)
         {
             _logger.Log($"AddRandomImplicitEffect");
 
             var positive = Helpers._random.NextDouble() > 0.5f;
-            var removeRandom = Helpers._random.NextDouble() > 0.8f;
-
             _logger.Log($"is positive effect: {positive}");
+
+            var genericCount = 0;
+
+            MetadataWrapper.TryGetBaseId(this.itemId, out string baseId);
+            baseId = baseId.Split('_')[0];
+
+            // Try to get generic record
+            var genericRecord = Data.WoundSlots.GetRecord(baseId);
+
+            if (genericRecord != null)
+            {
+                genericCount = positive
+                    ? genericRecord.ImplicitBonusEffects.Count
+                    : genericRecord.ImplicitPenaltyEffects.Count;
+            }
+
+            // Get extra count based on rarity and slot
+            // Get extra count of slots per specified rarity
+            // Add positive or negative count for average number of effects slot per vanilla item so we get total slots we can add
+            // Substract generic count so if they exist we lower the amount
+            var extraCount = Helpers._random.Next(
+                extraEffectsPerRarity[itemRarity].Min,
+                extraEffectsPerRarity[itemRarity].Max + 1);
+
+            if (itemRecord is IHasSlotType hasSlot)
+            {
+                extraCount += positive
+                    ? effectsPerSlot[hasSlot.SlotType].positive
+                    : effectsPerSlot[hasSlot.SlotType].negative;
+            }
+            
+            extraCount -= genericCount;
+
+            var removeRandom = Helpers._random.NextDouble() > 0.8f;
             _logger.Log($"remove random effect: {removeRandom}");
 
             // Remove random effect right away so it doesn't interfere
@@ -518,7 +588,13 @@ namespace QM_PathOfQuasimorph.Processors
                     var keys = effects.Keys.ToArray();
                     var randomKey = keys[Helpers._random.Next(keys.Length)];
                     effects.Remove(randomKey);
+                    extraCount += 1; // Add count as we have free slot
                 }
+            }
+
+            if (extraCount <= 0)
+            {
+                return false;
             }
 
             // Now chose random effect that will be either positive or negative based on the roll
@@ -551,7 +627,8 @@ namespace QM_PathOfQuasimorph.Processors
 
                 if (bonusEffects.ContainsKey(selectedEffectName))
                 {
-                    return; 
+                    // Effect already exists, let's fail.
+                    return false;
                 }
 
                 // Enforce cap: remove random if at limit (5)
@@ -562,14 +639,13 @@ namespace QM_PathOfQuasimorph.Processors
                     bonusEffects.Remove(randomKey);
                 }
 
-                bonusEffects.Add(selectedEffectName, randomizedValue);
+                bonusEffects[selectedEffectName] = randomizedValue;
             }
             else
             {
                 randomizedValue = -randomizedValue;
                 _logger.Log($"randomizedValue (penalty): {randomizedValue}");
-                
-                // Enforce cap
+
                 if (penaltyEffects.Count >= 5)
                 {
                     var keys = penaltyEffects.Keys.ToArray();
@@ -577,8 +653,10 @@ namespace QM_PathOfQuasimorph.Processors
                     penaltyEffects.Remove(randomKey);
                 }
 
-                penaltyEffects.Add(selectedEffectName, randomizedValue);
+                penaltyEffects[selectedEffectName] = randomizedValue;
             }
+
+            return true;
         }
     }
 }
