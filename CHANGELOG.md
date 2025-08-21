@@ -4,6 +4,24 @@
 
 ---
 
+## v1.9.5 (8f13b02)
+
+### Added
+- New config options exposed:
+  - `AllowBlackjackDealerToCheat` - enables rarity roller to cheat using existing blackjack system.
+  - `AllowSynthraformers` - disables synthraformers drops.
+
+### Removed
+  - Removed synthraformers drops from natural augmentations (e.g., Possessed, Quasi) to preserve balance.
+
+### Tweaks
+- **Random Implicit Effects**:
+  - Effect processing (implants/augmentations) now randomly selects a positive or negative effect for application.
+  - Determined success outcome when applying catalyst synthraformer, preventing unintended item consumption.
+- **Wound Effects Overhaul**:
+  - Introduced support for weights and applicable record types.
+  - Effects are now using weighted selection.
+
 ## v1.9.4 (56137a0)
 
 ### Fixes
