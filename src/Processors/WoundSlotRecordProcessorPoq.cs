@@ -148,6 +148,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
             {
+                _logger.Log($"Apply BonusEffect: {keyValuePair.Key}");
+
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
 
                 float valueFinal = 0;
@@ -194,6 +196,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
+                _logger.Log($"Apply PenaltyEffect: {keyValuePair.Key}");
+
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
 
                 float valueFinal = 0;

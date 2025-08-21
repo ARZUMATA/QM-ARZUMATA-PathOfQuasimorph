@@ -542,15 +542,19 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"AddRandomImplicitEffect");
 
             var positive = Helpers._random.NextDouble() > 0.5f;
-            _logger.Log($"is positive effect: {positive}");
+
+            _logger.Log($"\t is positive effect: {positive}");
 
             var genericCount = 0;
 
             MetadataWrapper.TryGetBaseId(this.itemId, out string baseId);
             baseId = baseId.Split('_')[0];
 
+            _logger.Log($"\t baseId: {baseId}");
+
             // Try to get generic record
             var genericRecord = Data.WoundSlots.GetRecord(baseId);
+            _logger.Log($"\t genericRecord == null: {genericRecord == null}");
 
             if (genericRecord != null)
             {
@@ -562,22 +566,25 @@ namespace QM_PathOfQuasimorph.Processors
             // Get extra count based on rarity and slot
             // Get extra count of slots per specified rarity
             // Add positive or negative count for average number of effects slot per vanilla item so we get total slots we can add
-            // Substract generic count so if they exist we lower the amount
-            var extraCount = Helpers._random.Next(
+            var extraEffectsAvailableCount = Helpers._random.Next(
                 extraEffectsPerRarity[itemRarity].Min,
                 extraEffectsPerRarity[itemRarity].Max + 1);
 
             if (itemRecord is IHasSlotType hasSlot)
             {
-                extraCount += positive
+                extraEffectsAvailableCount += positive
                     ? effectsPerSlot[hasSlot.SlotType].positive
                     : effectsPerSlot[hasSlot.SlotType].negative;
             }
-            
-            extraCount -= genericCount;
+
+            _logger.Log($"\t genericCount: {genericCount}");
+            _logger.Log($"\t extraEffectsAvailableCount: {extraEffectsAvailableCount}");
+
+            // Substract generic countto not overexceed amount of effects
+            extraEffectsAvailableCount -= genericCount;
 
             var removeRandom = Helpers._random.NextDouble() > 0.8f;
-            _logger.Log($"remove random effect: {removeRandom}");
+            _logger.Log($"\t remove random effect: {removeRandom}");
 
             // Remove random effect right away so it doesn't interfere
             if (removeRandom)
@@ -588,13 +595,17 @@ namespace QM_PathOfQuasimorph.Processors
                     var keys = effects.Keys.ToArray();
                     var randomKey = keys[Helpers._random.Next(keys.Length)];
                     effects.Remove(randomKey);
-                    extraCount += 1; // Add count as we have free slot
+                    extraEffectsAvailableCount += 1; // Add count as we have free slot
                 }
             }
 
-            if (extraCount <= 0)
+            _logger.Log($"\t extraEffectsAvailableCount Final: {extraEffectsAvailableCount}");
+
+            if (extraEffectsAvailableCount < 0)
             {
-                return false;
+                _logger.LogError($"Can't add effect, above limit. {extraEffectsAvailableCount}");
+                extraEffectsAvailableCount = 0;
+                //return false;
             }
 
             // Now chose random effect that will be either positive or negative based on the roll
@@ -605,15 +616,15 @@ namespace QM_PathOfQuasimorph.Processors
             var selectedEffectName = SelectWeightedWoundEffects(1, combinedList, woundEffectsExclusiveGroups).First();
             var selectedEffect = woundEffects[selectedEffectName];
 
-            _logger.Log($"selectedEffect: {selectedEffect}");
+            _logger.Log($"\t selectedEffect: {selectedEffectName}");
 
             float finalValue = selectedEffect.Value;
 
             // Now pick random value in [finalValue * 0.5, finalValue * 1.5]
             float minValue = finalValue * 0.5f;
             float maxValue = finalValue * 1.5f;
-            _logger.Log($"minValue: {minValue}");
-            _logger.Log($"maxValue: {maxValue}");
+            _logger.Log($"\t minValue: {minValue}");
+            _logger.Log($"\t maxValue: {maxValue}");
 
             // Handle negative values: ensure min/max are correctly ordered
             float lowerBound = Math.Min(minValue, maxValue);
@@ -623,7 +634,7 @@ namespace QM_PathOfQuasimorph.Processors
 
             if (positive)
             {
-                _logger.Log($"randomizedValue (bonus): {randomizedValue}");
+                _logger.Log($"\t\t randomizedValue (bonus): {randomizedValue}");
 
                 if (bonusEffects.ContainsKey(selectedEffectName))
                 {
@@ -632,11 +643,14 @@ namespace QM_PathOfQuasimorph.Processors
                 }
 
                 // Enforce cap: remove random if at limit (5)
-                if (bonusEffects.Count >= 5) // If already 5 or more, replace random
+                while (bonusEffects.Count >= extraEffectsAvailableCount) // If already 5 or more, replace random
                 {
                     var keys = bonusEffects.Keys.ToArray();
                     var randomKey = keys[Helpers._random.Next(keys.Length)];
                     bonusEffects.Remove(randomKey);
+
+                    _logger.Log($"\t bonusEffects.Count > extraEffectsAvailableCount {bonusEffects.Count} {extraEffectsAvailableCount}");
+                    _logger.LogWarning($"\t\t REMOVING: {randomKey}");
                 }
 
                 bonusEffects[selectedEffectName] = randomizedValue;
@@ -644,7 +658,7 @@ namespace QM_PathOfQuasimorph.Processors
             else
             {
                 randomizedValue = -randomizedValue;
-                _logger.Log($"randomizedValue (penalty): {randomizedValue}");
+                _logger.Log($"\t\t randomizedValue (penalty): {randomizedValue}");
 
                 if (penaltyEffects.Count >= 5)
                 {
