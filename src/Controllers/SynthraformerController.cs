@@ -588,7 +588,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
                     case ImplantRecord implantRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.Init(implantRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.AddRandomEffect(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.AddRandomImplicitEffect(record, metadata, implantRecord.ImplicitBonusEffects, implantRecord.ImplicitPenaltyEffects);
                         break;
 
                     default:

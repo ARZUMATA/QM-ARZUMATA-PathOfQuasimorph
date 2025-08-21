@@ -64,18 +64,30 @@ namespace QM_PathOfQuasimorph.Processors
             // Apply modifiers
             foreach (var stat in parameters)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
                 ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
             }
         }
 
         private void GetAverageResists(out float averageResist, out bool averageResistApplied)
         {
+            var resistRecord = Data.Items.GetSimpleRecord<ResistRecord>(oldId, true);
+
+            Plugin.Logger.Log($"resistRecord null: {resistRecord == null}");
+            Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
+
             // Get average resist for armor
             averageResist = 0;
             int resistCount = 0;
             var resistSheet = itemRecord.ResistSheet;
             averageResistApplied = false;
+
+            // When we calculate average resists for an armor, we always need to check generic record.
+            // Fallback to existing item record remains.
+            if (resistRecord != null)
+            {
+                resistSheet = resistRecord.ResistSheet;
+            }
 
             _logger.Log($"\t\t\t\t itemRecord null {itemRecord == null}");
             _logger.Log($"\t\t\t\t resistSheet null {resistSheet == null}");
