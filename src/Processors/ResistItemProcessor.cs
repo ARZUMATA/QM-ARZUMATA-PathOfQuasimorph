@@ -71,9 +71,9 @@ namespace QM_PathOfQuasimorph.Processors
 
         private void GetAverageResists(out float averageResist, out bool averageResistApplied)
         {
-            var resistRecord = Data.Items.GetSimpleRecord<ResistRecord>(oldId, true);
+            var resistRecordGeneric = Data.Items.GetSimpleRecord<ResistRecord>(oldId, true);
 
-            Plugin.Logger.Log($"resistRecord null: {resistRecord == null}");
+            Plugin.Logger.Log($"resistRecordGeneric null: {resistRecordGeneric == null}");
             Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
 
             // Get average resist for armor
@@ -84,9 +84,9 @@ namespace QM_PathOfQuasimorph.Processors
 
             // When we calculate average resists for an armor, we always need to check generic record.
             // Fallback to existing item record remains.
-            if (resistRecord != null)
+            if (resistRecordGeneric != null)
             {
-                resistSheet = resistRecord.ResistSheet;
+                resistSheet = resistRecordGeneric.ResistSheet;
             }
 
             _logger.Log($"\t\t\t\t itemRecord null {itemRecord == null}");
@@ -170,13 +170,22 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
-
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
             string boostedParamString;
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            Plugin.Logger.Log($"RerollRandomStat");
+            Plugin.Logger.Log($"metadata: {metadata.BoostedString}");
+
+            // During rarity generation, PrepGenericData may have set a boosted string. However, since this method is reused later,
+            // we must preserve the original boosted string from metadata to prevent unintended boosting of all resist stats.
+            // This ensures only the stat originally chosen during initial rarity roll (or reroll) remains boosted.
+            if (metadata.BoostedString.Length > 1)
+            {
+                boostedParamString = metadata.BoostedString;
+            }
 
             float averageResist;
             bool averageResistApplied;

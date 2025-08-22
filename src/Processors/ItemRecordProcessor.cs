@@ -26,7 +26,6 @@ namespace QM_PathOfQuasimorph.Processors
         public abstract Dictionary<string, bool> parameters { get; }
         protected ItemRarity itemRarity;
         protected bool mobRarityBoost;
-        protected bool amplifierRarityBoost;
         protected string itemId;
         protected string oldId;
 
@@ -64,7 +63,7 @@ namespace QM_PathOfQuasimorph.Processors
             // CORE SURVIVAL & SUSTENANCE (Food, Health, Regen)
             // -----------------------------------------------------------------------------
             { "max_health",                   new WoundEffectData(true,  20f,   30) }, // Maximum Health
-            { "passive_regen",                new WoundEffectData(true,  5f,    25) }, // HP/turn, sustained healing
+            { "passive_regen",                new WoundEffectData(true,  1f,    25) }, // HP/turn, sustained healing
             { "regen_efficacy",               new WoundEffectData(true,  0.2f,  35) }, // Meds HP Regeneration
             { "food_calories",                new WoundEffectData(false, -0.7f, 40) }, // Calorie consumption, reduces food consumption — useful
             { "satiety",                      new WoundEffectData(true,  0.5f,  40) }, // Calorie gain, More calories from food — decent
@@ -291,7 +290,6 @@ namespace QM_PathOfQuasimorph.Processors
             this.itemRecord = itemRecord;
             this.itemRarity = itemRarity;
             this.mobRarityBoost = mobRarityBoost;
-            this.amplifierRarityBoost = amplifierRarityBoost;
             this.itemId = itemId;
             this.oldId = oldId;
         }
@@ -348,15 +346,6 @@ namespace QM_PathOfQuasimorph.Processors
                 _logger.Log($"\t\t boosting final modifier from {baseModifier} to {mobModifier}");
 
                 baseModifier = mobModifier;
-            }
-
-            if (amplifierRarityBoost)
-            {
-                float ampModifier = baseModifier * PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
-                _logger.Log($"\t\t amplifierRarityBoost exist, Rarity: {itemRarity}");
-                _logger.Log($"\t\t boosting final modifier from {baseModifier} to {ampModifier}");
-
-                baseModifier = ampModifier;
             }
 
             finalModifier = 0;

@@ -24,13 +24,13 @@ namespace QM_PathOfQuasimorph.Controllers
         {
             { SynthraformerType.PrimalCore,         0.70f },
             { SynthraformerType.Rarity,             0.025f },
-            { SynthraformerType.Infuser,            0.025f },
+            { SynthraformerType.Infuser,            0.0f },
             { SynthraformerType.Traits,             0.025f },
             { SynthraformerType.Indestructible,     0.025f },
             { SynthraformerType.Amplifier,          0.35f },
-            { SynthraformerType.Transmuter,         0.025f },
-            { SynthraformerType.Catalyst,           0.025f },
-            { SynthraformerType.Azure,              0.025f },
+            { SynthraformerType.Transmuter,         0.0f },
+            { SynthraformerType.Catalyst,           0.0f },
+            { SynthraformerType.Azure,              0.0f },
         };
 
         public Dictionary<SynthraformerType, float> ProduceTimeMap = new Dictionary<SynthraformerType, float>
@@ -170,7 +170,7 @@ namespace QM_PathOfQuasimorph.Controllers
                      │    │
                      │    ├─▶ Rarity (3 Traits + 4 Amp = 7)
                      │    │    │
-                     │    │    ├─▶ Transmuter (2 Rarity + 1 Amp + 4 Core = 7)
+                     │    │    ├─▶ Transmuter (3 Rarity + 4 Traits = 7)
                      │    │    │
                      │    │    └─▶ Catalyst (2 Rarity + 1 Transmuter + 4 Core = 7)
                      │    │
@@ -232,9 +232,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Transmuter:
-                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 2));
-                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Amplifier), 1));
-                    //recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.PrimalCore), 4));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Rarity), 3));
+                    recipe.RequiredItems.Add(new ItemQuantity(MakeId(SynthraformerType.Traits), 4));
                     break;
 
                 case SynthraformerType.Catalyst:
@@ -320,7 +319,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Transmuter:
-                    //HandleTransmuter(targetItem, repair, record, metadata, obj, ref __result);
+                    HandleTransmuter(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Catalyst:
@@ -580,6 +579,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     case WeaponRecord weaponRecord when !hasAugmentationRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.CreateAugmentation(record, metadata, obj);
+                        success = true;
                         break;
 
                     case AugmentationRecord augmentationRecord:
@@ -800,7 +800,7 @@ namespace QM_PathOfQuasimorph.Controllers
                         {
                             if (item.Record<BreakableItemRecord>().Unbreakable)
                             {
-                                finalChance = 1f; // 100% chance
+                                finalChance = 0.5f;
                             }
                         }
 
