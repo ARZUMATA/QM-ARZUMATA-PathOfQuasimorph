@@ -4,6 +4,11 @@
 
 ---
 
+## v1.9.6 (4ee2b3d)
+
+### Fixed:
+ - Armor resist values now roll more fairly and consistently
+
 ## v1.9.5 (8f13b02)
 
 ### Added
