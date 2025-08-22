@@ -4,6 +4,19 @@
 
 ---
 
+## v1.9.6 (4ee2b3d)
+
+### Fixed:
+ - Armor resist values now roll more fairly and consistently
+ - Typo in Aug creation prevented Catalyst being applied to an item
+ - Passive_regen effect reduced to 1 HP per tick
+
+### Changes:
+ - Removed drop chance for: Catalyst — craft them instead!
+
+### Changed:
+ - Indestructible augment drop chance reduced to 50% (crafting encouraged)
+
 ## v1.9.5 (8f13b02)
 
 ### Added
