@@ -4,6 +4,22 @@
 
 ---
 
+## v1.9.7 (febc924)
+
+### Added:
+- Transmuter synthraformer added, allowing some item transformations.
+  - Ammo: Changes ammo damage type to a random one.
+  - Weapons: Transmutes severed limbs of Standard rarity into random "natural" limb item. 
+    If the weapon has a different rarity, the Implicit flag is removed. (this is required for limbs as you can't 'drag' them)
+  - There is a % chance the item will be completely destroyed in the process.
+- Augment tooltips now correctly display woundslots for better info.
+
+### Changes:
+- Better resistance icons on armors tooltips.
+
+### Fixed:
+- Amplifiers can no longer be used on standard ammo types. (never should have been)
+
 ## v1.9.6 (4ee2b3d)
 
 ### Fixed:

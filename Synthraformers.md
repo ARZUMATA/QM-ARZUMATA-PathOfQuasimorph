@@ -18,7 +18,7 @@ Synthraformers are defined by the `Synthraformer Type` and each has a unique rol
 | `Traits` | Yellow | Replaces all traits on weapons/ammo | ✅ | Active |
 | `Indestructible` | Green | Attempts to apply *Indestructible* trait (50%) | ✅ | Active |
 | `Amplifier` | Blue | Rerolls a random stat on non-standard items | ✅ | Active |
-| `Transmuter` | Indigo | (No current functionality) | ✅ | ❌ Unused |
+| `Transmuter` | Indigo | Ammo: Changes ammo damage type to another random. Weapons: Transmutes some severed limbs of standard rarity into random "natural" limb item. If weapon has another type of rarity, removes Implicit flag. | ✅ | ❌ Unused |
 | `Catalyst` | Violet | Converts weapons into augments or enhances augments/implants | ✅ | Active |
 | `Azure` | Azure | (No current functionality)| ✅ | ❌ Unused |
 | `PrimalCore` | White | Base drop from disassembled items | ❌ Drop-only | Active |
