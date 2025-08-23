@@ -171,6 +171,8 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal bool AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
         {
+            Plugin.Logger.Log($"AddRandomEffect");
+
             if (itemRecord.WoundSlotIds.Count == 0)
             {
                 return false;
@@ -178,6 +180,7 @@ namespace QM_PathOfQuasimorph.Processors
 
             // Determine wound slot we can process
             var slotIdxToProcess = Helpers._random.Next(0, itemRecord.WoundSlotIds.Count);
+            Plugin.Logger.Log($"slotIdxToProcess: {slotIdxToProcess}");
 
             for (int i = 0; i < itemRecord.WoundSlotIds.Count; i++)
             {

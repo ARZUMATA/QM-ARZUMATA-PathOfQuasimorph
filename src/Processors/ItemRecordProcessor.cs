@@ -651,7 +651,9 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             // Enforce cap: remove random if at limit
-            while (targetEffects.Count >= extraEffectsAvailableCount)
+            _logger.LogWarning($"\t\t targetEffects.Count: {targetEffects.Count}");
+            _logger.LogWarning($"\t\t extraEffectsAvailableCount: {extraEffectsAvailableCount}");
+            while (targetEffects.Count > extraEffectsAvailableCount)
             {
                 var keys = targetEffects.Keys.ToArray();
                 var randomKey = keys[Helpers._random.Next(keys.Length)];
