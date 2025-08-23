@@ -4,6 +4,7 @@ using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.Core;
 using QM_PathOfQuasimorph.PoQHelpers;
 using QM_PathOfQuasimorph.Records;
+using QM_PathOfQuasimorph.PoqHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
@@ -183,7 +184,6 @@ namespace QM_PathOfQuasimorph.Processors
                 if (i == slotIdxToProcess)
                 {
                     var woundSlotString = itemRecord.WoundSlotIds[i];
-                
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlotString);
 
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
@@ -199,6 +199,113 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
                 }
             }
+
+            return true;
+        }
+
+        internal bool RandomWoundSlot(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            Plugin.Logger.Log($"RandomWoundSlot");
+
+            string boostedParamString = string.Empty;
+            Plugin.Logger.Log($"StripBodyPart");
+
+            Plugin.Logger.Log($"\t parts:");
+
+            // Extract body part types from existing wound slots
+            var existingSlotTypes = itemRecord.WoundSlotIds
+                .Select(id => PoqHelpers.PoqHelpers.StripBodyPart(id.Split('_')[0]).bodyPart) // Extract "Shoulder", "Arm", etc.
+                .Where(part => part != null) // Only valid parts
+                .Distinct()
+                .ToList();
+
+            Plugin.Logger.LogError($"\t existingSlotTypes:");
+
+            foreach (var type in existingSlotTypes)
+            {
+                Plugin.Logger.LogError($"\t\t {type}");
+            }
+
+            if (!existingSlotTypes.Any())
+            {
+                Plugin.Logger.LogError($"\t Nothing to replace: existingSlotTypes");
+                // Nothing to replace
+                return false;
+            }
+
+            // Find all possible base IDs (e.g., "Moon", "Centaur") that have *all* required body parts defined in existingSlotTypes 
+            var candidateBases = Data.WoundSlots.Records
+                .GroupBy(x => PoqHelpers.PoqHelpers.StripBodyPart(x.Id).baseId)
+                .Where(g => !string.IsNullOrEmpty(g.Key))
+                .Select(g => new
+                {
+                    BaseId = g.Key,
+                    AvailableParts = g.Select(x => PoqHelpers.PoqHelpers.StripBodyPart(x.Id).bodyPart).ToHashSet()
+                })
+
+                .Where(x => existingSlotTypes.All(requiredPart => x.AvailableParts.Contains(requiredPart)))
+                .Select(x => x.BaseId)
+                // .Except(new[] { "Human", "Skinless" }) // Blacklist full base IDs (Optional: We can blacklist some we don't need)
+                .Where(id => !MetadataWrapper.IsPoqItemUid(id)) // Avoid already-modified POQ variants
+                .Distinct()
+                .ToList();
+
+            Plugin.Logger.LogError($"\t candidateBases:");
+
+            foreach (var baseId in candidateBases)
+            {
+                Plugin.Logger.Log($"\t\t {baseId}");
+            }
+
+            if (!candidateBases.Any())
+            {
+                Plugin.Logger.Log($"\t Nothing in candidates: candidateBases");
+                Plugin.Logger.LogError($"\t No complete set found for required parts: {string.Join(", ", existingSlotTypes)}");
+                return false;
+            }
+
+            // Pick a random new base ID (e.g., "Moon")
+            var newBaseId = candidateBases[Helpers._random.Next(candidateBases.Count)];
+            Plugin.Logger.LogError($"\t newBaseId: {newBaseId}");
+
+            // Build mapping: body part > available slot in new base
+            var newSlotIds = new List<string>();
+
+            foreach (var bodyPart in existingSlotTypes)
+            {
+                Plugin.Logger.Log($"\t processing: {bodyPart}");
+
+                var replacementSlot = Data.WoundSlots.Records
+                    .FirstOrDefault(x =>
+                        PoqHelpers.PoqHelpers.StripBodyPart(x.Id) == (newBaseId, bodyPart) &&
+                        !itemRecord.WoundSlotIds.Contains(x.Id)); // Avoid reusing same
+
+                Plugin.Logger.Log($"\t replacementSlot == null {replacementSlot == null}");
+
+                if (replacementSlot != null)
+                {
+                    Plugin.Logger.Log($"\t processing replacementSlot.Id: {replacementSlot.Id}");
+
+                    var replacementSlotRecord = Data.WoundSlots.GetRecord(replacementSlot.Id);
+                    var newId = $"{replacementSlotRecord.Id}_{itemId}";
+
+                    Plugin.Logger.Log($"\t replacementSlot.Id will be: {newId}");
+
+                    WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(replacementSlotRecord, $"{newId}");
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
+                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+
+                    newSlotIds.Add($"{newId}");
+
+                    Data.WoundSlots._records[newId] = woundSlotRecordNew;
+                    RecordCollection.WoundSlotRecords[newId] = woundSlotRecordNew;
+                    Localization.DuplicateKey("woundslot." + replacementSlot.Id + ".name", "woundslot." + newId + ".name");
+                }
+            }
+
+            // Replace all existing wound slots with new themed ones
+            itemRecord.WoundSlotIds.Clear();
+            itemRecord.WoundSlotIds.AddRange(newSlotIds);
 
             return true;
         }

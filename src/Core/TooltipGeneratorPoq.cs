@@ -5,9 +5,11 @@ using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using static QM_PathOfQuasimorph.Controllers.CreaturesControllerPoq;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace QM_PathOfQuasimorph.Core
 {
@@ -299,13 +301,15 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitAugmentation(AugmentationRecord augmentationRecord, MetadataWrapper metadata, PickupItem item)
         {
+            _logger.Log($"InitAugmentation");
             var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(metadata.Id, true);
 
             if (genericRecord == null)
             {
                 // It can be null if we create our own augmentation so the generic record is simply missing from vanilla records.
                 // Since we got nothing to compare againts, we just quit.
-                return;
+                //return;
+                genericRecord = augmentationRecord;
             }
 
             _logger.Log($"genericRecord AugmentationRecord is {genericRecord == null}");
@@ -321,6 +325,24 @@ namespace QM_PathOfQuasimorph.Core
             Dictionary<string, float> bonusEffectsGeneric = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(recordsGeneric, (WoundSlotRecord r) => r.ImplicitBonusEffects);
             Dictionary<string, float> penaltyEffectsGeneric = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(recordsGeneric, (WoundSlotRecord r) => r.ImplicitPenaltyEffects);
             Dictionary<string, float> coreEffectsGeneric = WoundSystem.AggregateWoundEffects<WoundSlotRecord>(records, (WoundSlotRecord r) => r.CoreEffects);
+
+            var woundNames = augmentationRecord.WoundSlotIds
+                .Select(id =>
+                {
+                    // Split to get base (e.g. "MoonArm_uid" → "MoonArm")
+                    var baseIdAndPart = PoqHelpers.PoqHelpers.StripBodyPart(id.Split('_')[0]);
+                    return (baseIdAndPart.baseId, baseIdAndPart.bodyPart);
+                })
+                .Where(result => !string.IsNullOrEmpty(result.bodyPart))
+                .Select(result => $"{result.baseId} {result.bodyPart}") // Combine into "Moon Arm"
+                .Distinct()
+                .ToList();
+
+            if (woundNames.Any())
+            {
+                var woundStringFull = string.Join(", ", woundNames);
+                _factory.AddPanelToTooltip().SetMultilineName(woundStringFull).SetNameColor(Colors.DarkGreen);
+            }
 
             foreach (var effect in coreEffects)
             {
@@ -518,7 +540,8 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitWeapon(WeaponRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            _logger.Log($"genericId {metadata.Id}");
+            _logger.Log($"InitWeapon");
+            _logger.Log($"genericId: {metadata.Id}");
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
 
             if (metadata.IsMagnumProduced)

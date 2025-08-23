@@ -509,5 +509,10 @@ namespace QM_PathOfQuasimorph.Processors
             RecordCollection.ItemRecords[itemId] = obj;
             //RecordCollection.MetadataWrapperRecords.Add(itemId, wrapper);
         }
+
+        internal void RemoveImplicit(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            itemRecord.IsImplicit = false;
+        }
     }
 }

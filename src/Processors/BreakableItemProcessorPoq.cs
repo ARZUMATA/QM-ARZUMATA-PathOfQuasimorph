@@ -36,11 +36,11 @@ namespace QM_PathOfQuasimorph.Processors
         {
             AddUnbreakableTrait();
         }
-        private void AddUnbreakableTrait(float chanceOverride = 0)
+        private bool AddUnbreakableTrait(float chanceOverride = 0)
         {
             if (itemRecord.Unbreakable)
             {
-                return;
+                return false;
             }
 
             var canAddUnbreakableTrait = false;
@@ -80,11 +80,13 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 itemRecord.Unbreakable = false;
             }
+
+            return true;
         }
 
-        internal void AddUnbreakableTrait(SynthraformerRecord record, MetadataWrapper metadata, float chance)
+        internal bool AddUnbreakableTrait(SynthraformerRecord record, MetadataWrapper metadata, float chance)
         {
-            AddUnbreakableTrait(chance);
+            return AddUnbreakableTrait(chance);
         }
     }
 }

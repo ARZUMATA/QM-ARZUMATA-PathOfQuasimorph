@@ -134,7 +134,6 @@ namespace QM_PathOfQuasimorph.Processors
             float outOldValue = -1;
             float outNewValue = -1;
 
-
             // Even though we're updating a value (not adding a new key), in some contexts this can still be considered a modification that invalidates the enumerator.//
             // More importantly, any write operation to the dictionary during foreach enumeration is unsafe and can throw this exception.
             // Capture all entries safely for this case
@@ -150,7 +149,7 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 _logger.Log($"Apply BonusEffect: {keyValuePair.Key}");
 
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, true, _logger);
 
                 float valueFinal = 0;
 
@@ -198,7 +197,7 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 _logger.Log($"Apply PenaltyEffect: {keyValuePair.Key}");
 
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, false, _logger);
 
                 float valueFinal = 0;
 
@@ -283,7 +282,7 @@ namespace QM_PathOfQuasimorph.Processors
         {
             if (itemRecord.BareHandWeapon == string.Empty)
             {
-                _logger.Log($"itemRecord.BareHandWeapon == str empty {itemRecord.BareHandWeapon == string.Empty}. Quitting.");
+                _logger.Log($"itemRecord.BareHandWeapon is empty.");
                 return string.Empty;
             }
 
