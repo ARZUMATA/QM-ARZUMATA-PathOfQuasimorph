@@ -126,6 +126,7 @@ namespace QM_PathOfQuasimorph.Records
                     new List<AllowedTarget>
                     {
                         BlockStandard(typeof(AmmoRecord)),
+                        AllowAll(typeof(WeaponRecord)),
                     }
                 },
                 {

@@ -18,6 +18,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
         public const float TRAIT_CLEAN_CHANCE = 0.5f;
         public const float UNBREAKABLE_CHANCE = 0.5f;
+        public const float TRANSMUTER_VOID_ITEM_CHANCE = 0.25f;
 
         // Base drop chances by type
         public Dictionary<SynthraformerType, float> DropChances = new()
@@ -54,39 +55,41 @@ namespace QM_PathOfQuasimorph.Controllers
          * Red - rolls random rarity on a item (blackjack game based on rarities and mimic 21 card system)
          *      Applies to all items where rarity can be applied.
          *      
-         * Orange - rolls a random ballistic type on ammo
+         * Orange - Nothing
          * 
-         * Yellow - rerolls a list of traits on item removing existing ones
-         *      Weapons and Ammo
-         *      
+         * Yellow - Weapons and Ammo: rerolls a list of traits on item removing existing ones
+         *
          * Green - tries to roll indestructible flag (rare to drop, 50% chance)
          *      All items that can break
          *      
          * Blue - rerolls a random chosed parameter/stat on item
          *      All items that can have that roll
          * 
-         * Indigo - TBA
+         * Indigo - Augmentations: rerolls random woundslots (disabled)
+         *          Ammo: Rerolls damage type
+         *          Weapons: Transmutes some severed limbs of standard rarity into random "natural" limb item.
+         *                   If rarity is any other type, lifts Implicit flag.
          * 
          * Violet - Catalyst, turns any weapon into augment so its now an integrated augment with random augment stats too.
-         *      Blue can apply and roll weapon stats.
+         *          Blue can apply and roll weapon stats.
          *      
-         * Azure - TBA
+         * Azure - Nothing
          * 
-         * White - basic crafting material that drops from item dissasembly unless there is a different color to drop
+         * White - Basic crafting material that drops from item dissasembly unless there is a different color to drop
          */
 
 
         public enum SynthraformerType
         {
-            PrimalCore, // White - basic crafting material             // In Use
-            Rarity, // Red - applies random rarity onitem              // In Use
-            Infuser, // Orange - nothing for now                       // Nothing
-            Traits, // Yellow - rerolls traits on ite                  // In Use
-            Indestructible, // Green - roll indestructible flag        // In Use
-            Amplifier, // Blue - rerolls single random stat on item    // In Use
-            Transmuter,  // Indigo - nothing for now                   // Nothing
-            Catalyst, // Violet - turn weapon into augment             // In Use
-            Azure, // - nothing for now                                // Nothing
+            PrimalCore, // White
+            Rarity, // Red
+            Infuser, // Orange
+            Traits, // Yellow
+            Indestructible, // Green
+            Amplifier, // Blue
+            Transmuter,  // Indigo
+            Catalyst, // Violet
+            Azure, // Cyan
         }
 
         public void AddItems()
@@ -303,7 +306,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     break;
 
                 case SynthraformerType.Infuser:
-                    //HandleInfuser(targetItem, repair, record, metadata, obj, ref __result);
+                    HandleInfuser(targetItem, repair, record, metadata, obj, ref __result);
                     break;
 
                 case SynthraformerType.Traits:
@@ -363,8 +366,11 @@ namespace QM_PathOfQuasimorph.Controllers
         private void HandleTransmuter(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
             Plugin.Logger.Log($"HandleTransmuter");
+            bool isStandard = metadata.RarityClass == ItemRarity.Standard;
 
             bool needItemCreation = false;
+            bool itemSwapRequested = false;
+            BasePickupItem newItem = null;
 
             foreach (var basePickupItemRecord in obj.Records)
             {
@@ -376,22 +382,47 @@ namespace QM_PathOfQuasimorph.Controllers
                         __result = true;
                         goto ExitLoop;
 
-                    case AugmentationRecord augmentationRecord:
-                        PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.Init(augmentationRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        __result = PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.RandomWoundSlot(record, metadata);
+                    case WeaponRecord weaponRecord when isStandard:
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
+                        newItem = PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.TransmuteWeapon(record, metadata);
+                        itemSwapRequested = true;
+                        goto ExitLoop;
+
+                    case WeaponRecord weaponRecord when !isStandard:
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RemoveImplicit(record, metadata);
+                        __result = true;
                         needItemCreation = true;
                         goto ExitLoop;
+
+                        // case AugmentationRecord augmentationRecord:
+                        //     PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.Init(augmentationRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
+                        //     __result = PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.RandomWoundSlot(record, metadata);
+                        //     needItemCreation = true;
+                        //     goto ExitLoop;
                 }
             }
 
             __result = false;
             return;
 
-            ExitLoop:
+        ExitLoop:
 
             if (needItemCreation)
             {
                 __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+            }
+
+            if (itemSwapRequested)
+            {
+                if (newItem != null)
+                {
+                    __result = UI.Drag.SlotUnderCursor._itemStorage.SwitchItems(targetItem, newItem);
+                }
+                {
+                    __result = true;
+                    UI.Drag.SlotUnderCursor._itemStorage.Remove(targetItem);
+                }
             }
 
             if (__result)
@@ -416,13 +447,21 @@ namespace QM_PathOfQuasimorph.Controllers
                         __result = true;
                         needItemCreation = true;
                         goto ExitLoop;
+
+                    case WeaponRecord weaponRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RemoveImplicit(record, metadata);
+                        __result = true;
+                        needItemCreation = true;
+                        goto ExitLoop;
+
                 }
             }
 
             __result = false;
             return;
 
-            ExitLoop:
+        ExitLoop:
 
             if (needItemCreation)
             {
@@ -498,7 +537,7 @@ namespace QM_PathOfQuasimorph.Controllers
             __result = false;
             return;
 
-            ExitLoop:
+        ExitLoop:
 
             __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
 
@@ -541,7 +580,7 @@ namespace QM_PathOfQuasimorph.Controllers
             __result = false;
             return;
 
-            ExitLoop:
+        ExitLoop:
 
             __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
 
@@ -599,7 +638,7 @@ namespace QM_PathOfQuasimorph.Controllers
             __result = false;
             return;
 
-            ExitLoop:
+        ExitLoop:
 
             if (!success)
             {
@@ -659,7 +698,7 @@ namespace QM_PathOfQuasimorph.Controllers
             __result = false;
             return;
 
-            ExitLoop:
+        ExitLoop:
 
             if (!success)
             {

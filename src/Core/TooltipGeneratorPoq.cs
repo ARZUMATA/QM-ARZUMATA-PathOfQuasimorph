@@ -1026,12 +1026,25 @@ namespace QM_PathOfQuasimorph.Core
                             }
                             )).SetNameColor(Colors.DarkYellow);
                         break;
+
                     case SynthraformerController.SynthraformerType.Indestructible:
                         var value2 = $"{SynthraformerController.TRAIT_CLEAN_CHANCE * 100}%";
 
                         __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
                             {
                             $"{value2.WrapInColor(Color.yellow)}"
+                            }
+                            )).SetNameColor(Colors.DarkYellow);
+
+                        break;
+
+
+                    case SynthraformerController.SynthraformerType.Transmuter:
+
+                        __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
+                            {
+                            $"{ItemRarity.Standard.ToString().WrapInColor(Color.yellow)}", 
+                            $"{(SynthraformerController.TRANSMUTER_VOID_ITEM_CHANCE * 100).ToString().WrapInColor(Color.yellow)}"
                             }
                             )).SetNameColor(Colors.DarkYellow);
 
