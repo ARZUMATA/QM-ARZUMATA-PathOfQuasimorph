@@ -398,10 +398,10 @@ namespace QM_PathOfQuasimorph.Controllers
             {
                 switch (basePickupItemRecord)
                 {
-                    case AmmoRecord ammoRecord when isStandard:
-                        // There is only one exception for Standard Rarity - Ammmo.
-                        __result = CreateNewItem(targetItem, repair, metadata.RarityClass, true, true);
-                        return;
+                    //case AmmoRecord ammoRecord when isStandard:
+                    //    // There is only one exception for Standard Rarity - Ammmo.
+                    //    __result = CreateNewItem(targetItem, repair, metadata.RarityClass, true, true);
+                    //    return;
 
                     case AmmoRecord ammoRecord when !isStandard:
                         _logger.Log($"ammoRecord processing");

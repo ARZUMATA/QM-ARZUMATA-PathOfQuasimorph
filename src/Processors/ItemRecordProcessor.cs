@@ -311,6 +311,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             _logger.Log($"Updating {statStr}");
 
+            _logger.Log($"\t\t boostedParamString: {boostedParamString}");
+
             // Apply boost
             if (statStr != string.Empty && statStr == boostedParamString)
             {

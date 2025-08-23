@@ -179,7 +179,7 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
 
                 case "crit_damage":
-                    dmgInfo = itemRecord.Damage;
+                    dmgInfo = genericRecord.Damage;
                     PathOfQuasimorph.raritySystem.Apply<float>(v => dmgInfo.critDmg = v, () => dmgInfo.critDmg, finalModifier, increase, out outOldValue, out outNewValue);
                     itemRecord.Damage = dmgInfo;
                     break;
@@ -371,6 +371,14 @@ namespace QM_PathOfQuasimorph.Processors
             string boostedParamString;
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+            
+            Plugin.Logger.Log($"RerollRandomStat");
+            Plugin.Logger.Log($"metadata: {metadata.BoostedString}");
+
+            if (metadata.BoostedString.Length > 1)
+            {
+                boostedParamString = metadata.BoostedString;
+            }
 
             var statIdx = Helpers._random.Next(0, parameters.Count);
             var stat = parameters.ElementAt(statIdx);

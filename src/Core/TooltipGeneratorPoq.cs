@@ -426,7 +426,8 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     var value = $"{Math.Round(resistPoq.resistPercent, 2).ToString()} ({FormatDifference(Math.Abs(resistDifference).ToString(), resistDifference)})".WrapInColor(Colors.Green);
 
-                    _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
+                    _factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}").
+                    //_factory.AddPanelToTooltip().SetIcon($"damage_{recordPoq.ResistSheet[i].damage}_resist").
                      LocalizeName($"woundeffect.resist_{recordPoq.ResistSheet[i].damage}.desc")
                      .SetValue(value, true)
                      .SetComparsionValue(resistGeneric.resistPercent.ToString());

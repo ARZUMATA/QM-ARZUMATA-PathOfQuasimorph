@@ -116,7 +116,7 @@ namespace QM_PathOfQuasimorph.Records
                         BlockStandard(typeof(ArmorRecord)),
                         BlockStandard(typeof(LeggingsRecord)),
                         BlockStandard(typeof(BootsRecord)),
-                        BlockStandard(typeof(AmmoRecord)),
+                        //BlockStandard(typeof(AmmoRecord)),
                         //typeof(ImplantRecord),
                         //typeof(AugmentationRecord),
                     }
