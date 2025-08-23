@@ -18,7 +18,7 @@ namespace QM_PathOfQuasimorph.Controllers
 
         public const float TRAIT_CLEAN_CHANCE = 0.5f;
         public const float UNBREAKABLE_CHANCE = 0.5f;
-        
+
         // Base drop chances by type
         public Dictionary<SynthraformerType, float> DropChances = new()
         {
@@ -362,6 +362,10 @@ namespace QM_PathOfQuasimorph.Controllers
 
         private void HandleTransmuter(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
+            Plugin.Logger.Log($"HandleTransmuter");
+
+            bool needItemCreation = false;
+
             foreach (var basePickupItemRecord in obj.Records)
             {
                 switch (basePickupItemRecord)
@@ -370,13 +374,38 @@ namespace QM_PathOfQuasimorph.Controllers
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollDamageType(record, metadata);
                         __result = true;
-                        return;
+                        goto ExitLoop;
+
+                    case AugmentationRecord augmentationRecord:
+                        PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.Init(augmentationRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
+                        __result = PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.RandomWoundSlot(record, metadata);
+                        needItemCreation = true;
+                        goto ExitLoop;
                 }
+            }
+
+            __result = false;
+            return;
+
+            ExitLoop:
+
+            if (needItemCreation)
+            {
+                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+            }
+
+            if (__result)
+            {
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
             }
         }
 
         private void HandleInfuser(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
+            Plugin.Logger.Log($"HandleInfuser");
+            bool needItemCreation = false;
+
             foreach (var basePickupItemRecord in obj.Records)
             {
                 switch (basePickupItemRecord)
@@ -385,8 +414,25 @@ namespace QM_PathOfQuasimorph.Controllers
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollAmmoType(record, metadata);
                         __result = true;
-                        return;
+                        needItemCreation = true;
+                        goto ExitLoop;
                 }
+            }
+
+            __result = false;
+            return;
+
+            ExitLoop:
+
+            if (needItemCreation)
+            {
+                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+            }
+
+            if (__result)
+            {
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
             }
         }
 
@@ -407,59 +453,60 @@ namespace QM_PathOfQuasimorph.Controllers
                         _logger.Log($"ammoRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case WeaponRecord weaponRecord when !isStandard:
                         _logger.Log($"weaponRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case HelmetRecord helmetRecord when !isStandard:
                         _logger.Log($"helmetRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.Init(helmetRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case ArmorRecord armorRecord when !isStandard:
                         _logger.Log($"armorRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.Init(armorRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case LeggingsRecord leggingsRecord when !isStandard:
                         _logger.Log($"leggingsRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.Init(leggingsRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case BootsRecord bootsRecord when !isStandard:
                         _logger.Log($"bootsRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.Init(bootsRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.RerollRandomStat(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case ImplantRecord implantRecord when !isStandard:
                         _logger.Log($"implantRecord processing");
-                        break;
+                        goto ExitLoop;
 
                     case AugmentationRecord augmentationRecord when !isStandard:
                         _logger.Log($"augmentationRecord processing");
-                        break;
+                        goto ExitLoop;
                 }
-
-                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
-
-                if (__result)
-                {
-                    RecordCollection.ItemRecords.Remove(targetItem.Id);
-                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
-                }
-
-                return;
             }
 
             __result = false;
+            return;
+
+            ExitLoop:
+
+            __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+
+            if (__result)
+            {
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+            }
         }
 
         private void HandleTraits(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
@@ -477,29 +524,32 @@ namespace QM_PathOfQuasimorph.Controllers
                     case WeaponRecord weaponRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata, 0.5f, true);
-                        break;
+                        goto ExitLoop;
 
                     case AmmoRecord ammoRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.ReplaceAmmoTraits(record, metadata, 0.5f, true);
-                        break;
+                        goto ExitLoop;
 
                     default:
                         continue;
                 }
 
-                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
 
-                if (__result)
-                {
-                    RecordCollection.ItemRecords.Remove(targetItem.Id);
-                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
-                }
-
-                return;
             }
 
             __result = false;
+            return;
+
+            ExitLoop:
+
+            __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+
+            if (__result)
+            {
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+            }
         }
 
 
@@ -522,8 +572,10 @@ namespace QM_PathOfQuasimorph.Controllers
 
         private void HandleIndestructible(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
         {
-            _logger.Log($"HandleIndestructible")
-                ;
+            _logger.Log($"HandleIndestructible");
+
+            bool success = false;
+
             if (metadata.RarityClass == ItemRarity.Standard)
             {
                 __result = false;
@@ -537,24 +589,31 @@ namespace QM_PathOfQuasimorph.Controllers
                     case BreakableItemRecord breakableItemRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.Init(breakableItemRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata, UNBREAKABLE_CHANCE);
-                        break;
+                        goto ExitLoop;
 
                     default:
                         continue;
                 }
-
-                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
-
-                if (__result)
-                {
-                    RecordCollection.ItemRecords.Remove(targetItem.Id);
-                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
-                }
-
-                return;
             }
 
             __result = false;
+            return;
+
+            ExitLoop:
+
+            if (!success)
+            {
+                __result = false;
+                return;
+            }
+
+            __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+
+            if (__result)
+            {
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+            }
         }
 
         private void HandleCatalyst(PickupItem targetItem, BasePickupItem repair, SynthraformerRecord record, MetadataWrapper metadata, CompositeItemRecord obj, ref bool __result)
@@ -571,7 +630,7 @@ namespace QM_PathOfQuasimorph.Controllers
             bool hasWeaponRecord = targetItem.Is<WeaponRecord>();
             bool hasAugmentationRecord = targetItem.Is<AugmentationRecord>();
             _logger.Log($"hasWeaponRecord: {hasWeaponRecord}, hasAugmentationRecord: {hasAugmentationRecord}");
-            
+
             foreach (var basePickupItemRecord in obj.Records)
             {
                 switch (basePickupItemRecord)
@@ -580,40 +639,41 @@ namespace QM_PathOfQuasimorph.Controllers
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.CreateAugmentation(record, metadata, obj);
                         success = true;
-                        break;
+                        goto ExitLoop;
 
                     case AugmentationRecord augmentationRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.Init(augmentationRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         success = PathOfQuasimorph.itemRecordsControllerPoq.augmentationRecordProcessorPoq.AddRandomEffect(record, metadata);
-                        break;
+                        goto ExitLoop;
 
                     case ImplantRecord implantRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.Init(implantRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         success = PathOfQuasimorph.itemRecordsControllerPoq.implantRecordProcessorPoq.AddRandomImplicitEffect(record, metadata, implantRecord.ImplicitBonusEffects, implantRecord.ImplicitPenaltyEffects);
-                        break;
+                        goto ExitLoop;
 
                     default:
                         continue;
                 }
-
-                if (!success)
-                {
-                    __result = false;
-                    return;
-                }
-
-                __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
-
-                if (__result)
-                {
-                    RecordCollection.ItemRecords.Remove(targetItem.Id);
-                    RecordCollection.ItemRecords.Add(targetItem.Id, obj);
-                }
-
-                return;
             }
 
             __result = false;
+            return;
+
+            ExitLoop:
+
+            if (!success)
+            {
+                __result = false;
+                return;
+            }
+
+            __result = CreateNewItem(targetItem, repair, metadata.RarityClass, false, false);
+
+            if (__result)
+            {
+                RecordCollection.ItemRecords.Remove(targetItem.Id);
+                RecordCollection.ItemRecords.Add(targetItem.Id, obj);
+            }
         }
 
         private static bool CreateNewItem(BasePickupItem target, BasePickupItem repair, ItemRarity itemRarity, bool selectRarity, bool applyRarity)
@@ -679,7 +739,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"BreakableItemComponent skip");
                     continue;
                 }
-           
+
                 // Find old component with same concrete type
                 var oldComp = pickupItemOld.Components.FirstOrDefault(c => c?.GetType() == newComp.GetType());
 
