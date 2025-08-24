@@ -273,9 +273,9 @@ namespace QM_PathOfQuasimorph.Processors
             { ItemRarity.Standard,  (0,  0) },     // 
             { ItemRarity.Enhanced,  (0,  0) },     // 
             { ItemRarity.Advanced,  (1,  3) },     // 
-            { ItemRarity.Premium,   (1,  4) },     // 
-            { ItemRarity.Prototype, (2,  5) },     // 
-            { ItemRarity.Quantum,   (3,  6) },     // 
+            { ItemRarity.Premium,   (2,  4) },     // 
+            { ItemRarity.Prototype, (3,  5) },     // 
+            { ItemRarity.Quantum,   (4,  6) },     // 
         };
 
 
@@ -525,10 +525,10 @@ namespace QM_PathOfQuasimorph.Processors
         }
 
         internal virtual bool AddRandomImplicitEffect(
-            SynthraformerRecord record,
-            MetadataWrapper metadata,
+            ItemRarity rarity,
             IDictionary<string, float> bonusEffects,
-            IDictionary<string, float> penaltyEffects)
+            IDictionary<string, float> penaltyEffects,
+            bool canRemoveRandom = true)
         {
             _logger.Log($"AddRandomImplicitEffect");
 
@@ -558,8 +558,8 @@ namespace QM_PathOfQuasimorph.Processors
             // Get extra count of slots per specified rarity
             // Add positive or negative count for average number of effects slot per vanilla item so we get total slots we can add
             var extraEffectsAvailableCount = Helpers._random.Next(
-                extraEffectsPerRarity[itemRarity].Min,
-                extraEffectsPerRarity[itemRarity].Max + 1);
+                extraEffectsPerRarity[rarity].Min,
+                extraEffectsPerRarity[rarity].Max + 1);
 
             if (itemRecord is IHasSlotType hasSlot)
             {
@@ -578,7 +578,7 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\t remove random effect: {removeRandom}");
 
             // Remove random effect right away so it doesn't interfere
-            if (removeRandom)
+            if (removeRandom && canRemoveRandom)
             {
                 var effects = positive ? bonusEffects : penaltyEffects;
                 if (effects != null && effects.Count > 0)
@@ -653,6 +653,7 @@ namespace QM_PathOfQuasimorph.Processors
             // Enforce cap: remove random if at limit
             _logger.LogWarning($"\t\t targetEffects.Count: {targetEffects.Count}");
             _logger.LogWarning($"\t\t extraEffectsAvailableCount: {extraEffectsAvailableCount}");
+
             while (targetEffects.Count > extraEffectsAvailableCount)
             {
                 var keys = targetEffects.Keys.ToArray();

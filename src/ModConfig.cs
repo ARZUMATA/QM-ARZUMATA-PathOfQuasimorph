@@ -78,6 +78,9 @@ namespace QM_PathOfQuasimorph
         public bool AllowBlackjackDealerToCheat { get; set; } = true;
 
         [JsonIgnore]
+        public bool MonsterTierWoundSlotEffectsAdd { get; set; } = false;
+        
+        [JsonIgnore]
         public bool CustomWeights { get; set; } = true;
 
         [JsonIgnore]

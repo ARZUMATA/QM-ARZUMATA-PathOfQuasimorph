@@ -5,6 +5,7 @@ using QM_PathOfQuasimorph.PoQHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
@@ -31,6 +32,46 @@ namespace QM_PathOfQuasimorph.Core
             public static void Postfix(ref CreatureData __result)
             {
                 Plugin.Logger.Log($"CreatureSystem_GenerateMonster_Patch");
+
+                if (!Plugin.Config.EnableMobs)
+                {
+                    return;
+                }
+
+                // Can adjust mobs before here too
+                if (MobContext.ProcesingMobRarity && Plugin.Config.MonsterTierWoundSlotEffectsAdd)
+                {
+                    if (MobContext.Rarity != CreaturesControllerPoq.MonsterMasteryTier.None)
+                    {
+                        foreach (var slotkey in __result.WoundSlotMap.ToList())
+                        {
+                            var randomUidInjected = PathOfQuasimorph.itemRecordsControllerPoq.GenerateUid();
+                            MetadataWrapper wrapper;
+                            string newId;
+                            string boostedParamString = string.Empty;
+
+                            ItemRecordsControllerPoq.GetNewId(slotkey.Key, randomUidInjected, false, out wrapper, out newId);
+
+                            newId = $"{slotkey.Key}_{newId}";
+                            Plugin.Logger.Log($"\t new name will be {newId}");
+
+                            var woundSlotRecord = Data.WoundSlots.GetRecord(slotkey.Key);
+                            WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
+                            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, (ItemRarity)MobContext.Rarity + 1, true, false, $"{newId}", slotkey.Key);
+                            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.FillMobContextEffects(MobContext.Rarity, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects);
+
+
+                            __result.WoundSlotMap[newId] = __result.WoundSlotMap[slotkey.Key];
+                            __result.WoundSlotMap.Remove(slotkey.Key);
+
+                            Data.WoundSlots._records[newId] = woundSlotRecordNew;
+
+                            RecordCollection.WoundSlotRecords[newId] = woundSlotRecordNew;
+                            Localization.DuplicateKey("woundslot." + slotkey.Key + ".name", "woundslot." + newId + ".name");
+                        }
+                    }
+                }
             }
         }
 
@@ -64,7 +105,6 @@ namespace QM_PathOfQuasimorph.Core
 
                     Plugin.Logger.Log($"SpawnMonsterFromMobClass: Upcoming creature Id: {MobContext.CurrentMobId}");
                     Plugin.Logger.Log($"SpawnEquipment is TRUE. Assigned rarity: {creatureDataPoq.rarity}");
-
                 }
                 else
                 {
@@ -80,7 +120,7 @@ namespace QM_PathOfQuasimorph.Core
             public static void Postfix(ref Monster __result)
             {
                 Plugin.Logger.Log($"SpawnMonsterFromMobClass: creatureUniqueId: {__result.CreatureData.UniqueId}");
-                
+
                 if (!Plugin.Config.EnableMobs)
                 {
                     return;

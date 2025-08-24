@@ -186,6 +186,14 @@ namespace QM_PathOfQuasimorph.Controllers
 
             return newId;
         }
+        public string GenerateUid()
+        {
+            DigitInfo digits = DigitInfo.GetRandomDigits();
+            var randomUidInjected = digits.ReturnUID();
+
+            _logger.Log($"\t randomUidInjected: {randomUidInjected}");
+            return randomUidInjected;
+        }
 
         private string GenerateUid(ItemRarity itemRarity)
         {
@@ -198,7 +206,7 @@ namespace QM_PathOfQuasimorph.Controllers
             return randomUidInjected;
         }
 
-        private static void GetNewId(string Id, string randomUidInjected, bool isMagnumProduced, out MetadataWrapper wrapper, out string newId)
+        public static void GetNewId(string Id, string randomUidInjected, bool isMagnumProduced, out MetadataWrapper wrapper, out string newId)
         {
             // Resulting UID
             // We don't need custom suffix anyway since we create own records for magnum crafted projects.

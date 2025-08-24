@@ -316,5 +316,29 @@ namespace QM_PathOfQuasimorph.Processors
 
             return string.Empty;
         }
+
+        internal void FillMobContextEffects(CreaturesControllerPoq.MonsterMasteryTier mastery,
+            IDictionary<string, float> bonusEffects,
+            IDictionary<string, float> penaltyEffects)
+        {
+            _logger.Log($"FillMobContextEffects");
+
+            var totalEffectsPerSlot = (int)mastery * 2;
+            _logger.Log($"totalEffectsPerSlot: {totalEffectsPerSlot} for mastery: {mastery}");
+
+            var addedEffectsPerSlot = 0;
+
+            //while (int i = 0; i < totalEffectsPerSlot; i++)
+            while (addedEffectsPerSlot <= totalEffectsPerSlot)
+            {
+                var success = AddRandomImplicitEffect((ItemRarity)(mastery + 1), bonusEffects, penaltyEffects, canRemoveRandom: false);
+
+                if (success)
+                {
+                    addedEffectsPerSlot++;
+                    _logger.Log($"SUCCESS");
+                }
+            }
+        }
     }
 }
