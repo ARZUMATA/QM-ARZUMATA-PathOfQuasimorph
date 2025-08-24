@@ -817,6 +817,10 @@ namespace QM_PathOfQuasimorph.Core
                 {
                     HandlePoqTooltipMonster(monster);
                 }
+                else
+                {
+                    HandlePoqTooltipMonsterRemove();
+                }
             }
         }
 
