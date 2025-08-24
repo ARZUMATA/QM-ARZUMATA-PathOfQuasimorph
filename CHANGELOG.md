@@ -3,6 +3,13 @@
 > **Note**: This version introduces foundational changes for future features. Please report any unexpected behavior with save files or synthraformer behavior using logs and reproducible cases.
 
 ---
+## v1.9.8-hotfix1 (53751d5)
+
+### Fixed:
+- Some wound effects were too strong/bad for mobs, so they have been disabled for them.
+
+### Testing:
+- When applying the Amplifier Synthraformer, stat rolls will no longer be randomly hindered by standard rarity-based roll mechanics; they will always roll within the item's rarity range.
 
 ## v1.9.8 (89c6b2c)
 

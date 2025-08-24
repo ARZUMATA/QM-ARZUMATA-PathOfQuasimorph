@@ -315,7 +315,7 @@ namespace QM_PathOfQuasimorph.Processors
             return selectedTraits;
         }
 
-        internal void RerollRandomStat(SynthraformerRecord recomb, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord recomb, MetadataWrapper metadata, bool blockHinder)
         {
             var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
 
@@ -327,6 +327,11 @@ namespace QM_PathOfQuasimorph.Processors
 
             var statIdx = Helpers._random.Next(0, parameters.Count);
             var stat = parameters.ElementAt(statIdx);
+
+            if (blockHinder)
+            {
+                hinderedCount = 999; // Test
+            }
 
             finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
             ApplyStat(finalModifier, increase, stat, genericRecord);

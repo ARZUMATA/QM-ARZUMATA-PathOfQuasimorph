@@ -173,7 +173,7 @@ namespace QM_PathOfQuasimorph.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
         {
             Plugin.Logger.Log($"RerollRandomStat");
 
@@ -196,6 +196,11 @@ namespace QM_PathOfQuasimorph.Processors
             if (metadata.BoostedString.Length > 1)
             {
                 boostedParamString = metadata.BoostedString;
+            }
+
+            if (blockHinder)
+            {
+                hinderedCount = 999; // Test
             }
 
             float averageResist;
