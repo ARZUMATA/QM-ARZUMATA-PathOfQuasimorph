@@ -73,7 +73,8 @@ namespace QM_PathOfQuasimorph.Processors
             new HashSet<string> { "toxic", "heavy_toxic" },
             new HashSet<string> { "knockback", "heavy_knockback" },
             new HashSet<string> { "knockdown", "heavy_knockdown" },
-            new HashSet<string> { "explosive_light_flak", "explosive_flak" },
+            new HashSet<string> { "incendiary", "heavy_incendiary" },
+            new HashSet<string> { "explosive", "explosive_fire", "explosive_flak", "explosive_hfg", "explosive_light_flak", "explosive_poison", "explosive_quasi" },
         };
 
         internal override void ProcessRecord(ref string boostedParamString)
