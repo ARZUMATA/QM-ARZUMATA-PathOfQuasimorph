@@ -405,7 +405,7 @@ namespace QM_PathOfQuasimorph.Processors
             return selectedTraits;
         }
 
-        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
         {
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
 
@@ -421,6 +421,11 @@ namespace QM_PathOfQuasimorph.Processors
             if (metadata.BoostedString.Length > 1)
             {
                 boostedParamString = metadata.BoostedString;
+            }
+
+            if (blockHinder)
+            {
+                hinderedCount = 999; // Test
             }
 
             var statIdx = Helpers._random.Next(0, parameters.Count);

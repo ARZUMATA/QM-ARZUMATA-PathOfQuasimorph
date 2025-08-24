@@ -491,38 +491,38 @@ namespace QM_PathOfQuasimorph.Controllers
                     case AmmoRecord ammoRecord when !isStandard:
                         _logger.Log($"ammoRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.Init(ammoRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.ammoRecordProcessorPoq.RerollRandomStat(record, metadata, true);
                         goto ExitLoop;
 
                     case WeaponRecord weaponRecord when !isStandard:
                         _logger.Log($"weaponRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(record, metadata, true);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RemoveImplicit(record, metadata);
                         goto ExitLoop;
 
                     case HelmetRecord helmetRecord when !isStandard:
                         _logger.Log($"helmetRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.Init(helmetRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.helmetRecordProcessorPoq.RerollRandomStat(record, metadata, true);
                         goto ExitLoop;
 
                     case ArmorRecord armorRecord when !isStandard:
                         _logger.Log($"armorRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.Init(armorRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.armorRecordProcessorPoq.RerollRandomStat(record, metadata, true);
                         goto ExitLoop;
 
                     case LeggingsRecord leggingsRecord when !isStandard:
                         _logger.Log($"leggingsRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.Init(leggingsRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.leggingsRecordProcessorPoq.RerollRandomStat(record, metadata, true);
                         goto ExitLoop;
 
                     case BootsRecord bootsRecord when !isStandard:
                         _logger.Log($"bootsRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.Init(bootsRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
-                        PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.bootsRecordProcessorPoq.RerollRandomStat(record, metadata, true);
                         goto ExitLoop;
 
                     case ImplantRecord implantRecord when !isStandard:
