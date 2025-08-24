@@ -4,6 +4,14 @@
 
 ---
 
+## v1.9.8 (89c6b2c)
+
+### Fixed:
+ - Fixed an issue where the Indestructible Synthraformer ability did not work consistently
+
+### Added:
+- Experimental feature (toggle in settings): Added dynamic bonus and penalty effects to mob body parts based on mastery level. This may grant regeneration, immunity, improved critical hits, reduced wound chance, and more. Hover over body parts in the monster inspection window to view active bonuses or penalties.
+
 ## v1.9.7 (febc924)
 
 ### Added:
