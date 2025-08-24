@@ -331,7 +331,7 @@ namespace QM_PathOfQuasimorph.Processors
             //while (int i = 0; i < totalEffectsPerSlot; i++)
             while (addedEffectsPerSlot <= totalEffectsPerSlot)
             {
-                var success = AddRandomImplicitEffect((ItemRarity)(mastery + 1), bonusEffects, penaltyEffects, canRemoveRandom: false);
+                var success = AddRandomImplicitEffect((ItemRarity)(mastery + 1), bonusEffects, penaltyEffects,false, true);
 
                 if (success)
                 {

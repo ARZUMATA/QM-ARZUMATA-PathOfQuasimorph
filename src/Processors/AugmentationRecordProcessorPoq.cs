@@ -190,7 +190,7 @@ namespace QM_PathOfQuasimorph.Processors
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlotString);
 
                     itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
-                    var success = itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomImplicitEffect(metadata.RarityClass, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects);
+                    var success = itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomImplicitEffect(metadata.RarityClass, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects, true, false);
 
                     if (!success)
                     {

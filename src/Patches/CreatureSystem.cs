@@ -38,6 +38,12 @@ namespace QM_PathOfQuasimorph.Core
                     return;
                 }
 
+                Plugin.Logger.Log($"MonsterTierWoundSlotEffectsAdd {Plugin.Config.MonsterTierWoundSlotEffectsAdd}");
+                Plugin.Logger.Log($"MobContext.ProcesingMobRarity {MobContext.ProcesingMobRarity}");
+                Plugin.Logger.Log($"MobContext.Rarity {MobContext.Rarity}");
+                Plugin.Logger.Log($"MobContext.CurrentMobId {MobContext.CurrentMobId}");
+
+
                 // Can adjust mobs before here too
                 if (MobContext.ProcesingMobRarity && Plugin.Config.MonsterTierWoundSlotEffectsAdd)
                 {
@@ -70,6 +76,8 @@ namespace QM_PathOfQuasimorph.Core
                             RecordCollection.WoundSlotRecords[newId] = woundSlotRecordNew;
                             Localization.DuplicateKey("woundslot." + slotkey.Key + ".name", "woundslot." + newId + ".name");
                         }
+
+                        AugmentationSystem.ConfigureImplicitEffects(__result);
                     }
                 }
             }

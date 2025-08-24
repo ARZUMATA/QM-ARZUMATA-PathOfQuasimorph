@@ -39,12 +39,14 @@ namespace QM_PathOfQuasimorph.Processors
             public float Value { get; set; }
             public int Weight { get; set; }   // selection weight — higher = more common
             public List<Type> ApplicableTypes { get; set; }
+            public bool AllowMobs { get; set; }
 
-            public WoundEffectData(bool? sign, float value, int weight)
+            public WoundEffectData(bool? sign, float value, int weight, bool allowMobs)
             {
                 Sign = sign;
                 Value = value;
                 Weight = weight;
+                AllowMobs = allowMobs;
                 ApplicableTypes = new List<Type>
                 {
                     typeof(ImplantRecord),
@@ -62,95 +64,95 @@ namespace QM_PathOfQuasimorph.Processors
             // -----------------------------------------------------------------------------
             // CORE SURVIVAL & SUSTENANCE (Food, Health, Regen)
             // -----------------------------------------------------------------------------
-            { "max_health",                   new WoundEffectData(true,  20f,   30) }, // Maximum Health
-            { "passive_regen",                new WoundEffectData(true,  1f,    25) }, // HP/turn, sustained healing
-            { "regen_efficacy",               new WoundEffectData(true,  0.2f,  35) }, // Meds HP Regeneration
-            { "food_calories",                new WoundEffectData(false, -0.7f, 40) }, // Calorie consumption, reduces food consumption — useful
-            { "satiety",                      new WoundEffectData(true,  0.5f,  40) }, // Calorie gain, More calories from food — decent
-            { "vomiting",                     new WoundEffectData(false, -0.1f, 50) }, // Reduces puke chance — minor quality of life
-            { "hallucinations",               new WoundEffectData(false, -0.3f, 45) }, // Reduces hallucination chance — situational
-            { "pain_threshold_regen",         new WoundEffectData(true,  1f,    30) }, // Pain per turn, faster pain threshold recovery
+            { "max_health",                   new WoundEffectData(true,  20f,   30, true) }, // Maximum Health
+            { "passive_regen",                new WoundEffectData(true,  1f,    25, true) }, // HP/turn, sustained healing
+            { "regen_efficacy",               new WoundEffectData(true,  0.2f,  35, true) }, // Meds HP Regeneration
+            { "food_calories",                new WoundEffectData(false, -0.7f, 40, true) }, // Calorie consumption, reduces food consumption — useful
+            { "satiety",                      new WoundEffectData(true,  0.5f,  40, true) }, // Calorie gain, More calories from food — decent
+            { "vomiting",                     new WoundEffectData(false, -0.1f, 50, true) }, // Reduces puke chance — minor quality of life
+            { "hallucinations",               new WoundEffectData(false, -0.3f, 45, true) }, // Reduces hallucination chance — situational
+            { "pain_threshold_regen",         new WoundEffectData(true,  1f,    30, true) }, // Pain per turn, faster pain threshold recovery
 
             // -----------------------------------------------------------------------------
             // DAMAGE MODIFIERS (Incoming & Outgoing)
             // -----------------------------------------------------------------------------
-            { "income_dmg",                   new WoundEffectData(false, -0.2f, 30) }, // Incoming damage — strong defensive stat
-            { "income_pain",                  new WoundEffectData(false, -0.3f, 35) }, // Pain reduction
-            { "melee_dmg_reduce",             new WoundEffectData(true,  0.3f,  40) }, // Strike Damage, Increases melee damage
-            { "critchance_reduce",            new WoundEffectData(true,  0.05f, 35) }, // Crit chance bonus
-            { "crit_damage",                  new WoundEffectData(true,  0.2f,  30) }, // Multiplier on crits
-            { "pain_to_melee_dmg",            new WoundEffectData(true,  4f,    20) }, // Pain into Melee Damage
-            { "move_dmg",                     new WoundEffectData(false, -1f,   50) }, // Damage on move
-            { "dot_dmg",                      new WoundEffectData(false, -1f,   50) }, // Damage per turn
-            { "action_dmg",                   new WoundEffectData(false, -1f,   50) }, // Damage per Action
-            { "eat_dmg",                      new WoundEffectData(false, -1f,   50) }, // Damage per eating — anti-heal debuff
-            { "apoint_dmg",                   new WoundEffectData(false, -1f,   50) }, // Damage per AP
+            { "income_dmg",                   new WoundEffectData(false, -0.2f, 30, true) }, // Incoming damage — strong defensive stat
+            { "income_pain",                  new WoundEffectData(false, -0.3f, 35, true) }, // Pain reduction
+            { "melee_dmg_reduce",             new WoundEffectData(true,  0.3f,  40, true) }, // Strike Damage, Increases melee damage
+            { "critchance_reduce",            new WoundEffectData(true,  0.05f, 35, true) }, // Crit chance bonus
+            { "crit_damage",                  new WoundEffectData(true,  0.2f,  30, true) }, // Multiplier on crits
+            { "pain_to_melee_dmg",            new WoundEffectData(true,  4f,    20, true) }, // Pain into Melee Damage
+            { "move_dmg",                     new WoundEffectData(false, -1f,   50, false) }, // Damage on move
+            { "dot_dmg",                      new WoundEffectData(false, -1f,   50, false) }, // Damage per turn
+            { "action_dmg",                   new WoundEffectData(false, -1f,   50, false) }, // Damage per Action
+            { "eat_dmg",                      new WoundEffectData(false, -1f,   50, false) }, // Damage per eating — anti-heal debuff
+            { "apoint_dmg",                   new WoundEffectData(false, -1f,   50, false) }, // Damage per AP
 
             // -----------------------------------------------------------------------------
             // ACCURACY, COMBAT & WEAPON BEHAVIOR
             // -----------------------------------------------------------------------------
-            { "accuracy_reduce",              new WoundEffectData(true,  0.1f,    40) }, // Ranged accuracy
-            { "melee_accuracy",               new WoundEffectData(true,  0.05f,   45) }, // Melee Accuracy,
-            { "ranged_accuracy",              new WoundEffectData(true,  0.2f,    35) }, // Ranged Accuracy
-            { "firearm_range",                new WoundEffectData(true,  1f,      30) }, // Weapon range, extended range
-            { "scatter_angle",                new WoundEffectData(false, -0.2f,   40) }, // Scatter, Tighter spread
-            { "multi_hit",                    new WoundEffectData(true,  1f,      25) }, // Extra hit
-            { "added_projectile",             new WoundEffectData(true,  1f,      25) }, // Extra projectile
-            { "reload_duration",              new WoundEffectData(false, -1f,     35) }, // Weapon Reload Duration, faster reload
-            { "income_critchance",              new WoundEffectData(false, -0.1f, 35) }, // Incoming crit. chance
-            { "dodge_reduce",                   new WoundEffectData(true,  0.15f, 40) }, // Dodge chance
-            { "melee_throw_range",              new WoundEffectData(true,  1f,    45) }, // Throw Range
-            { "fov_angle",                      new WoundEffectData(true,  0.2f,  50) }, // Field of view
+            { "accuracy_reduce",              new WoundEffectData(true,  0.1f,    40, true) }, // Ranged accuracy
+            { "melee_accuracy",               new WoundEffectData(true,  0.05f,   45, true) }, // Melee Accuracy,
+            { "ranged_accuracy",              new WoundEffectData(true,  0.2f,    35, true) }, // Ranged Accuracy
+            { "firearm_range",                new WoundEffectData(true,  1f,      30, true) }, // Weapon range, extended range
+            { "scatter_angle",                new WoundEffectData(false, -0.2f,   40, true) }, // Scatter, Tighter spread
+            { "multi_hit",                    new WoundEffectData(true,  1f,      25, true) }, // Extra hit
+            { "added_projectile",             new WoundEffectData(true,  1f,      25, true) }, // Extra projectile
+            { "reload_duration",              new WoundEffectData(false, -1f,     35, true) }, // Weapon Reload Duration, faster reload
+            { "income_critchance",              new WoundEffectData(false, -0.1f, 35, true) }, // Incoming crit. chance
+            { "dodge_reduce",                   new WoundEffectData(true,  0.15f, 40, true) }, // Dodge chance
+            { "melee_throw_range",              new WoundEffectData(true,  1f,    45, true) }, // Throw Range
+            { "fov_angle",                      new WoundEffectData(true,  0.2f,  50, true) }, // Field of view
 
             // -----------------------------------------------------------------------------
             // RESISTANCES (All Damage Types)
             // -----------------------------------------------------------------------------
-            { "resist_blunt",                 new WoundEffectData(true,  15f,  25) }, // Blunt resist
-            { "resist_pierce",                new WoundEffectData(true,  15f,  25) }, // Pierce resist
-            { "resist_lacer",                 new WoundEffectData(true,  15f,  25) }, // Cut resist
-            { "resist_fire",                  new WoundEffectData(true,  15f,  25) }, // Fire resist
-            { "resist_beam",                  new WoundEffectData(true,  15f,  25) }, // Beam resist
-            { "resist_shock",                 new WoundEffectData(true,  15f,  25) }, // Shock resist
-            { "resist_poison",                new WoundEffectData(true,  15f,  25) }, // Poison resist
-            { "resist_cold",                  new WoundEffectData(true,  15f,  25) }, // Cold resist
+            { "resist_blunt",                 new WoundEffectData(true,  15f,  25, true) }, // Blunt resist
+            { "resist_pierce",                new WoundEffectData(true,  15f,  25, true) }, // Pierce resist
+            { "resist_lacer",                 new WoundEffectData(true,  15f,  25, true) }, // Cut resist
+            { "resist_fire",                  new WoundEffectData(true,  15f,  25, true) }, // Fire resist
+            { "resist_beam",                  new WoundEffectData(true,  15f,  25, true) }, // Beam resist
+            { "resist_shock",                 new WoundEffectData(true,  15f,  25, true) }, // Shock resist
+            { "resist_poison",                new WoundEffectData(true,  15f,  25, true) }, // Poison resist
+            { "resist_cold",                  new WoundEffectData(true,  15f,  25, true) }, // Cold resist
 
             // -----------------------------------------------------------------------------
             // MOVEMENT, STEALTH & DETECTION
             // -----------------------------------------------------------------------------
-            { "stealth_ap",                   new WoundEffectData(true,  2f,   15) }, // More AP in stealth
-            { "walk_ap",                      new WoundEffectData(true,  3f,   25) }, // More walking AP 
-            { "run_ap",                       new WoundEffectData(true,  4f,   35) }, // Run AP
-            { "los_reduce",                   new WoundEffectData(true,  1f,   45) }, // Vision range — situational
-            { "spotted_radius",               new WoundEffectData(false, -1f,  50) }, // Smaller player detection radius
-            { "no_spotted_signal",            new WoundEffectData(null,  0f,   35) }, // No enemy detection (>1 = Enabled - negative stat)
-            { "run_spotted_signal",           new WoundEffectData(null,  1f,   35) }, // Detect others when running (>1 = Enabled - positive stat))
-            { "walk_spotted_signal",          new WoundEffectData(null,  1f,   40) }, // Detection while walking — (>1 = Enabled - positive stat)
+            { "stealth_ap",                   new WoundEffectData(true,  2f,   15, true) }, // More AP in stealth
+            { "walk_ap",                      new WoundEffectData(true,  3f,   25, true) }, // More walking AP 
+            { "run_ap",                       new WoundEffectData(true,  4f,   35, true) }, // Run AP
+            { "los_reduce",                   new WoundEffectData(true,  1f,   45, true) }, // Vision range — situational
+            { "spotted_radius",               new WoundEffectData(false, -1f,  50, true) }, // Smaller player detection radius
+            { "no_spotted_signal",            new WoundEffectData(null,  0f,   35, true) }, // No enemy detection (>1 = Enabled - negative stat)
+            { "run_spotted_signal",           new WoundEffectData(null,  1f,   35, true) }, // Detect others when running (>1 = Enabled - positive stat))
+            { "walk_spotted_signal",          new WoundEffectData(null,  1f,   40, true) }, // Detection while walking — (>1 = Enabled - positive stat)
 
             // -----------------------------------------------------------------------------
             // INVENTORY & UTILITY
             // -----------------------------------------------------------------------------
-            { "items_weight",                 new WoundEffectData(false, -0.1f,   45) }, // Weight modifier, lighter items — QoL
-            { "backpack_weight",              new WoundEffectData(false, -0.15f,  40) }, //  Load weight, carry more — useful
-            { "bonus_vest_slot",              new WoundEffectData(true,  1f,      15) }, // Extra vest slot
-            { "perk_exp_modifier",            new WoundEffectData(true,  0.8f,    35) }, // Faster perk XP
-            { "perk_cooldown",                new WoundEffectData(false, -0.2f,   30) }, // Shorter cooldowns
-            { "implant_cooldown",             new WoundEffectData(false, -8f,     20) }, // Implant Cooldown, major reduction 
+            { "items_weight",                 new WoundEffectData(false, -0.1f,   45, true) }, // Weight modifier, lighter items — QoL
+            { "backpack_weight",              new WoundEffectData(false, -0.15f,  40, true) }, //  Load weight, carry more — useful
+            { "bonus_vest_slot",              new WoundEffectData(true,  1f,      15, true) }, // Extra vest slot
+            { "perk_exp_modifier",            new WoundEffectData(true,  0.8f,    35, true) }, // Faster perk XP
+            { "perk_cooldown",                new WoundEffectData(false, -0.2f,   30, true) }, // Shorter cooldowns
+            { "implant_cooldown",             new WoundEffectData(false, -8f,     20, true) }, // Implant Cooldown, major reduction 
 
             // -----------------------------------------------------------------------------
             // CHANCE-BASED EFFECTS (Wounds, Crits, Addiction)
             // -----------------------------------------------------------------------------
-            { "wound_chance",                 new WoundEffectData(false, -0.1f,   40) }, // Reduce self-wounding
-            { "wound_heal_chance",            new WoundEffectData(true,  0.1f,    45) }, // Wound healing chance
-            { "wound_chance_mult",            new WoundEffectData(false, -0.2f,   35) }, // Getting Wound Chance
-            { "added_wound_chance_mult",      new WoundEffectData(true,  0.15f,   30) }, // Inflict Wound Chance
-            { "addiction_chance",             new WoundEffectData(false, -0.15f,  45) }, // Addiction Chance, avoid addiction
-            { "qmorph_summon",                new WoundEffectData(false, -0.01f,  25) }, // Chance to break through quasimorphs
-            { "qmorph",                       new WoundEffectData(false, -1f,     20) }, // Quasimorphosis gain
+            { "wound_chance",                 new WoundEffectData(false, -0.1f,   40, true) }, // Reduce self-wounding
+            { "wound_heal_chance",            new WoundEffectData(true,  0.1f,    45, true) }, // Wound healing chance
+            { "wound_chance_mult",            new WoundEffectData(false, -0.2f,   35, true) }, // Getting Wound Chance
+            { "added_wound_chance_mult",      new WoundEffectData(true,  0.15f,   30, true) }, // Inflict Wound Chance
+            { "addiction_chance",             new WoundEffectData(false, -0.15f,  45, true) }, // Addiction Chance, avoid addiction
+            { "qmorph_summon",                new WoundEffectData(false, -0.01f,  25, true) }, // Chance to break through quasimorphs
+            { "qmorph",                       new WoundEffectData(false, -1f,     20, true) }, // Quasimorphosis gain
 
             // -----------------------------------------------------------------------------
             // PROGRESSION & REWARD SYSTEMS
             // -----------------------------------------------------------------------------
-            { "mission_points",                 new WoundEffectData(true,  0.1f,  40) }, // Mission Points
+            { "mission_points",                 new WoundEffectData(true,  0.1f,  40, false) }, // Mission Points
 
             // -----------------------------------------------------------------------------
             // SPECIAL / TOGGLE EFFECTS (bool? = null > flags)
@@ -160,45 +162,45 @@ namespace QM_PathOfQuasimorph.Processors
             
             // { "arm_slot_unavailable",       new WoundEffectData(null,  1f,   5) },  // Weapon slot blocked
             // { "food_unavailable",           new WoundEffectData(null,  1f,   10) }, // Food unavailable
-            { "throwback_immune",           new WoundEffectData(null,  1f,   15) }, // Knockback immunity
-            { "no_stealth",                 new WoundEffectData(null,  0f,   10) }, // Stealth is unavailable
+            { "throwback_immune",           new WoundEffectData(null,  1f,   15, true) }, // Knockback immunity
+            { "no_stealth",                 new WoundEffectData(null,  0f,   10, true) }, // Stealth is unavailable
             // { "frozen_stun",                new WoundEffectData(null,  0f,   5)  }, // Freeze
             // { "shock_stun",                 new WoundEffectData(null,  0f,   5)  }, // Shock
-            { "self_heal",                  new WoundEffectData(null,  1f,   10) }, // Self-healing regen toggle — strong
+            { "self_heal",                  new WoundEffectData(null,  1f,   10, false) }, // Self-healing regen toggle — strong
             // { "death",                      new WoundEffectData(null,  0f,   1)  }, // Instant death — extremely rare
-            { "run_unavailable",            new WoundEffectData(null,  0f,   10) }, // Running is unavailable          >1 = Enabled
-            { "consume_regen",              new WoundEffectData(null,  0f,   15) }, // Regeneration is unavailable     0 = Unavail
+            { "run_unavailable",            new WoundEffectData(null,  0f,   10, true) }, // Running is unavailable          >1 = Enabled
+            { "consume_regen",              new WoundEffectData(null,  0f,   15, true) }, // Regeneration is unavailable     0 = Unavail
             
             // Immunities (very rare / powerful)
-            { "wound_immune_blunt",         new WoundEffectData(null,  1f,  8)  },  // Immune to Blunt Wounds
-            { "wound_immune_pierce",        new WoundEffectData(null,  1f,  8)  },  // Immune to Pierce Wounds
-            { "wound_immune_lacer",         new WoundEffectData(null,  1f,  8)  },  // Immune to Lacer Wounds
-            { "wound_immune_fire",          new WoundEffectData(null,  1f,  8)  },  // Immune to Fire Wounds
-            { "wound_immune_beam",          new WoundEffectData(null,  1f,  8)  },  // Immune to Beam Wounds
-            { "wound_immune_shock",         new WoundEffectData(null,  1f,  8)  },  // Immune to Shock Wounds
-            { "wound_immune_poison",        new WoundEffectData(null,  1f,  8)  },  // Immune to Poison Wounds
-            { "wound_immune_cold",          new WoundEffectData(null,  1f,  8)  },  // Immune to Cold Wounds
+            { "wound_immune_blunt",         new WoundEffectData(null,  1f,  8, true)  },  // Immune to Blunt Wounds
+            { "wound_immune_pierce",        new WoundEffectData(null,  1f,  8, true)  },  // Immune to Pierce Wounds
+            { "wound_immune_lacer",         new WoundEffectData(null,  1f,  8, true)  },  // Immune to Lacer Wounds
+            { "wound_immune_fire",          new WoundEffectData(null,  1f,  8, true)  },  // Immune to Fire Wounds
+            { "wound_immune_beam",          new WoundEffectData(null,  1f,  8, true)  },  // Immune to Beam Wounds
+            { "wound_immune_shock",         new WoundEffectData(null,  1f,  8, true)  },  // Immune to Shock Wounds
+            { "wound_immune_poison",        new WoundEffectData(null,  1f,  8, true)  },  // Immune to Poison Wounds
+            { "wound_immune_cold",          new WoundEffectData(null,  1f,  8, true)  },  // Immune to Cold Wounds
             
             // Full damage immunities
-            { "immune_blunt",               new WoundEffectData(null,  1f,  5)  }, // blunt immunity
-            { "immune_pierce",              new WoundEffectData(null,  1f,  5)  }, // pierce immunity
-            { "immune_lacer",               new WoundEffectData(null,  1f,  5)  }, // cut immunity
-            { "immune_fire",                new WoundEffectData(null,  1f,  5)  }, // fire immunity
-            { "immune_beam",                new WoundEffectData(null,  1f,  5)  }, // beam immunity
-            { "immune_shock",               new WoundEffectData(null,  1f,  5)  }, // shock immunity
-            { "immune_poison",              new WoundEffectData(null,  1f,  5)  }, // poison immunity
-            { "immune_cold",                new WoundEffectData(null,  1f,  5)  }, // cold immunity
+            { "immune_blunt",               new WoundEffectData(null,  1f,  5, true)  }, // blunt immunity
+            { "immune_pierce",              new WoundEffectData(null,  1f,  5, true)  }, // pierce immunity
+            { "immune_lacer",               new WoundEffectData(null,  1f,  5, true)  }, // cut immunity
+            { "immune_fire",                new WoundEffectData(null,  1f,  5, true)  }, // fire immunity
+            { "immune_beam",                new WoundEffectData(null,  1f,  5, true)  }, // beam immunity
+            { "immune_shock",               new WoundEffectData(null,  1f,  5, true)  }, // shock immunity
+            { "immune_poison",              new WoundEffectData(null,  1f,  5, true)  }, // poison immunity
+            { "immune_cold",                new WoundEffectData(null,  1f,  5, true)  }, // cold immunity
             
             // Status immunities
-            { "status_immune_infectionEffect",    new WoundEffectData(null,  1f,  10) }, // Immune to Infection
-            { "status_immune_poisonEffect",       new WoundEffectData(null,  1f,  10) }, // Immune to Poisoning
-            { "status_immune_morphineAddiction",  new WoundEffectData(null,  1f,  15) }, // Immune to Drug Addiction
-            { "status_immune_alcoholAddiction",   new WoundEffectData(null,  1f,  15) }, // Immune to Alcohol Addiction
-            { "status_immune_nicotineAddiction",  new WoundEffectData(null,  1f,  15) }, // Immune to Nicotine Addiction
-            { "status_immune_gavaahAddiction",    new WoundEffectData(null,  1f,  15) }, // Immune to Gavaakh Addiction
-            { "status_immune_coldEffect",         new WoundEffectData(null,  1f,  12) }, // Immune to Hypothermia
-            { "status_immune_beamEffect",         new WoundEffectData(null,  1f,  12) }, // Immune to ARS
-            { "status_immune_shockEffect",        new WoundEffectData(null,  1f,  12) }, // Immune to Shock Status
+            { "status_immune_infectionEffect",    new WoundEffectData(null,  1f,  10, true) }, // Immune to Infection
+            { "status_immune_poisonEffect",       new WoundEffectData(null,  1f,  10, true) }, // Immune to Poisoning
+            { "status_immune_morphineAddiction",  new WoundEffectData(null,  1f,  15, true) }, // Immune to Drug Addiction
+            { "status_immune_alcoholAddiction",   new WoundEffectData(null,  1f,  15, true) }, // Immune to Alcohol Addiction
+            { "status_immune_nicotineAddiction",  new WoundEffectData(null,  1f,  15, true) }, // Immune to Nicotine Addiction
+            { "status_immune_gavaahAddiction",    new WoundEffectData(null,  1f,  15, true) }, // Immune to Gavaakh Addiction
+            { "status_immune_coldEffect",         new WoundEffectData(null,  1f,  12, true) }, // Immune to Hypothermia
+            { "status_immune_beamEffect",         new WoundEffectData(null,  1f,  12, true) }, // Immune to ARS
+            { "status_immune_shockEffect",        new WoundEffectData(null,  1f,  12, true) }, // Immune to Shock Status
         };
 
 
@@ -382,12 +384,12 @@ namespace QM_PathOfQuasimorph.Processors
             increase = true;
         }
 
-        internal List<string> SelectWeightedWoundEffects(int count, List<string> existingEffects, List<HashSet<string>> exclusiveGroups = null)
+        internal List<string> SelectWeightedWoundEffects(int count, Dictionary<string, WoundEffectData> eligibleEffects, List<string> existingEffects, List<HashSet<string>> exclusiveGroups = null)
         {
-            Helpers.ShuffleDictionary(woundEffects);
+            Helpers.ShuffleDictionary(eligibleEffects);
 
             var available = new Dictionary<string, int>();
-            foreach (var kvp in woundEffects)
+            foreach (var kvp in eligibleEffects)
             {
                 if (existingEffects.Contains(kvp.Key))
                 {
@@ -528,7 +530,7 @@ namespace QM_PathOfQuasimorph.Processors
             ItemRarity rarity,
             IDictionary<string, float> bonusEffects,
             IDictionary<string, float> penaltyEffects,
-            bool canRemoveRandom = true)
+            bool canRemoveRandom, bool isForMobs)
         {
             _logger.Log($"AddRandomImplicitEffect");
 
@@ -604,7 +606,10 @@ namespace QM_PathOfQuasimorph.Processors
             combinedList.AddRange(bonusEffects.Keys);
             combinedList.AddRange(penaltyEffects.Keys);
 
-            var selectedEffectName = SelectWeightedWoundEffects(1, combinedList, woundEffectsExclusiveGroups).First();
+            Helpers.ShuffleDictionary(woundEffects);
+            var eligibleEffects = woundEffects.Where(x => x.Value.AllowMobs == isForMobs).ToDictionary(x => x.Key, x => x.Value);
+
+            var selectedEffectName = SelectWeightedWoundEffects(1, eligibleEffects, combinedList, woundEffectsExclusiveGroups).First();
             var selectedEffect = woundEffects[selectedEffectName];
 
             _logger.Log($"\t selectedEffect: {selectedEffectName}");
