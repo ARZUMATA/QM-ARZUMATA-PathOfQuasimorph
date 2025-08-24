@@ -498,6 +498,7 @@ namespace QM_PathOfQuasimorph.Controllers
                         _logger.Log($"weaponRecord processing");
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RerollRandomStat(record, metadata);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RemoveImplicit(record, metadata);
                         goto ExitLoop;
 
                     case HelmetRecord helmetRecord when !isStandard:
@@ -563,6 +564,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     case WeaponRecord weaponRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.ReplaceWeaponTraits(record, metadata, 0.5f, true);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RemoveImplicit(record, metadata);
                         goto ExitLoop;
 
                     case AmmoRecord ammoRecord:
@@ -628,6 +630,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     case BreakableItemRecord breakableItemRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.Init(breakableItemRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.breakableItemProcessorPoq.AddUnbreakableTrait(record, metadata, UNBREAKABLE_CHANCE);
+                        success = true;
                         goto ExitLoop;
 
                     default:
@@ -677,6 +680,7 @@ namespace QM_PathOfQuasimorph.Controllers
                     case WeaponRecord weaponRecord when !hasAugmentationRecord:
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.Init(weaponRecord, metadata.RarityClass, false, false, metadata.ReturnItemUid(), metadata.Id);
                         PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.CreateAugmentation(record, metadata, obj);
+                        PathOfQuasimorph.itemRecordsControllerPoq.weaponRecordProcessorPoq.RemoveImplicit(record, metadata);
                         success = true;
                         goto ExitLoop;
 
