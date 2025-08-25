@@ -387,7 +387,8 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             // Determine total number of traits to add based on rarity
-            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            //var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            var totalTraitCount = (int)itemRarity + extraTraitCount; // Avoid percentages
 
             // Select traits based on weights
             var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
