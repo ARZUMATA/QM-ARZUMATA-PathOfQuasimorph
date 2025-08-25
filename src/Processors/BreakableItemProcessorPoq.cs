@@ -75,13 +75,13 @@ namespace QM_PathOfQuasimorph.Processors
             if (canAddUnbreakableTrait)
             {
                 itemRecord.Unbreakable = true;
+                return true;
             }
             else
             {
                 itemRecord.Unbreakable = false;
+                return false;
             }
-
-            return true;
         }
 
         internal bool AddUnbreakableTrait(SynthraformerRecord record, MetadataWrapper metadata, float chance)
