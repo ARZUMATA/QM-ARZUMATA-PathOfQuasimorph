@@ -86,7 +86,6 @@ namespace QM_PathOfQuasimorph.Processors
             { "overheat", 350 },
         };
 
-
         // bool = should we increase the stat or decrease for benefits
         internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
         {
@@ -108,6 +107,50 @@ namespace QM_PathOfQuasimorph.Processors
             //"MagazineCapacity",
             //"BonusAccuracy",
             //"BonusScatterAngle",
+        };
+
+        internal Dictionary<string, int> rangedNatures = new Dictionary<string, int>()
+        {
+            { "moon_fist_1",                          100 },
+            { "nature_human_fist",                    100 },
+            { "nature_centaur_fist",                  100 },
+            { "nature_bigpos_fist",                   100 },
+            { "nature_possesed_fist",                 100 },
+            { "nature_venusdemoncat_fist",            100 },
+            { "nature_skinless_fist",                 100 },
+            { "nature_aztknight_fist",                100 },
+            { "nature_venusdemonwarrior_fist",        100 },
+            { "nature_marsbaron_fist",                100 },
+            { "nature_marscrab_fist",                 100 },
+            { "nature_spider_fist",                   125 },
+            { "nature_cyborg_fist",                   100 },
+            { "nature_cyborg_drill",                  100 },
+            { "nature_cyborgbattle_fist",             100 },
+            { "nature_cyborgrecreation_fist",         100 },
+            { "nature_cyborgrecreation_blade",        100 },
+            { "nature_human_armstump",                100 },
+            { "nature_moonknight_thorn",              100 },
+            { "nature_moonservitor_fist",             100 },
+            { "nature_moonslave_thorn",               100 },
+            { "nature_scrivnus_fist",                 100 },
+            { "nature_scrivnus_blade",                100 },
+            { "nature_dog_bite",                      125 },
+            { "nature_cargodrone_pitchfork",          100 },
+        };
+
+        internal Dictionary<string, int> meleeNatures = new Dictionary<string, int>()
+        {
+            { "mercury_arm",                          100 },
+            { "nature_mars_headgun",                  100 },
+            { "nature_cyborgbattle_machinegun",       35 },
+            { "nature_mars_flamehead",                35 },
+            { "venus_hand",                           100 },
+            { "nature_venusrange_fist",               100 },
+            { "mars_grenade_launcher",                35 },
+            { "minigun_turret",                       25 },
+            { "firethrower_turret",                   25 },
+            { "laser_turret",                         25 },
+            { "mars_urparp_headgun",                  35 },
         };
 
         List<HashSet<string>> traitsMutuallyExclusiveGroups = new List<HashSet<string>>
@@ -179,7 +222,7 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
 
                 case "crit_damage":
-                    dmgInfo = itemRecord.Damage;
+                    dmgInfo = genericRecord.Damage;
                     PathOfQuasimorph.raritySystem.Apply<float>(v => dmgInfo.critDmg = v, () => dmgInfo.critDmg, finalModifier, increase, out outOldValue, out outNewValue);
                     itemRecord.Damage = dmgInfo;
                     break;
@@ -344,7 +387,8 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             // Determine total number of traits to add based on rarity
-            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            //var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            var totalTraitCount = (int)itemRarity + extraTraitCount; // Avoid percentages
 
             // Select traits based on weights
             var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
@@ -362,7 +406,7 @@ namespace QM_PathOfQuasimorph.Processors
             return selectedTraits;
         }
 
-        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
         {
             var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
 
@@ -371,6 +415,19 @@ namespace QM_PathOfQuasimorph.Processors
             string boostedParamString;
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            Plugin.Logger.Log($"RerollRandomStat");
+            Plugin.Logger.Log($"metadata: {metadata.BoostedString}");
+
+            if (metadata.BoostedString.Length > 1)
+            {
+                boostedParamString = metadata.BoostedString;
+            }
+
+            if (blockHinder)
+            {
+                hinderedCount = 999; // Test
+            }
 
             var statIdx = Helpers._random.Next(0, parameters.Count);
             var stat = parameters.ElementAt(statIdx);
@@ -500,6 +557,44 @@ namespace QM_PathOfQuasimorph.Processors
 
             RecordCollection.ItemRecords[itemId] = obj;
             //RecordCollection.MetadataWrapperRecords.Add(itemId, wrapper);
+        }
+
+        internal void RemoveImplicit(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            itemRecord.IsImplicit = false;
+        }
+
+        internal BasePickupItem TransmuteWeapon(SynthraformerRecord record, MetadataWrapper metadata)
+        {
+            if (new[] { "human_hand", "human_leg", } // "human_wrist", "human_feet",
+                         .Any(oldId.Equals))
+            {
+                // First, determine if the item breaks
+                var breakItem = Helpers._random.NextDouble() < 0.3f;
+
+                if (breakItem)
+                {
+                    return null; // Item breaks, return nothing
+                }
+
+                // Only proceed to weapon type selection if item didn't break
+                var melee = Helpers._random.NextDouble() < 0.5f;
+                itemRecord.IsImplicit = false;
+                string selectedNature = string.Empty;
+
+                if (melee)
+                {
+                    selectedNature = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(meleeNatures);
+                }
+                else
+                {
+                    selectedNature = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(rangedNatures);
+                }
+
+                return ItemFactoryPoq.CreateNewItem(selectedNature);
+            }
+
+            return null;
         }
     }
 }

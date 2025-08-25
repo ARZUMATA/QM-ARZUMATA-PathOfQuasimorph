@@ -54,12 +54,13 @@ Well this is the mod for you!
 
 * **Synthraformer System — Item Alchemy & Crafting Evolution**  
   Transform your gear through powerful Synthraformer catalysts, each enabling unique modifications:
+  - **Primal Core**: The base material, dropped when disassembling items (% chance).
   - **Rarity**: Roll a new random rarity using a blackjack-style risk system.
   - **Traits Recombinator**: Strip and replace all traits on weapons and ammo.
   - **Indestructible Activator**: Attempt to make an item unbreakable (% chance).
   - **Amplifier**: Reroll a random stat on non-Standard items for optimization.
+  - **Transmuter**: Converts some items into another item type.
   - **Augmentation Catalyst**: Turn weapons into integrated augments or enhance existing ones.
-  - **Primal Core**: The base material, dropped when disassembling items (% chance).
 
   Higher-tier Synthraformers are crafted from lower-tier ones, forming a progression tree rooted in Primal Cores. Unused types (`Infuser`, `Transmuter`, `Azure`) are reserved for future updates.
   

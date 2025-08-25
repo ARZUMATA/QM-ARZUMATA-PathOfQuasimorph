@@ -15,9 +15,9 @@ public class BlackJackRollerSimulator
         public double AverageLevelJump => TotalRolls > 0 ? TotalLevelJump / (double)TotalRolls : 0;
     }
 
-    public static RollStats RunSimulation(int maxLevel = 5, int rollCount = 100000)
+    public static RollStats RunSimulation(int maxLevel = 5, int rollCount = 100000, bool cheat = false)
     {
-        var roller = new BlackJackRoller(maxLevel: maxLevel);
+        var roller = new BlackJackRoller(maxLevel: maxLevel, cheat);
         var stats = new RollStats
         {
             TotalRolls = rollCount,

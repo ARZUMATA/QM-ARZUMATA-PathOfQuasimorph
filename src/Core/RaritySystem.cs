@@ -66,7 +66,7 @@ namespace QM_PathOfQuasimorph.Core
         public const int AMOUNT_PREFIXES = 10; // csv has 10 prefixes per rarity
         public const int AMOUNT_SUFFIXES = 5; // CSV has 5 suffies per rarity param
         private static Logger _logger = new Logger(null, typeof(RaritySystem));
-        public BlackJackRoller blackJackRoller = new BlackJackRoller(5);
+        public BlackJackRoller blackJackRoller = new BlackJackRoller(5, Plugin.Config.AllowBlackjackDealerToCheat);
 
         // D20 approach
         private const int NUM_ROLLS = 3; // Number of dice rolls
@@ -1003,6 +1003,10 @@ namespace QM_PathOfQuasimorph.Core
 
         public bool ShouldHinderParameter(ref int hinderedCount, ref int improvedCount, int numParamsToHinder, int numParamsToImprove)
         {
+            _logger.Log($"ShouldHinderParameter");
+
+            _logger.Log($"\t hinderedCount: {hinderedCount}, improvedCount: {improvedCount}, numParamsToHinder: {numParamsToHinder}, numParamsToImprove: {numParamsToImprove}, ");
+
             // 20% chance to hinder first, regardless of improvement status
             if (Helpers._random.Next(0, 100 + 1) < 20)
             {

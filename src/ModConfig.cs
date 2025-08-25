@@ -68,12 +68,18 @@ namespace QM_PathOfQuasimorph
         public Color MonsterMasteryColors_Grandmaster { get; set; } = Helpers.HexStringToUnityColor("#FF0000");
 
 
-
-
-
         [JsonIgnore]
         public bool CleanupMode { get; set; } = true;
 
+        [JsonIgnore]
+        public bool AllowSynthraformers { get; set; } = true;
+
+        [JsonIgnore]
+        public bool AllowBlackjackDealerToCheat { get; set; } = true;
+
+        [JsonIgnore]
+        public bool MonsterTierWoundSlotEffectsAdd { get; set; } = false;
+        
         [JsonIgnore]
         public bool CustomWeights { get; set; } = true;
 
@@ -100,7 +106,7 @@ namespace QM_PathOfQuasimorph
 
         [JsonIgnore]
         //[JsonProperty("version")]
-        public string Version { get; set; } = "1.9.4";
+        public string Version { get; set; } = "1.9.9";
 
         // MCM Related Start
 

@@ -108,7 +108,7 @@ namespace QM_PathOfQuasimorph.Core
                         Plugin.Logger.Log($"metadata ok");
 
                         // We can use transformation record but i want it random, so.
-                        if (metadata.RarityClass != ItemRarity.Standard)
+                        if (metadata.RarityClass != ItemRarity.Standard && Plugin.Config.AllowSynthraformers)
                         {
                             Plugin.Logger.Log($"metadata.RarityClass: {metadata.RarityClass}");
 

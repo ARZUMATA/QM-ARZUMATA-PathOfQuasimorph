@@ -134,7 +134,6 @@ namespace QM_PathOfQuasimorph.Processors
             float outOldValue = -1;
             float outNewValue = -1;
 
-
             // Even though we're updating a value (not adding a new key), in some contexts this can still be considered a modification that invalidates the enumerator.//
             // More importantly, any write operation to the dictionary during foreach enumeration is unsafe and can throw this exception.
             // Capture all entries safely for this case
@@ -148,7 +147,9 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
+                _logger.Log($"Apply BonusEffect: {keyValuePair.Key}");
+
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, true, _logger);
 
                 float valueFinal = 0;
 
@@ -194,7 +195,9 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
+                _logger.Log($"Apply PenaltyEffect: {keyValuePair.Key}");
+
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, false, _logger);
 
                 float valueFinal = 0;
 
@@ -279,7 +282,7 @@ namespace QM_PathOfQuasimorph.Processors
         {
             if (itemRecord.BareHandWeapon == string.Empty)
             {
-                _logger.Log($"itemRecord.BareHandWeapon == str empty {itemRecord.BareHandWeapon == string.Empty}. Quitting.");
+                _logger.Log($"itemRecord.BareHandWeapon is empty.");
                 return string.Empty;
             }
 
@@ -314,82 +317,28 @@ namespace QM_PathOfQuasimorph.Processors
             return string.Empty;
         }
 
-        internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
+        internal void FillMobContextEffects(CreaturesControllerPoq.MonsterMasteryTier mastery,
+            IDictionary<string, float> bonusEffects,
+            IDictionary<string, float> penaltyEffects)
         {
-            _logger.Log($"AddRandomEffect");
+            _logger.Log($"FillMobContextEffects");
 
-            var positive = Helpers._random.NextDouble() > 0.5f;
-            var removeRandom = Helpers._random.NextDouble() > 0.8f;
+            var totalEffectsPerSlot = (int)mastery * 2;
+            _logger.Log($"totalEffectsPerSlot: {totalEffectsPerSlot} for mastery: {mastery}");
 
-            _logger.Log($"positive: {positive}");
-            _logger.Log($"posremoveRandomitive: {removeRandom}");
+            var addedEffectsPerSlot = 0;
 
-            var effect = woundEffects.Keys.ToArray()[Helpers._random.Next(0, woundEffects.Count - 1)];
-            _logger.Log($"effect: {effect}");
-
-            var (sign, value) = woundEffects[effect];
-
-            float finalValue = value;
-
-            // Now pick random value in [finalValue * 0.5, finalValue * 1.5]
-            float minValue = finalValue * 0.5f;
-            float maxValue = finalValue * 1.5f;
-            _logger.Log($"minValue: {minValue}");
-            _logger.Log($"maxValue: {maxValue}");
-
-            // Handle negative values: ensure min/max are correctly ordered
-            float lowerBound = Math.Min(minValue, maxValue);
-            float upperBound = Math.Max(minValue, maxValue);
-
-            float randomizedValue = (float)(Helpers._random.NextDouble() * (upperBound - lowerBound) + lowerBound);
-
-            if (removeRandom)
+            //while (int i = 0; i < totalEffectsPerSlot; i++)
+            while (addedEffectsPerSlot <= totalEffectsPerSlot)
             {
-                var effects = positive ? itemRecord.ImplicitBonusEffects : itemRecord.ImplicitPenaltyEffects;
-                if (effects != null && effects.Count > 0)
+                var success = AddRandomImplicitEffect((ItemRarity)(mastery + 1), bonusEffects, penaltyEffects,false, true);
+
+                if (success)
                 {
-                    var keys = effects.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    effects.Remove(randomKey);
+                    addedEffectsPerSlot++;
+                    _logger.Log($"SUCCESS");
                 }
-            }
-
-            if (positive)
-            {
-                var bonuses = itemRecord.ImplicitBonusEffects;
-                _logger.Log($"randomizedValue: {randomizedValue}");
-
-                if (bonuses.ContainsKey(effect))
-                {
-                    return;
-                }
-
-                if (bonuses.Count >= 5) // If already 5 or more, replace random
-                {
-                    var keys = bonuses.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    bonuses.Remove(randomKey);
-                }
-
-                bonuses.Add(effect, finalValue);
-
-            }
-            else
-            {
-                var penalties = itemRecord.ImplicitPenaltyEffects;
-                randomizedValue = -randomizedValue;
-                _logger.Log($"randomizedValue: {randomizedValue}");
-
-                if (penalties.Count >= 5)
-                {
-                    var keys = penalties.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    penalties.Remove(randomKey);
-                }
-
-                penalties.Add(effect, finalValue);
             }
         }
-
     }
 }

@@ -64,18 +64,30 @@ namespace QM_PathOfQuasimorph.Processors
             // Apply modifiers
             foreach (var stat in parameters)
             {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
                 ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
             }
         }
 
-        private void GetAverageResists(out float averageResist, out bool averageResistApplied)
+        private void GetAverageResists(out float averageResist, out bool averageResistApplied, T genericRecord = null)
         {
+            Plugin.Logger.Log($"GetAverageResists");
+            Plugin.Logger.Log($"\t itemRecord Id: {itemRecord.Id}");
+
             // Get average resist for armor
             averageResist = 0;
             int resistCount = 0;
             var resistSheet = itemRecord.ResistSheet;
             averageResistApplied = false;
+
+            // When we calculate average resists for an armor, we always need to check generic record.
+            // Fallback to existing item record remains.
+            if (genericRecord != null)
+            {
+                resistSheet = genericRecord.ResistSheet;
+
+                Plugin.Logger.Log($"\t genericRecord resistSheet for oldId: {genericRecord.Id}");
+            }
 
             _logger.Log($"\t\t\t\t itemRecord null {itemRecord == null}");
             _logger.Log($"\t\t\t\t resistSheet null {resistSheet == null}");
@@ -92,16 +104,21 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
         }
 
-        private void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat)
+        private void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;
             float outNewValue = -1;
 
+            if (genericRecord == null)
+            {
+                genericRecord = itemRecord;
+            }
+
             if (stat.Key.Contains("resist"))
             {
                 var resistName = stat.Key.Split('_')[1];
-                var resistValue = itemRecord.GetResist(resistName);
+                var resistValue = genericRecord.GetResist(resistName);
                 _logger.Log($"\t\t\t resist {resistName} with original value: {resistValue}");
 
                 if (resistValue == 0)
@@ -133,7 +150,7 @@ namespace QM_PathOfQuasimorph.Processors
                     case "weight":
                         PathOfQuasimorph.raritySystem.Apply<float>(
                             v => itemRecord.Weight = v,
-                            () => itemRecord.Weight,
+                            () => genericRecord.Weight,
                             finalModifier,
                             increase,
                             out outOldValue,
@@ -143,7 +160,7 @@ namespace QM_PathOfQuasimorph.Processors
                     case "max_durability":
                         PathOfQuasimorph.raritySystem.Apply<int>(
                             v => itemRecord.MaxDurability = v,
-                            () => itemRecord.MaxDurability,
+                            () => genericRecord.MaxDurability,
                             finalModifier,
                             increase,
                             out outOldValue,
@@ -156,9 +173,13 @@ namespace QM_PathOfQuasimorph.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+            Plugin.Logger.Log($"RerollRandomStat");
+
+            var genericRecord = Data.Items.GetSimpleRecord<T>(metadata.Id, true);
+            Plugin.Logger.Log($"\t genericRecord null: {genericRecord == null}");
+            Plugin.Logger.Log($"\t genericRecord null for oldId: {genericRecord.Id}");
 
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
@@ -166,16 +187,34 @@ namespace QM_PathOfQuasimorph.Processors
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
+            Plugin.Logger.Log($"RerollRandomStat");
+            Plugin.Logger.Log($"metadata: {metadata.BoostedString}");
+
+            // During rarity generation, PrepGenericData may have set a boosted string. However, since this method is reused later,
+            // we must preserve the original boosted string from metadata to prevent unintended boosting of all resist stats.
+            // This ensures only the stat originally chosen during initial rarity roll (or reroll) remains boosted.
+            if (metadata.BoostedString.Length > 1)
+            {
+                boostedParamString = metadata.BoostedString;
+            }
+
+            if (blockHinder)
+            {
+                hinderedCount = 999; // Test
+            }
+
             float averageResist;
             bool averageResistApplied;
-            GetAverageResists(out averageResist, out averageResistApplied);
+            GetAverageResists(out averageResist, out averageResistApplied, genericRecord);
+
+            averageResistApplied = true; // We do reroll, so if average res been applied then it's been applied.
 
             var statIdx = Helpers._random.Next(0, parameters.Count);
             var stat = parameters.ElementAt(statIdx);
 
             finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
 
-            ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
+            ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat, genericRecord);
         }
     }
 }

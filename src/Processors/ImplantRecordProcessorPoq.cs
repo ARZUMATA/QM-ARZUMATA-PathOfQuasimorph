@@ -118,6 +118,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
             {
+                _logger.Log($"Apply BonusEffect: {keyValuePair.Key}");
+
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
 
                 float valueFinal = 0;
@@ -155,6 +157,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
+                _logger.Log($"Apply PenaltyEffect: {keyValuePair.Key}");
+
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
 
                 float valueFinal = 0;
@@ -193,17 +197,19 @@ namespace QM_PathOfQuasimorph.Processors
             if (itemRecord.IsActive == true)
             {
                 // Add new perk copying same perk under new id (yeah that's how game works)
-                Plugin.Logger.Log($"\t\t perkRecord oldId {oldId}");
-                Plugin.Logger.Log($"\t\t perkRecord itemId {itemId}");
+                Plugin.Logger.Log($"\t perkRecord oldId {oldId}");
+                Plugin.Logger.Log($"\t perkRecord itemId {itemId}");
 
                 PerkRecord perkRecord = Data.Perks.GetRecord(oldId, true);
 
-                Plugin.Logger.Log($"\t\t perkRecord null {perkRecord == null}");
+                Plugin.Logger.Log($"\t perkRecord null {perkRecord == null}");
 
                 PerkRecord newPerkRecord = ItemRecordHelpers.ClonePerkRecord(perkRecord, itemId);
 
-                foreach (var perkParameter in perkRecord.Parameters)
+                foreach (var perkParameter in newPerkRecord.Parameters)
                 {
+                    Plugin.Logger.Log($"\t\t perkParameter {perkParameter.Name}");
+
                     switch (perkParameter.ValType)
                     {
                         case PerkParameter.ValueType.Int:
@@ -213,6 +219,9 @@ namespace QM_PathOfQuasimorph.Processors
                             PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref perkParameter.FloatVal, finalModifier, increase, out outOldValue, out outNewValue);
                             break;
                     }
+                    Plugin.Logger.Log($"\t\t old value {outOldValue}");
+                    Plugin.Logger.Log($"\t\t new value {outNewValue}");
+
                 }
 
                 Data.Perks.AddRecord(itemId, newPerkRecord);
@@ -223,83 +232,6 @@ namespace QM_PathOfQuasimorph.Processors
 
                 Localization.DuplicateKey("perk." + baseId + ".desc", "perk." + itemId + ".desc");
                 RaritySystem.AddAffixes(itemId);
-            }
-        }
-
-        internal void AddRandomEffect(SynthraformerRecord record, MetadataWrapper metadata)
-        {
-            _logger.Log($"AddRandomEffect");
-
-            var positive = Helpers._random.NextDouble() > 0.5f;
-            var removeRandom = Helpers._random.NextDouble() > 0.8f;
-
-            _logger.Log($"positive: {positive}");
-            _logger.Log($"posremoveRandomitive: {removeRandom}");
-
-            var effect = woundEffects.Keys.ToArray()[Helpers._random.Next(0, woundEffects.Count - 1)];
-            _logger.Log($"effect: {effect}");
-
-            var (sign, value) = woundEffects[effect];
-
-            float finalValue = value;
-
-            // Now pick random value in [finalValue * 0.5, finalValue * 1.5]
-            float minValue = finalValue * 0.5f;
-            float maxValue = finalValue * 1.5f;
-            _logger.Log($"minValue: {minValue}");
-            _logger.Log($"maxValue: {maxValue}");
-
-            // Handle negative values: ensure min/max are correctly ordered
-            float lowerBound = Math.Min(minValue, maxValue);
-            float upperBound = Math.Max(minValue, maxValue);
-
-            float randomizedValue = (float)(Helpers._random.NextDouble() * (upperBound - lowerBound) + lowerBound);
-
-            if (removeRandom)
-            {
-                var effects = positive ? itemRecord.ImplicitBonusEffects : itemRecord.ImplicitPenaltyEffects;
-                if (effects != null && effects.Count > 0)
-                {
-                    var keys = effects.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    effects.Remove(randomKey);
-                }
-            }
-
-            if (positive)
-            {
-                var bonuses = itemRecord.ImplicitBonusEffects;
-                _logger.Log($"randomizedValue: {randomizedValue}");
-
-                if (bonuses.ContainsKey(effect))
-                {
-                    return;
-                }
-
-                if (bonuses.Count >= 5) // If already 5 or more, replace random
-                {
-                    var keys = bonuses.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    bonuses.Remove(randomKey);
-                }
-
-                bonuses.Add(effect, finalValue);
-
-            }
-            else
-            {
-                var penalties = itemRecord.ImplicitPenaltyEffects;
-                randomizedValue = -randomizedValue;
-                _logger.Log($"randomizedValue: {randomizedValue}");
-
-                if (penalties.Count >= 5)
-                {
-                    var keys = penalties.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    penalties.Remove(randomKey);
-                }
-
-                penalties.Add(effect, finalValue);
             }
         }
     }

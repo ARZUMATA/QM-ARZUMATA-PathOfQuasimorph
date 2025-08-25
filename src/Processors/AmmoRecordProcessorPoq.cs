@@ -73,7 +73,8 @@ namespace QM_PathOfQuasimorph.Processors
             new HashSet<string> { "toxic", "heavy_toxic" },
             new HashSet<string> { "knockback", "heavy_knockback" },
             new HashSet<string> { "knockdown", "heavy_knockdown" },
-            new HashSet<string> { "explosive_light_flak", "explosive_flak" },
+            new HashSet<string> { "incendiary", "heavy_incendiary" },
+            new HashSet<string> { "explosive", "explosive_fire", "explosive_flak", "explosive_hfg", "explosive_light_flak", "explosive_poison", "explosive_quasi", "explosive_shotgun" },
         };
 
         internal override void ProcessRecord(ref string boostedParamString)
@@ -188,15 +189,15 @@ namespace QM_PathOfQuasimorph.Processors
         {
             Plugin.Logger.Log($"ApplyTraits: clearTraits args: {clearTraits}, removeChance: {removeChance}, keepGeneric: {keepGeneric}");
 
-            var ammoRecord = Data.Items.GetSimpleRecord<AmmoRecord>(oldId, true);
+            var ammoRecordGeneric = Data.Items.GetSimpleRecord<AmmoRecord>(oldId, true);
 
-            Plugin.Logger.Log($"ammoRecord null: {ammoRecord == null}");
+            Plugin.Logger.Log($"ammoRecordGeneric null: {ammoRecordGeneric == null}");
             Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
 
             var extraTraitCount = 0;
 
             // If we keep generic, recheck chance.
-            if (keepGeneric && ammoRecord != null)
+            if (keepGeneric && ammoRecordGeneric != null)
             {
                 keepGeneric = Helpers._random.NextDouble() < removeChance;
             }
@@ -216,16 +217,16 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             // Generic traits
-            if (ammoRecord != null)
+            if (ammoRecordGeneric != null)
             {
-                Plugin.Logger.Log($"\tGeneric traits: {ammoRecord.Traits.Count}");
+                Plugin.Logger.Log($"\tGeneric traits: {ammoRecordGeneric.Traits.Count}");
 
-                foreach (var trait in ammoRecord.Traits)
+                foreach (var trait in ammoRecordGeneric.Traits)
                 {
                     Plugin.Logger.Log($"\t\t {trait}");
                 }
 
-                extraTraitCount = keepGeneric ? 0 : ammoRecord.Traits.Count;
+                extraTraitCount = keepGeneric ? 0 : ammoRecordGeneric.Traits.Count;
                 Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
             }
 
@@ -235,10 +236,10 @@ namespace QM_PathOfQuasimorph.Processors
             {
                 itemRecord.Traits.Clear();
 
-                if (keepGeneric && ammoRecord != null)
+                if (keepGeneric && ammoRecordGeneric != null)
                 {
                     Plugin.Logger.Log($"Keeping generic? Yes.");
-                    itemRecord.Traits.AddRange(ammoRecord.Traits);
+                    itemRecord.Traits.AddRange(ammoRecordGeneric.Traits);
                 }
                 else
                 {
@@ -270,7 +271,6 @@ namespace QM_PathOfQuasimorph.Processors
                 Plugin.Logger.Log($"\t\t {trait}");
             }
 
-
             // Add traits
             for (int i = 0; i < selectedTraits.Count; i++)
             {
@@ -297,8 +297,11 @@ namespace QM_PathOfQuasimorph.Processors
                 trait => 5             // value: constant 5 for each
             );
 
+            Helpers.ShuffleDictionary(allTraitsCombined);
+
             // Determine total number of traits to add based on rarity
-            var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            //var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            var totalTraitCount = (int)itemRarity + extraTraitCount; // Avoid percentages
 
             // Select traits based on weights
             var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
@@ -309,13 +312,12 @@ namespace QM_PathOfQuasimorph.Processors
             //    selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
             //}
 
-
             // Filter all traits if they are not in allowed list (just in case)
             selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
             return selectedTraits;
         }
 
-        internal void RerollRandomStat(SynthraformerRecord recomb, MetadataWrapper metadata)
+        internal void RerollRandomStat(SynthraformerRecord recomb, MetadataWrapper metadata, bool blockHinder)
         {
             var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
 
@@ -327,6 +329,11 @@ namespace QM_PathOfQuasimorph.Processors
 
             var statIdx = Helpers._random.Next(0, parameters.Count);
             var stat = parameters.ElementAt(statIdx);
+
+            if (blockHinder)
+            {
+                hinderedCount = 999; // Test
+            }
 
             finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
             ApplyStat(finalModifier, increase, stat, genericRecord);
