@@ -89,7 +89,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             static CreatureDataPoq creatureDataPoq;
 
-            public static bool Prefix(Difficulty difficulty, Creatures creatures, TurnController turnController, string mobClassId, CellPosition pos, int groupIndex = -1, bool spawnEquipment = true, int customActionPoints = -1, bool isLeader = false, int techLevelLimit = -1, int skinIndex = -1, string specificBodyTypeId = null, string hairType = "", string hairColor = "", string factionId = "", Creature actAfter = null)
+            public static bool Prefix(Difficulty difficulty, Creatures creatures, RaidMetadata raidMetadata, TurnController turnController, string mobClassId, CellPosition pos, int groupIndex = -1, bool spawnEquipment = true, int customActionPoints = -1, bool isLeader = false, int techLevelLimit = -1, int skinIndex = -1, string specificBodyTypeId = null, string hairType = "", string hairColor = "", string factionId = "", Creature actAfter = null)
             {
                 if (!Plugin.Config.EnableMobs)
                 {
@@ -107,7 +107,7 @@ namespace QM_PathOfQuasimorph.Core
                     MobContext.Rarity = creatureDataPoq.rarity;
 
                     // Upcoming creature Id
-                    MobContext.CurrentMobId = creatures.CreatureIdCounter + 1;
+                    MobContext.CurrentMobId = raidMetadata.CreatureIdCounter + 1;
 
                     MobContext.ProcesingMobRarity = true;
 

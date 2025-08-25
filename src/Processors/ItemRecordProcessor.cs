@@ -124,7 +124,7 @@ namespace QM_PathOfQuasimorph.Processors
             { "run_ap",                       new WoundEffectData(true,  4f,   35, true) }, // Run AP
             { "los_reduce",                   new WoundEffectData(true,  1f,   45, true) }, // Vision range — situational
             { "spotted_radius",               new WoundEffectData(false, -1f,  50, true) }, // Smaller player detection radius
-            { "no_spotted_signal",            new WoundEffectData(null,  0f,   35, true) }, // No enemy detection (>1 = Enabled - negative stat)
+            { "no_spotted_signal",            new WoundEffectData(null,  0f,   35, false) }, // No enemy detection (>1 = Enabled - negative stat)
             { "run_spotted_signal",           new WoundEffectData(null,  1f,   35, true) }, // Detect others when running (>1 = Enabled - positive stat))
             { "walk_spotted_signal",          new WoundEffectData(null,  1f,   40, true) }, // Detection while walking — (>1 = Enabled - positive stat)
 
@@ -134,9 +134,9 @@ namespace QM_PathOfQuasimorph.Processors
             { "items_weight",                 new WoundEffectData(false, -0.1f,   45, true) }, // Weight modifier, lighter items — QoL
             { "backpack_weight",              new WoundEffectData(false, -0.15f,  40, true) }, //  Load weight, carry more — useful
             { "bonus_vest_slot",              new WoundEffectData(true,  1f,      15, true) }, // Extra vest slot
-            { "perk_exp_modifier",            new WoundEffectData(true,  0.8f,    35, true) }, // Faster perk XP
-            { "perk_cooldown",                new WoundEffectData(false, -0.2f,   30, true) }, // Shorter cooldowns
-            { "implant_cooldown",             new WoundEffectData(false, -8f,     20, true) }, // Implant Cooldown, major reduction 
+            { "perk_exp_modifier",            new WoundEffectData(true,  0.8f,    35, false) }, // Faster perk XP
+            { "perk_cooldown",                new WoundEffectData(false, -0.2f,   30, false) }, // Shorter cooldowns
+            { "implant_cooldown",             new WoundEffectData(false, -8f,     20, false) }, // Implant Cooldown, major reduction 
 
             // -----------------------------------------------------------------------------
             // CHANCE-BASED EFFECTS (Wounds, Crits, Addiction)
@@ -644,8 +644,9 @@ namespace QM_PathOfQuasimorph.Processors
             else
             {
                 randomizedValue = positive ? randomizedValue : -randomizedValue;
-                _logger.Log($"\t\t randomizedValue ({(positive ? "bonus" : "penalty")}): {randomizedValue}");
             }
+
+            _logger.Log($"\t\t randomizedValue ({(positive ? "bonus" : "penalty")}): {randomizedValue}");
 
             var targetEffects = positive ? bonusEffects : penaltyEffects;
 

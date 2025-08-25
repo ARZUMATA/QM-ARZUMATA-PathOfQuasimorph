@@ -118,6 +118,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
             {
+                _logger.Log($"Apply BonusEffect: {keyValuePair.Key}");
+
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
 
                 float valueFinal = 0;
@@ -155,6 +157,8 @@ namespace QM_PathOfQuasimorph.Processors
 
             foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
             {
+                _logger.Log($"Apply PenaltyEffect: {keyValuePair.Key}");
+
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, false, _logger);
 
                 float valueFinal = 0;
@@ -193,17 +197,19 @@ namespace QM_PathOfQuasimorph.Processors
             if (itemRecord.IsActive == true)
             {
                 // Add new perk copying same perk under new id (yeah that's how game works)
-                Plugin.Logger.Log($"\t\t perkRecord oldId {oldId}");
-                Plugin.Logger.Log($"\t\t perkRecord itemId {itemId}");
+                Plugin.Logger.Log($"\t perkRecord oldId {oldId}");
+                Plugin.Logger.Log($"\t perkRecord itemId {itemId}");
 
                 PerkRecord perkRecord = Data.Perks.GetRecord(oldId, true);
 
-                Plugin.Logger.Log($"\t\t perkRecord null {perkRecord == null}");
+                Plugin.Logger.Log($"\t perkRecord null {perkRecord == null}");
 
                 PerkRecord newPerkRecord = ItemRecordHelpers.ClonePerkRecord(perkRecord, itemId);
 
-                foreach (var perkParameter in perkRecord.Parameters)
+                foreach (var perkParameter in newPerkRecord.Parameters)
                 {
+                    Plugin.Logger.Log($"\t\t perkParameter {perkParameter.Name}");
+
                     switch (perkParameter.ValType)
                     {
                         case PerkParameter.ValueType.Int:
@@ -213,6 +219,9 @@ namespace QM_PathOfQuasimorph.Processors
                             PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref perkParameter.FloatVal, finalModifier, increase, out outOldValue, out outNewValue);
                             break;
                     }
+                    Plugin.Logger.Log($"\t\t old value {outOldValue}");
+                    Plugin.Logger.Log($"\t\t new value {outNewValue}");
+
                 }
 
                 Data.Perks.AddRecord(itemId, newPerkRecord);
