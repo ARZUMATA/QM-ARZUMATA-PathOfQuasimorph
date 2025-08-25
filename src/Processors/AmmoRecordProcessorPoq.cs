@@ -185,30 +185,38 @@ namespace QM_PathOfQuasimorph.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void ApplyTraits(bool clearTraits = false, float removeChance = 0.2f, bool keepGeneric = false)
+        internal void ApplyTraits(bool clearTraits, float removeChance = 0.2f, bool tryToKeepGeneric = false)
         {
-            Plugin.Logger.Log($"ApplyTraits: clearTraits args: {clearTraits}, removeChance: {removeChance}, keepGeneric: {keepGeneric}");
+            Plugin.Logger.Log($"ApplyTraits: clearTraits={clearTraits}, removeChance={removeChance}, tryToKeepGeneric={tryToKeepGeneric}");
 
             var ammoRecordGeneric = Data.Items.GetSimpleRecord<AmmoRecord>(oldId, true);
 
             Plugin.Logger.Log($"ammoRecordGeneric null: {ammoRecordGeneric == null}");
-            Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
+            Plugin.Logger.Log($"itemRecord Id: {itemRecord.Id}");
 
             var extraTraitCount = 0;
 
-            // If we keep generic, recheck chance.
-            if (keepGeneric && ammoRecordGeneric != null)
+            bool keepGeneric = false;
+
+            // Only attempt to keep generic traits if:
+            // - Caller wants to try, AND
+            // - There are generic traits available (ammoRecordGeneric exists)
+            if (tryToKeepGeneric && ammoRecordGeneric != null)
             {
+                // Roll the dice: chance to actually keep them is based on `removeChance`
+                // Example: removeChance = 0.2 → 20% chance to keep, 80% to strip
                 keepGeneric = Helpers._random.NextDouble() < removeChance;
+                Plugin.Logger.Log($"Rolled to keep generic traits: {keepGeneric} (chance: {removeChance})");
             }
             else
             {
                 keepGeneric = false;
+                Plugin.Logger.Log("Not attempting to keep generic traits.");
             }
 
-            Plugin.Logger.Log($"Keeping generic? {keepGeneric}");
+            Plugin.Logger.Log($"Final keepGeneric: {keepGeneric}");
 
-            // Existing traits
+            // Log existing traits
             Plugin.Logger.Log($"\tExisting traits: {itemRecord.Traits.Count}");
 
             foreach (var trait in itemRecord.Traits)
@@ -216,7 +224,7 @@ namespace QM_PathOfQuasimorph.Processors
                 Plugin.Logger.Log($"\t\t {trait}");
             }
 
-            // Generic traits
+            // Log generic traits from record
             if (ammoRecordGeneric != null)
             {
                 Plugin.Logger.Log($"\tGeneric traits: {ammoRecordGeneric.Traits.Count}");
@@ -230,38 +238,36 @@ namespace QM_PathOfQuasimorph.Processors
                 Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
             }
 
-            // Apply traits to record
-            // Should we remove existing traits?
+            // Clear existing traits based on rules
             if (clearTraits)
             {
                 itemRecord.Traits.Clear();
 
                 if (keepGeneric && ammoRecordGeneric != null)
                 {
-                    Plugin.Logger.Log($"Keeping generic? Yes.");
+                    Plugin.Logger.Log("Re-adding generic traits.");
                     itemRecord.Traits.AddRange(ammoRecordGeneric.Traits);
                 }
                 else
                 {
-                    Plugin.Logger.Log($"Keeping generic? No.");
+                    Plugin.Logger.Log("Not re-adding generic traits.");
                 }
             }
             else
             {
-                // Randomly decide whether to remove existing traits (20% chance)
+                // 20% chance to remove existing traits even if not clearing
                 if (Helpers._random.NextDouble() < removeChance)
                 {
-                    Plugin.Logger.Log($"Keeping existing? Yes.");
+                    Plugin.Logger.Log("Randomly clearing existing traits.");
                     itemRecord.Traits.Clear();
                 }
                 else
                 {
-                    Plugin.Logger.Log($"Keeping existing? No.");
-
+                    Plugin.Logger.Log("Preserving existing traits.");
                 }
             }
 
-            // Select traits
+            // Select and apply new traits
             List<string> selectedTraits = PrepareTraits(extraTraitCount);
 
             Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
@@ -272,18 +278,16 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             // Add traits
-            for (int i = 0; i < selectedTraits.Count; i++)
-            {
-                itemRecord.Traits.Add(selectedTraits[i]);
-            }
+            itemRecord.Traits.AddRange(selectedTraits);
 
-            Plugin.Logger.Log($"\tNew traits: {itemRecord.Traits.Count}");
+            Plugin.Logger.Log($"\tFinal trait count: {itemRecord.Traits.Count}");
 
             foreach (var trait in itemRecord.Traits)
             {
                 Plugin.Logger.Log($"\t\t {trait}");
             }
         }
+
         private List<string> PrepareTraits(int extraTraitCount)
         {
             // Allowed traits for item type
