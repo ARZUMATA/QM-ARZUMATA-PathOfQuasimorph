@@ -3,6 +3,16 @@
 > **Note**: This version introduces foundational changes for future features. Please report any unexpected behavior with save files or synthraformer behavior using logs and reproducible cases.
 
 ---
+
+## v1.9.9 (2964b80)
+
+### Balance:
+- The weapon and ammo traits system has been slightly nerfed: instead of scaling by percentage per rarity, traits now scale directly based on the weapon's rarity level. The maximum number of traits is capped at 5, determined strictly by the rarity enum value.
+
+### Fixed:
+ - Implant reroll bug by modifying copied records instead of vanilla, preventing stat degradation on repeated rolls
+ - Avoid spending indestructible synth if the item is already indestructible.
+
 ## v1.9.8-hotfix1 (53751d5)
 
 ### Fixed:

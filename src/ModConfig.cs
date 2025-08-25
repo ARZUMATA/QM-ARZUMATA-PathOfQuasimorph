@@ -106,7 +106,7 @@ namespace QM_PathOfQuasimorph
 
         [JsonIgnore]
         //[JsonProperty("version")]
-        public string Version { get; set; } = "1.9.8";
+        public string Version { get; set; } = "1.9.9";
 
         // MCM Related Start
 
