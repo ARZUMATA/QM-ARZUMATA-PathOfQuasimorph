@@ -33,6 +33,9 @@ namespace QM_PathOfQuasimorph.Controllers
         internal LeggingsRecordProcessorPoq leggingsRecordProcessorPoq;
         internal BootsRecordProcessorPoq bootsRecordProcessorPoq;
         internal WoundSlotRecordProcessorPoq woundSlotRecordProcessorPoq;
+        internal VestRecordProcessorPoq vestRecordProcessorPoq;
+        internal BackpackRecordProcessorPoq backpackRecordProcessorPoq;
+
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
 
         private Logger _logger = new Logger(null, typeof(ItemRecordsControllerPoq));
@@ -49,6 +52,9 @@ namespace QM_PathOfQuasimorph.Controllers
             leggingsRecordProcessorPoq = new LeggingsRecordProcessorPoq(this);
             bootsRecordProcessorPoq = new BootsRecordProcessorPoq(this);
             woundSlotRecordProcessorPoq = new WoundSlotRecordProcessorPoq(this);
+            vestRecordProcessorPoq = new VestRecordProcessorPoq(this);
+            backpackRecordProcessorPoq = new BackpackRecordProcessorPoq(this);
+
         }
 
         internal string InterceptAndReplaceItemId(string Id, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool applyRarity, bool ignoreBlacklist, string randomUidInjected)
@@ -351,6 +357,31 @@ namespace QM_PathOfQuasimorph.Controllers
                     ammoRecordProcessorPoq.ProcessRecord(ref boostedParamString);
                     records.Add(ammoRecordNew);
                 }
+                
+                VestRecord vestRecord = basePickupItemRecord as VestRecord;
+
+                if (vestRecord != null)
+                {
+                    _logger.Log($"vestRecord processing");
+
+                    VestRecord vestRecordNew = ItemRecordHelpers.CloneVestRecord(vestRecord, itemId);
+                    vestRecordProcessorPoq.Init(vestRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    vestRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    records.Add(vestRecordNew);
+                }
+
+                BackpackRecord backpackRecord = basePickupItemRecord as BackpackRecord;
+
+                if (backpackRecord != null)
+                {
+                    _logger.Log($"backpackRecord processing");
+
+                    BackpackRecord backpackRecordNew = ItemRecordHelpers.CloneBackpackRecord(backpackRecord, itemId);
+                    backpackRecordProcessorPoq.Init(backpackRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    backpackRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    records.Add(backpackRecordNew);
+                }
+
             }
         }
 

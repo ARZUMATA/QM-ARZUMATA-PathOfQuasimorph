@@ -128,13 +128,31 @@ namespace QM_PathOfQuasimorph.PoQHelpers
 
         internal static BreakableItemRecord CloneBreakableRecord(BreakableItemRecord original, string newId)
         {
-            Plugin.Logger.Log($"ImplantRecord: CloneBreakableRecord");
+            Plugin.Logger.Log($"BreakableItemRecord: CloneBreakableRecord");
 
             BreakableItemRecord clone = ReflectionHelper.CloneViaProperties(original);
             clone.Id = newId;
 
             clone.RepairItemIds = DataSerializerHelper.MakeDeepCopy(original.RepairItemIds);
 
+            return clone;
+        }
+
+        internal static BackpackRecord CloneBackpackRecord(BackpackRecord original, string newId)
+        {
+            Plugin.Logger.Log($"BackpackRecord: CloneBackpackRecord");
+
+            BackpackRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
+            return clone;
+        }
+
+        internal static VestRecord CloneVestRecord(VestRecord original, string newId)
+        {
+            Plugin.Logger.Log($"VestRecord: CloneVestRecord");
+
+            VestRecord clone = ReflectionHelper.CloneViaProperties(original);
+            clone.Id = newId;
             return clone;
         }
     }
