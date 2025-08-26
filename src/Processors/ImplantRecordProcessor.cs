@@ -17,15 +17,11 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class ImplantRecordProcessorPoq : ItemRecordProcessor<ImplantRecord>
+    internal class ImplantRecordProcessor<T> : BasePickupItemRecordProcessor<T> where T : ImplantRecord
     {
-        private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessor));
 
         public override Dictionary<string, bool> parameters => _parameters;
-
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-        };
 
         // True - increase, False - decreqse
         // They al lcome from wound records
@@ -81,7 +77,7 @@ namespace QM_PathOfQuasimorph.Processors
             { "wound_chance_mult",            true },
         };
 
-        public ImplantRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        public ImplantRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
 

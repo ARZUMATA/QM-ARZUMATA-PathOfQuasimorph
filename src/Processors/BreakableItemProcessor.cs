@@ -17,18 +17,13 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class BreakableItemProcessorPoq : ItemRecordProcessor<BreakableItemRecord>
+    internal class BreakableItemProcessor<T> : ItemRecordProcessor<T> where T : BreakableItemRecord
     {
-        private new Logger _logger = new Logger(null, typeof(BreakableItemProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(BreakableItemProcessor<T>));
 
         public override Dictionary<string, bool> parameters => _parameters;
 
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-        };
-
-
-        public BreakableItemProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        public BreakableItemProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
 

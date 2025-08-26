@@ -19,9 +19,12 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class WoundSlotRecordProcessorPoq : ItemRecordProcessor<WoundSlotRecord>
+    internal class WoundSlotRecordProcessor<T> : ConfigTableRecordProcessor<T> where T : WoundSlotRecord
     {
-        private new Logger _logger = new Logger(null, typeof(WoundSlotRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(WoundSlotRecordProcessor<T>));
+        public WoundSlotRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        {
+        }
 
         public override Dictionary<string, bool> parameters => _parameters;
 
@@ -108,9 +111,6 @@ namespace QM_PathOfQuasimorph.Processors
             "vomiting",
         };
 
-        public WoundSlotRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
-        {
-        }
 
         internal override void ProcessRecord(ref string boostedParamString)
         {

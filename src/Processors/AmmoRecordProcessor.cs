@@ -9,32 +9,31 @@ using System.Security.Cryptography;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class AmmoRecordProcessorPoq : ItemRecordProcessor<AmmoRecord>
+    internal class AmmoRecordProcessor<T> : ItemRecordProcessor<T> where T : AmmoRecord
     {
-        public AmmoRecordProcessorPoq(ItemRecordsControllerPoq controller) : base(controller) { }
-        private new Logger _logger = new Logger(null, typeof(AmmoRecordProcessorPoq));
-
+        //private new Logger _logger = new Logger(null, typeof(AmmoRecordProcessor));
         public override Dictionary<string, bool> parameters => _parameters;
 
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
+        public AmmoRecordProcessor(ItemRecordsControllerPoq controller) : base(controller) 
         {
-            //{ "BallisticType", true },
-            { "MinAmmoAmount", true },
-            { "MaxAmmoAmount", true },
-            //{ "AmmoType", true },
-            //{ "DmgType", true },
-            { "DmgCritChance", true },
-            { "RangeBonus", true },
-            { "AccuracyMult", true },
-            { "ScatterMult", false },
-            { "DamageMult", true },
-            { "BulletCastsPerShot", true },
-            //{ "StatusEffectId", true },
-            { "StatusDamageModifier", true },
-            { "StatusResistModifier", true },
-            //{ "Traits", true },
-            //{ "ProjectileId", true },
-        };
+            //_parameters["BallisticType"] = true;
+            _parameters["MinAmmoAmount"] = true;
+            _parameters["MaxAmmoAmount"] = true;
+            //_parameters["AmmoType"] = true;
+            //_parameters["DmgType"] = true;
+            _parameters["DmgCritChance"] = true;
+            _parameters["RangeBonus"] = true;
+            _parameters["AccuracyMult"] = true;
+            _parameters["ScatterMult"] = false;
+            _parameters["DamageMult"] = true;
+            _parameters["BulletCastsPerShot"] = true;
+            //_parameters["StatusEffectId"] = true;
+            _parameters["StatusDamageModifier"] = true;
+            _parameters["StatusResistModifier"] = true;
+            //_parameters["Traits"] = true;
+            //_parameters["ProjectileId"] = true;
+        }
+
 
         List<string> AmmoTypes = new List<string>
         {

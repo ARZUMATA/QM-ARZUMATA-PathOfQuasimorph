@@ -17,22 +17,19 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class BackpackRecordProcessorPoq : ItemRecordProcessor<BackpackRecord>
+    internal class BackpackRecordProcessor<T> : ItemRecordProcessor<T> where T : BackpackRecord
     {
-        private new Logger _logger = new Logger(null, typeof(BackpackRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(BackpackRecordProcessor<T>));
 
         public override Dictionary<string, bool> parameters => _parameters;
 
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
+        public BackpackRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
-           { "ReloadTurnMod", false },
-           { "Height", true },
-           { "AddServoArm", true },
-           { "BackpackWeightMult", false },
-        };
-
-        public BackpackRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
-        {
+            // Extend the base parameters
+            _parameters["ReloadTurnMod"] = false;
+            _parameters["Height"] = true;
+            _parameters["AddServoArm"] = true;
+            _parameters["BackpackWeightMult"] = false;
         }
         internal override void ProcessRecord(ref string boostedParamString)
         {

@@ -19,11 +19,24 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class WeaponRecordProcessorPoq : ItemRecordProcessor<WeaponRecord>
+    internal class WeaponRecordProcessor<T> : BasePickupItemRecordProcessor<T> where T : WeaponRecord
     {
-        private new Logger _logger = new Logger(null, typeof(WeaponRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(WeaponRecordProcessor));
 
         public override Dictionary<string, bool> parameters => _parameters;
+
+        public WeaponRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        {
+            // bool = should we increase the stat or decrease for benefits
+            _parameters["weight"] = false;
+            _parameters["max_durability"] = true;
+            _parameters["damage"] = true;
+            _parameters["crit_damage"] = true;
+            _parameters["accuracy"] = true;
+            _parameters["scatter_angle"] = false;
+            _parameters["reload_duration"] = false;
+            _parameters["magazine_capacity"] = true;
+        }
 
         private List<string> rangedTraitsBlacklist = new List<string> {
             "perfect_throw",
@@ -86,29 +99,6 @@ namespace QM_PathOfQuasimorph.Processors
             { "overheat", 350 },
         };
 
-        // bool = should we increase the stat or decrease for benefits
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-           { "weight", false },
-           { "max_durability", true },
-           { "damage", true },
-           { "crit_damage", true },
-           { "accuracy", true },
-           { "scatter_angle", false },
-           { "reload_duration", false },
-           { "magazine_capacity", true },
-            //"special_ability",
-            //"none",
-
-            //"Damage_MinMax",
-            //"Damage_CritChance",
-            //"Damage_CritDmg",
-            //"ReloadDuration",
-            //"MagazineCapacity",
-            //"BonusAccuracy",
-            //"BonusScatterAngle",
-        };
-
         internal Dictionary<string, int> rangedNatures = new Dictionary<string, int>()
         {
             { "moon_fist_1",                          100 },
@@ -158,9 +148,6 @@ namespace QM_PathOfQuasimorph.Processors
             new HashSet<string> { "piercing", "full_piercing" },
         };
 
-        public WeaponRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
-        {
-        }
 
         internal override void ProcessRecord(ref string boostedParamString)
         {
@@ -512,8 +499,8 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\tarmSlot_NewId: {armSlot_NewId}");
 
             WoundSlotRecord armSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(armSlotRecord, $"{armSlot_NewId}");
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(armSlotRecordNew, itemRarity, mobRarityBoost, false, $"{armSlot_NewId}", oldId);
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.Init(armSlotRecordNew, itemRarity, mobRarityBoost, false, $"{armSlot_NewId}", oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
             Data.WoundSlots.AddRecord($"{armSlot_NewId}", armSlotRecordNew);
             RecordCollection.WoundSlotRecords.Add($"{armSlot_NewId}", armSlotRecordNew);
@@ -535,8 +522,8 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\tashoulderSlot_NewId: {shoulderSlot_NewId}");
 
             WoundSlotRecord shoulderSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(shoulderSlotRecord, $"{shoulderSlot_NewId}");
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(shoulderSlotRecordNew, itemRarity, mobRarityBoost, false, $"{shoulderSlot_NewId}", oldId);
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.Init(shoulderSlotRecordNew, itemRarity, mobRarityBoost, false, $"{shoulderSlot_NewId}", oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
             Data.WoundSlots.AddRecord($"{shoulderSlot_NewId}", shoulderSlotRecordNew);
             RecordCollection.WoundSlotRecords.Add($"{shoulderSlot_NewId}", shoulderSlotRecordNew);

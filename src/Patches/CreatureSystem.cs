@@ -63,9 +63,9 @@ namespace QM_PathOfQuasimorph.Core
 
                             var woundSlotRecord = Data.WoundSlots.GetRecord(slotkey.Key);
                             WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
-                            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, (ItemRarity)MobContext.Rarity + 1, true, false, $"{newId}", slotkey.Key);
-                            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
-                            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.FillMobContextEffects(MobContext.Rarity, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects);
+                            itemRecordsControllerPoq.woundSlotRecordProcessor.Init(woundSlotRecordNew, (ItemRarity)MobContext.Rarity + 1, true, false, $"{newId}", slotkey.Key);
+                            itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
+                            itemRecordsControllerPoq.woundSlotRecordProcessor.FillMobContextEffects(MobContext.Rarity, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects);
 
 
                             __result.WoundSlotMap[newId] = __result.WoundSlotMap[slotkey.Key];

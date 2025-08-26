@@ -10,32 +10,24 @@ using static MGSC.TurnDebugLogger;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal abstract class ResistItemProcessor<T> : ItemRecordProcessor<T> where T : ResistRecord
+    internal class ResistItemProcessor<T> : BasePickupItemRecordProcessor<T> where T : ResistRecord
     {
         private new Logger _logger = new Logger(null, typeof(ResistItemProcessor<T>));
 
         public override Dictionary<string, bool> parameters => _parameters;
 
-
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-            { "resist_blunt", true },
-            { "resist_pierce", true },
-            { "resist_lacer", true },
-            { "resist_fire", true },
-            { "resist_beam", true },
-            { "resist_shock", true },
-            { "resist_poison", true },
-            { "resist_cold", true },
-            { "weight", false },
-            { "max_durability", true },
-            //"none"
-        };
-
         protected ResistItemProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
-            // Override logger to use the actual derived type name
-            _logger = new Logger(null, GetType()); // Ensures logger shows HelmetRecordProcessor, etc.
+            _parameters["resist_blunt"] = true;
+            _parameters["resist_pierce"] = true;
+            _parameters["resist_lacer"] = true;
+            _parameters["resist_fire"] = true;
+            _parameters["resist_beam"] = true;
+            _parameters["resist_shock"] = true;
+            _parameters["resist_poison"] = true;
+            _parameters["resist_cold"] = true;
+            _parameters["weight"] = false;
+            _parameters["max_durability"] = true;
         }
 
         internal override void ProcessRecord(ref string boostedParamString)
@@ -69,7 +61,7 @@ namespace QM_PathOfQuasimorph.Processors
             }
         }
 
-        private void GetAverageResists(out float averageResist, out bool averageResistApplied, T genericRecord = null)
+        internal void GetAverageResists(out float averageResist, out bool averageResistApplied, T genericRecord = null)
         {
             Plugin.Logger.Log($"GetAverageResists");
             Plugin.Logger.Log($"\t itemRecord Id: {itemRecord.Id}");
@@ -104,7 +96,7 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\t\t\t\t Average resist {averageResist} for total count {resistCount}");
         }
 
-        private void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat, T genericRecord = null)
+        protected virtual void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;

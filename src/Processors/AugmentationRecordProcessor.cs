@@ -19,17 +19,13 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class AugmentationRecordProcessorPoq : ItemRecordProcessor<AugmentationRecord>
+    internal class AugmentationRecordProcessor<T> : ItemRecordProcessor<T> where T : AugmentationRecord
     {
-        private new Logger _logger = new Logger(null, typeof(AugmentationRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(AugmentationRecordProcessor));
 
         public override Dictionary<string, bool> parameters => _parameters;
 
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>
-        {
-        };
-
-        public AugmentationRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        public AugmentationRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
 
@@ -55,7 +51,7 @@ namespace QM_PathOfQuasimorph.Processors
             float outOldValue = -1;
             float outNewValue = -1;
 
-            Plugin.Logger.Log($"itemRecord.WoundSlotIds Count: {itemRecord.WoundSlotIds.Count}");
+            _logger.Log($"itemRecord.WoundSlotIds Count: {itemRecord.WoundSlotIds.Count}");
             List<string> newWoundSlotIds = new List<string>();
 
             bool addNewSlots = false; // I don't like how it works.
@@ -150,8 +146,8 @@ namespace QM_PathOfQuasimorph.Processors
 
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
                     newWoundSlotIds.Add($"{newId}");
 
@@ -189,8 +185,8 @@ namespace QM_PathOfQuasimorph.Processors
                     var woundSlotString = itemRecord.WoundSlotIds[i];
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlotString);
 
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
-                    var success = itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomImplicitEffect(metadata.RarityClass, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects, true, false);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
+                    var success = itemRecordsControllerPoq.woundSlotRecordProcessor.AddRandomImplicitEffect(metadata.RarityClass, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects, true, false);
 
                     if (!success)
                     {
@@ -295,8 +291,8 @@ namespace QM_PathOfQuasimorph.Processors
                     Plugin.Logger.Log($"\t replacementSlot.Id will be: {newId}");
 
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(replacementSlotRecord, $"{newId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
                     newSlotIds.Add($"{newId}");
 

@@ -8,18 +8,17 @@ using System.Linq;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class VestRecordProcessorPoq : ResistItemProcessor<VestRecord>
+    internal class VestRecordProcessor<T> : ResistItemProcessor<T> where T : VestRecord
     {
-        private new Logger _logger = new Logger(null, typeof(VestRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(VestRecordProcessor));
         public override Dictionary<string, bool> parameters => _parameters;
 
-        public VestRecordProcessorPoq(ItemRecordsControllerPoq controller) : base(controller) { }
-
-        internal new Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-           { "SlotCapacity", true },
-           { "ReloadTurnMod", false },
-        };
+        public VestRecordProcessor(ItemRecordsControllerPoq controller) : base(controller) 
+        { 
+            // Extend the base parameters
+            _parameters["SlotCapacity"] = true;
+            _parameters["ReloadTurnMod"] = false;
+        }
 
         internal override void ProcessRecord(ref string boostedParamString)
         {
@@ -32,16 +31,22 @@ namespace QM_PathOfQuasimorph.Processors
             int numToHinder, numToImprove, improvedCount, hinderedCount;
             //string boostedParamString;
             bool increase;
+
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
+            float averageResist;
+            bool averageResistApplied;
+            GetAverageResists(out averageResist, out averageResistApplied);
+
+            // Apply modifiers
             foreach (var stat in parameters)
             {
                 finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-                ApplyStat(finalModifier, increase, stat);
+                ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
             }
         }
 
-        private void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, VestRecord genericRecord = null)
+        protected override void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;
@@ -63,6 +68,11 @@ namespace QM_PathOfQuasimorph.Processors
                 case "ReloadTurnMod":
                     PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.ReloadTurnMod = v, () => genericRecord.ReloadTurnMod, finalModifier, increase, out outOldValue, out outNewValue);
                     break;
+
+                default:
+                    // For all other stats (resists, weight, durability), use base logic
+                    base.ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat, genericRecord);
+                    return;
             }
 
             Plugin.Logger.Log($"\t\t old value {outOldValue}");
