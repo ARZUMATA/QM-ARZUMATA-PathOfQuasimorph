@@ -144,6 +144,19 @@ namespace QM_PathOfQuasimorph.Processors
             new HashSet<string> { "piercing", "full_piercing" },
         };
 
+        protected override List<string> GetTraitsList() => itemRecord.Traits;
+        protected override T GetGenericRecord() => Data.Items.GetSimpleRecord<T>(oldId, true);
+        protected override ItemTraitType? GetTraitType() => ItemTraitType.WeaponTrait;
+        protected override List<HashSet<string>> GetMutuallyExclusiveGroups() => traitsMutuallyExclusiveGroups;
+        protected override bool IsMelee() => itemRecord.IsMelee;
+
+        protected override HashSet<string> GetBlacklist()
+        {
+            return itemRecord.IsMelee
+                ? new HashSet<string>(meleeTraitsBlacklist)
+                : new HashSet<string>(rangedTraitsBlacklist);
+        }
+
         internal override void ProcessRecord(ref string boostedParamString)
         {
             if (itemRarity == ItemRarity.Standard)
@@ -169,6 +182,7 @@ namespace QM_PathOfQuasimorph.Processors
                 ApplyStat(finalModifier, increase, stat);
             }
         }
+
         protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
@@ -233,147 +247,29 @@ namespace QM_PathOfQuasimorph.Processors
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void ApplyTraits(bool clearTraits, float removeChance = 0.2f, bool tryToKeepGeneric = false)
+        protected override Dictionary<string, int> BuildTraitWeightsDictionary(IEnumerable<string> allowedTraits)
         {
-            Plugin.Logger.Log($"ApplyTraits: clearTraits={clearTraits}, removeChance={removeChance}, tryToKeepGeneric={tryToKeepGeneric}");
+            var combined = new Dictionary<string, int>();
 
-            var weaponRecordGeneric = Data.Items.GetSimpleRecord<WeaponRecord>(oldId, true);
-
-            Plugin.Logger.Log($"weaponRecordGeneric null: {weaponRecordGeneric == null}");
-            Plugin.Logger.Log($"itemRecord Id: {itemRecord.Id}");
-
-            var extraTraitCount = 0;
-
-            bool keepGeneric = false;
-
-            // Only attempt to keep generic traits if:
-            // - Caller wants to try, AND
-            // - There are generic traits available (weaponRecordGeneric exists)
-            if (tryToKeepGeneric && weaponRecordGeneric != null)
+            // Add positive traits (only if in allowed list)
+            foreach (var kvp in positiveTraits)
             {
-                // Roll the dice: chance to actually keep them is based on `removeChance`
-                // Example: removeChance = 0.2 → 20% chance to keep, 80% to strip
-                keepGeneric = Helpers._random.NextDouble() < removeChance;
-                Plugin.Logger.Log($"Rolled to keep generic traits: {keepGeneric} (chance: {removeChance})");
-            }
-            else
-            {
-                keepGeneric = false;
-                Plugin.Logger.Log("Not attempting to keep generic traits.");
-            }
-
-            Plugin.Logger.Log($"Final keepGeneric: {keepGeneric}");
-
-            // Log existing traits
-            Plugin.Logger.Log($"\tExisting traits: {itemRecord.Traits.Count}");
-
-            foreach (var trait in itemRecord.Traits)
-            {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-
-            // Log generic traits from record
-            if (weaponRecordGeneric != null)
-            {
-                Plugin.Logger.Log($"\tGeneric traits: {weaponRecordGeneric.Traits.Count}");
-
-                foreach (var trait in weaponRecordGeneric.Traits)
+                if (allowedTraits.Contains(kvp.Key))
                 {
-                    Plugin.Logger.Log($"\t\t {trait}");
-                }
-
-                extraTraitCount = keepGeneric ? 0 : weaponRecordGeneric.Traits.Count;
-                Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
-            }
-
-            // Clear existing traits based on rules
-            if (clearTraits)
-            {
-                itemRecord.Traits.Clear();
-
-                if (keepGeneric && weaponRecordGeneric != null)
-                {
-                    Plugin.Logger.Log("Re-adding generic traits.");
-                    itemRecord.Traits.AddRange(weaponRecordGeneric.Traits);
-                }
-                else
-                {
-                    Plugin.Logger.Log("Not re-adding generic traits.");
-                }
-            }
-            else
-            {
-                // 20% chance to remove existing traits even if not clearing
-                if (Helpers._random.NextDouble() < removeChance)
-                {
-                    Plugin.Logger.Log("Randomly clearing existing traits.");
-                    itemRecord.Traits.Clear();
-                }
-                else
-                {
-                    Plugin.Logger.Log("Preserving existing traits.");
+                    combined[kvp.Key] = kvp.Value;
                 }
             }
 
-            // Select and apply new traits
-            List<string> selectedTraits = PrepareTraits(extraTraitCount);
-
-            Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
-
-            foreach (var trait in selectedTraits)
+            // Add negative traits (only if in allowed list)
+            foreach (var kvp in negativeTraits)
             {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-
-            // Add traits
-            itemRecord.Traits.AddRange(selectedTraits);
-
-            Plugin.Logger.Log($"\tFinal trait count: {itemRecord.Traits.Count}");
-
-            foreach (var trait in itemRecord.Traits)
-            {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-        }
-
-        private List<string> PrepareTraits(int extraTraitCount)
-        {
-            // Determine if the item is a melee weapon
-            _logger.Log($"\t\t  isMelee: {itemRecord.IsMelee}");
-
-            // Allowed traits for item type
-            var allowedTraits = itemRecordsControllerPoq.GetAddeableTraits(ItemTraitType.WeaponTrait);
-
-            // Combined dict of positive and negative traits
-            Dictionary<string, int> allTraitsCombined = positiveTraits.Concat(negativeTraits).ToDictionary(pair => pair.Key, pair => pair.Value);
-
-            // Log traits in allowedTraits not present in allTraitsCombined
-            foreach (var trait in allowedTraits)
-            {
-                if (!allTraitsCombined.ContainsKey(trait))
+                if (allowedTraits.Contains(kvp.Key))
                 {
-                    _logger.LogWarning($"[WARNING] Allowed trait '{trait}' is not present in allTraitsCombined.");
+                    combined[kvp.Key] = kvp.Value;
                 }
             }
 
-            // Determine total number of traits to add based on rarity
-            //var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
-            var totalTraitCount = (int)itemRarity + extraTraitCount; // Avoid percentages
-
-            // Select traits based on weights
-            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
-
-            // Apply blacklists
-            selectedTraits.RemoveAll(t =>
-                (itemRecord.IsMelee && meleeTraitsBlacklist.Contains(t)) ||
-                (!itemRecord.IsMelee && rangedTraitsBlacklist.Contains(t)));
-
-            // // Remove already present traits
-            // selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
-
-            // Filter all traits if they are not in allowed list (just in case)
-            selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
-            return selectedTraits;
+            return combined;
         }
 
         internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
