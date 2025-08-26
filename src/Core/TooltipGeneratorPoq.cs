@@ -197,7 +197,12 @@ namespace QM_PathOfQuasimorph.Core
 
             if (_factory._lastShowedItem.Is<ResistRecord>())
             {
-                InitArmor(item.Record<ResistRecord>(), metadata, item);
+                InitResist(item.Record<ResistRecord>(), metadata, item);
+            }
+
+            if (_factory._lastShowedItem.Is<VestRecord>())
+            {
+                InitVest(item.Record<VestRecord>(), metadata, item);
             }
 
             if (_factory._lastShowedItem.Is<AugmentationRecord>())
@@ -210,9 +215,132 @@ namespace QM_PathOfQuasimorph.Core
                 InitImplant(item.Record<ImplantRecord>(), metadata, item);
             }
 
+            if (_factory._lastShowedItem.Is<BackpackRecord>())
+            {
+                InitBackpackRecord(item.Record<BackpackRecord>(), metadata, item);
+            }
+
             if (_factory._lastShowedItem.Is<ItemRecord>())
             {
                 InitWeight(item.Record<ItemRecord>(), metadata, item);
+            }
+        }
+
+        private static void InitVest(VestRecord vestRecord, MetadataWrapper metadata, PickupItem item)
+        {
+            _logger.Log($"InitVest");
+            _logger.Log($"genericId: {metadata.Id}");
+
+            var genericRecord = Data.Items.GetSimpleRecord<VestRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<VestRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
+
+            string value;
+
+            // SlotCapacity
+            var SlotCapacityDiff = vestRecord.SlotCapacity - genericRecord.SlotCapacity;
+
+            if (SlotCapacityDiff != 0)
+            {
+                value = $"{vestRecord.SlotCapacity.ToString()} ({FormatDifference(SlotCapacityDiff.ToString(), SlotCapacityDiff)})".WrapInColor(Colors.Green);
+                if (SlotCapacityDiff != 0)
+                {
+                    _factory.AddPanelToTooltip().SetIcon("common_inventory_size").LocalizeName("tooltip.VestSize")
+                        .SetValue(value, true)
+                        .SetComparsionValue(genericRecord.SlotCapacity.ToString());
+                }
+            }
+
+            // ReloadTurnMod
+            var reloadTurnModDiff = vestRecord.ReloadTurnMod - genericRecord.ReloadTurnMod;
+
+            if (reloadTurnModDiff != 0)
+            {
+                value = $"{vestRecord.ReloadTurnMod.ToString()} ({FormatDifference(reloadTurnModDiff.ToString(), reloadTurnModDiff)})".WrapInColor(Colors.Green);
+                if (reloadTurnModDiff != 0)
+                {
+                    _factory.AddPanelToTooltip().SetIcon("common_time").LocalizeName("tooltip.ReloadDuration")
+                        .SetValue(value, true)
+                        .SetComparsionValue(genericRecord.ReloadTurnMod.ToString());
+                }
+            }
+        }
+
+        private static void InitBackpackRecord(BackpackRecord backpackRecord, MetadataWrapper metadata, PickupItem item)
+        {
+            _logger.Log($"InitBackpackRecord");
+            _logger.Log($"genericId: {metadata.Id}");
+
+            var genericRecord = Data.Items.GetSimpleRecord<BackpackRecord>(metadata.Id, true);
+
+            if (metadata.IsMagnumProduced)
+            {
+                // Compare against magnum project item.
+                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<BackpackRecord>($"{metadata.Id}_custom", true);
+
+                if (isMagnumProducedRecord != null)
+                {
+                    genericRecord = isMagnumProducedRecord;
+                }
+            }
+
+            // AddServoArm
+
+            string value;
+
+            // Height
+            var inventorySizeDiff = backpackRecord.Height - genericRecord.Height;
+
+            if (inventorySizeDiff != 0)
+            {
+                value = $"{backpackRecord.Height.ToString()} ({FormatDifference(inventorySizeDiff.ToString(), inventorySizeDiff)})".WrapInColor(Colors.Green);
+
+                if (inventorySizeDiff != 0)
+                {
+                    _factory.AddPanelToTooltip().SetIcon("common_inventory_size").LocalizeName("tooltip.InventorySize")
+                        .SetValue(value, true)
+                        .SetComparsionValue(genericRecord.Height.ToString());
+                }
+            }
+
+            // BackpackWeightMult
+
+            var BackpackWeightMultDiff = backpackRecord.BackpackWeightMult - genericRecord.BackpackWeightMult;
+
+            if (BackpackWeightMultDiff != 0)
+            {
+                value = $"{FormatHelper.To100Percent(backpackRecord.BackpackWeightMult, false).ToString()} ({FormatDifference(FormatHelper.To100Percent(Math.Abs(BackpackWeightMultDiff), false).ToString(), BackpackWeightMultDiff)})".WrapInColor(Colors.Green);
+
+                if (BackpackWeightMultDiff != 0)
+                {
+                    _factory.AddPanelToTooltip().SetIcon("common_weight_mod").LocalizeName("tooltip.BackpackWeightMult")
+                        .SetValue(value, true)
+                        .SetComparsionValue(FormatHelper.To100Percent(genericRecord.BackpackWeightMult, false));
+                }
+
+            }
+
+            // ReloadTurnMod
+            var reloadTurnModDiff = backpackRecord.ReloadTurnMod - genericRecord.ReloadTurnMod;
+
+            if (reloadTurnModDiff != 0)
+            {
+                value = $"{backpackRecord.ReloadTurnMod.ToString()} ({FormatDifference(reloadTurnModDiff.ToString(), reloadTurnModDiff)})".WrapInColor(Colors.Green);
+                if (reloadTurnModDiff != 0)
+                {
+                    _factory.AddPanelToTooltip().SetIcon("common_time").LocalizeName("tooltip.ReloadDuration")
+                        .SetValue(value, true)
+                        .SetComparsionValue(genericRecord.ReloadTurnMod.ToString());
+                }
             }
         }
 
@@ -420,7 +548,7 @@ namespace QM_PathOfQuasimorph.Core
             }
         }
 
-        private static void InitArmor(ResistRecord recordPoq, MetadataWrapper metadata, PickupItem item)
+        private static void InitResist(ResistRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
             var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(metadata.Id, true);
 
@@ -1047,7 +1175,7 @@ namespace QM_PathOfQuasimorph.Core
 
                         __instance._factory.AddPanelToTooltip().SetMultilineName(Localization.Get($"item.{synRec.GetId()}.desc").SafeFormat(new object[]
                             {
-                            $"{ItemRarity.Standard.ToString().WrapInColor(Color.yellow)}", 
+                            $"{ItemRarity.Standard.ToString().WrapInColor(Color.yellow)}",
                             $"{(SynthraformerController.TRANSMUTER_VOID_ITEM_CHANCE * 100).ToString().WrapInColor(Color.yellow)}"
                             }
                             )).SetNameColor(Colors.DarkYellow);
