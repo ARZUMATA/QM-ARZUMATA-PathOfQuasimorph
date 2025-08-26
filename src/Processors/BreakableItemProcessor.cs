@@ -25,12 +25,41 @@ namespace QM_PathOfQuasimorph.Processors
 
         public BreakableItemProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
+            _parameters["MaxDurability"] = true;
         }
 
         internal override void ProcessRecord(ref string boostedParamString)
         {
             AddUnbreakableTrait();
         }
+
+        protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
+        {
+            // Simply for logging
+            float outOldValue = -1;
+            float outNewValue = -1;
+
+            // If we got declared generic we take their values for reroll, and if not, use it as actual item record.
+            if (genericRecord == null)
+            {
+                genericRecord = itemRecord;
+            }
+
+            switch (stat.Key)
+            {
+                case "MaxDurability":
+                    PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MaxDurability = v, () => genericRecord.MaxDurability, finalModifier, increase, out outOldValue, out outNewValue);
+                    break;
+
+                default:
+                    base.ApplyStat(finalModifier, increase, stat, genericRecord);
+                    return;
+            }
+
+            Plugin.Logger.Log($"\t\t old value {outOldValue}");
+            Plugin.Logger.Log($"\t\t new value {outNewValue}");
+        }
+
         private bool AddUnbreakableTrait(float chanceOverride = 0)
         {
             if (itemRecord.Unbreakable)

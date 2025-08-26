@@ -17,7 +17,7 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class ImplantRecordProcessor<T> : BasePickupItemRecordProcessor<T> where T : ImplantRecord
+    internal class ImplantRecordProcessor<T> : ItemRecordProcessor<T> where T : ImplantRecord
     {
         //private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessor));
 

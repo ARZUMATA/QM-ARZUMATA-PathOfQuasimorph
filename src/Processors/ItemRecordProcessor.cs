@@ -17,6 +17,31 @@ namespace QM_PathOfQuasimorph.Processors
 
         protected ItemRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
+            _parameters["Weight"] = true;
         }
+
+        protected virtual void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
+        {
+            // Simply for logging
+            float outOldValue = -1;
+            float outNewValue = -1;
+
+            // If we got declared generic we take their values for reroll, and if not, use it as actual item record.
+            if (genericRecord == null)
+            {
+                genericRecord = itemRecord;
+            }
+
+            switch (stat.Key)
+            {
+                case "Weight":
+                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.Weight = v, () => genericRecord.Weight, finalModifier, increase, out outOldValue, out outNewValue);
+                    break;
+            }
+
+            Plugin.Logger.Log($"\t\t old value {outOldValue}");
+            Plugin.Logger.Log($"\t\t new value {outNewValue}");
+        }
+
     }
 }

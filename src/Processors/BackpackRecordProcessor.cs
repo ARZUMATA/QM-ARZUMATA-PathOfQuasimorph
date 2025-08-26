@@ -17,7 +17,7 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class BackpackRecordProcessor<T> : ItemRecordProcessor<T> where T : BackpackRecord
+    internal class BackpackRecordProcessor<T> : BreakableItemProcessor<T> where T : BackpackRecord
     {
         //private new Logger _logger = new Logger(null, typeof(BackpackRecordProcessor<T>));
 
@@ -51,7 +51,7 @@ namespace QM_PathOfQuasimorph.Processors
             }
         }
 
-        private void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, BackpackRecord genericRecord = null)
+        protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;
@@ -74,12 +74,17 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
 
                 case "AddServoArm":
-                    PathOfQuasimorph.raritySystem.Apply<bool>(v => itemRecord.AddServoArm = v, () => genericRecord.AddServoArm, finalModifier, increase, out outOldValue, out outNewValue);
+                    //PathOfQuasimorph.raritySystem.Apply<bool>(v => itemRecord.AddServoArm = v, () => genericRecord.AddServoArm, finalModifier, increase, out outOldValue, out outNewValue);
                     break;
 
                 case "BackpackWeightMult":
                     PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.BackpackWeightMult = v, () => genericRecord.BackpackWeightMult, finalModifier, increase, out outOldValue, out outNewValue);
                     break;
+
+                default:
+                    // For all other stats (resists, weight, durability), use base logic
+                    base.ApplyStat(finalModifier, increase, stat, genericRecord);
+                    return;
             }
 
             Plugin.Logger.Log($"\t\t old value {outOldValue}");

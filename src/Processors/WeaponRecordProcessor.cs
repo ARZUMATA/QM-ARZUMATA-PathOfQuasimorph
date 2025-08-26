@@ -19,17 +19,13 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class WeaponRecordProcessor<T> : BasePickupItemRecordProcessor<T> where T : WeaponRecord
+    internal class WeaponRecordProcessor<T> : BreakableItemProcessor<T> where T : WeaponRecord
     {
-        //private new Logger _logger = new Logger(null, typeof(WeaponRecordProcessor));
-
         public override Dictionary<string, bool> parameters => _parameters;
 
         public WeaponRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
             // bool = should we increase the stat or decrease for benefits
-            _parameters["weight"] = false;
-            _parameters["max_durability"] = true;
             _parameters["damage"] = true;
             _parameters["crit_damage"] = true;
             _parameters["accuracy"] = true;
@@ -148,7 +144,6 @@ namespace QM_PathOfQuasimorph.Processors
             new HashSet<string> { "piercing", "full_piercing" },
         };
 
-
         internal override void ProcessRecord(ref string boostedParamString)
         {
             if (itemRarity == ItemRarity.Standard)
@@ -174,8 +169,7 @@ namespace QM_PathOfQuasimorph.Processors
                 ApplyStat(finalModifier, increase, stat);
             }
         }
-
-        private void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, WeaponRecord genericRecord = null)
+        protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;
@@ -189,18 +183,6 @@ namespace QM_PathOfQuasimorph.Processors
 
             switch (stat.Key)
             {
-
-                case "weight":
-                    //var weight = genericRecord.Weight;
-                    //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref weight, finalModifier, increase, out outOldValue, out outNewValue);
-                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.Weight = v, () => genericRecord.Weight, finalModifier, increase, out outOldValue, out outNewValue);
-                    //itemRecord.Weight = weight;
-                    break;
-
-                case "max_durability":
-                    PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MaxDurability = v, () => genericRecord.MaxDurability, finalModifier, increase, out outOldValue, out outNewValue);
-                    break;
-
                 case "damage":
                     var dmgInfo = genericRecord.Damage;
                     PathOfQuasimorph.raritySystem.Apply<int>(v => dmgInfo.minDmg = v, () => dmgInfo.minDmg, finalModifier, increase, out outOldValue, out outNewValue);
@@ -241,6 +223,10 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
                 case "none":
                     break;
+
+                default:
+                    base.ApplyStat(finalModifier, increase, stat, genericRecord);
+                    return;
             }
 
             Plugin.Logger.Log($"\t\t old value {outOldValue}");
@@ -392,7 +378,7 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+            var genericRecord = Data.Items.GetSimpleRecord<T>(metadata.Id, true);
 
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;

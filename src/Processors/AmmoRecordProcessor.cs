@@ -101,7 +101,8 @@ namespace QM_PathOfQuasimorph.Processors
                 ApplyStat(finalModifier, increase, stat);
             }
         }
-        private void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, AmmoRecord genericRecord = null)
+
+        protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;
@@ -178,6 +179,10 @@ namespace QM_PathOfQuasimorph.Processors
 
                 case "ProjectileId":
                     break;
+
+                default:
+                    base.ApplyStat(finalModifier, increase, stat, genericRecord);
+                    return;
             }
 
             Plugin.Logger.Log($"\t\t old value {outOldValue}");
@@ -322,7 +327,7 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal void RerollRandomStat(SynthraformerRecord recomb, MetadataWrapper metadata, bool blockHinder)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
+            var genericRecord = Data.Items.GetSimpleRecord<T>(metadata.Id, true);
 
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;

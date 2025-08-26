@@ -11,7 +11,7 @@ using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal abstract class ConfigTableRecordProcessor<T> : ConfigTableRecord
+    internal abstract partial class ConfigTableRecordProcessor<T> : ConfigTableRecord
     {
         protected T itemRecord;
         protected ItemRarity itemRarity;
@@ -291,6 +291,8 @@ namespace QM_PathOfQuasimorph.Processors
 
         internal float GetFinalModifier(float baseModifier, int numToHinder, int numToImprove, ref int improvedCount, ref int hinderedCount, string boostedParamString, ref bool increase, string statStr, bool statBool, Logger _logger)
         {
+            _logger.Log($"GetFinalModifier");
+
             float finalModifier;
 
             if (statBool == false)
@@ -302,7 +304,7 @@ namespace QM_PathOfQuasimorph.Processors
                 increase = true;
             }
 
-            _logger.Log($"Updating {statStr}");
+            _logger.Log($"Updating: {statStr}");
 
             _logger.Log($"\t\t boostedParamString: {boostedParamString}");
 
@@ -326,12 +328,14 @@ namespace QM_PathOfQuasimorph.Processors
                 increase = !increase;
             }
 
-            _logger.Log($"\t\t finalModifier: {finalModifier} hinder: {hinder}, boosted: {finalModifier != baseModifier}");
+            _logger.Log($"\t\t finalModifier: {finalModifier} hinder: {hinder}, increase: {increase}, boosted: {finalModifier != baseModifier}");
             return finalModifier;
         }
 
         internal void PrepGenericData(out float baseModifier, out float finalModifier, out int numToHinder, out int numToImprove, out string boostedParamString, out int improvedCount, out int hinderedCount, out bool increase)
         {
+            _logger.Log($"PrepGenericData");
+
             baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
 
             if (mobRarityBoost)
@@ -352,8 +356,12 @@ namespace QM_PathOfQuasimorph.Processors
             // Calculate the number of parameters to adjust based on the percentage
             int numToAdjust = Helpers._random.Next(minParams, maxParams + 1);
 
+            _logger.Log($"\t minParams={minParams}, maxParams={maxParams}, numToAdjust={numToAdjust}");
+
             numToHinder = (int)Math.Floor(numToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f);
             numToImprove = numToAdjust - numToHinder;
+
+            _logger.Log($"\t numToHinder={numToHinder}, numToImprove={numToImprove}");
 
             // Shuffle the list
             Helpers.ShuffleDictionary(parameters);
@@ -522,10 +530,6 @@ namespace QM_PathOfQuasimorph.Processors
             targetEffects[selectedEffectName] = randomizedValue;
 
             return true;
-        }
-        private interface IHasSlotType
-        {
-            string SlotType { get; }
         }
 
         internal List<string> SelectWeightedWoundEffects(int count, Dictionary<string, WoundEffectData> eligibleEffects, List<string> existingEffects, List<HashSet<string>> exclusiveGroups = null)

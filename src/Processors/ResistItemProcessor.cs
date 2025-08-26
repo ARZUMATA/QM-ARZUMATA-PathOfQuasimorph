@@ -10,7 +10,7 @@ using static MGSC.TurnDebugLogger;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class ResistItemProcessor<T> : BasePickupItemRecordProcessor<T> where T : ResistRecord
+    internal class ResistItemProcessor<T> : BreakableItemProcessor<T> where T : ResistRecord
     {
         private new Logger _logger = new Logger(null, typeof(ResistItemProcessor<T>));
 
@@ -26,8 +26,6 @@ namespace QM_PathOfQuasimorph.Processors
             _parameters["resist_shock"] = true;
             _parameters["resist_poison"] = true;
             _parameters["resist_cold"] = true;
-            _parameters["weight"] = false;
-            _parameters["max_durability"] = true;
         }
 
         internal override void ProcessRecord(ref string boostedParamString)
@@ -107,58 +105,40 @@ namespace QM_PathOfQuasimorph.Processors
                 genericRecord = itemRecord;
             }
 
-            if (stat.Key.Contains("resist"))
+            switch (stat.Key)
             {
-                var resistName = stat.Key.Split('_')[1];
-                var resistValue = genericRecord.GetResist(resistName);
-                _logger.Log($"\t\t\t resist {resistName} with original value: {resistValue}");
+                    case var k when k.Contains("resist"):
+                        var resistName = stat.Key.Split('_')[1];
+                        var resistValue = genericRecord.GetResist(resistName);
+                        _logger.Log($"\t\t\t resist {resistName} with original value: {resistValue}");
 
-                if (resistValue == 0)
-                {
-                    if (averageResistApplied == false)
-                    {
-                        // Roll random
-                        var canApply = Helpers._random.Next(0, 100 + 1) < RaritySystem.AVERAGE_RESIST_APPLY_CHANCE;
-
-                        if (canApply)
+                        if (resistValue == 0)
                         {
-                            _logger.Log($"\t\t\t Resist with defaultValue {resistValue}, setting to {averageResist} (averageResist)");
-                            PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref averageResist, finalModifier, increase, out outOldValue, out outNewValue);
-                            itemRecord.SetResist(resistName, averageResist);
-                            averageResistApplied = true;
-                        }
-                    }
-                }
-                else
-                {
-                    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref resistValue, finalModifier, increase, out outOldValue, out outNewValue);
-                    itemRecord.SetResist(resistName, outNewValue);
-                }
-            }
-            else
-            {
-                switch (stat.Key)
-                {
-                    case "weight":
-                        PathOfQuasimorph.raritySystem.Apply<float>(
-                            v => itemRecord.Weight = v,
-                            () => genericRecord.Weight,
-                            finalModifier,
-                            increase,
-                            out outOldValue,
-                            out outNewValue);
-                        break;
+                            if (averageResistApplied == false)
+                            {
+                                // Roll random
+                                var canApply = Helpers._random.Next(0, 100 + 1) < RaritySystem.AVERAGE_RESIST_APPLY_CHANCE;
 
-                    case "max_durability":
-                        PathOfQuasimorph.raritySystem.Apply<int>(
-                            v => itemRecord.MaxDurability = v,
-                            () => genericRecord.MaxDurability,
-                            finalModifier,
-                            increase,
-                            out outOldValue,
-                            out outNewValue);
-                        break;
-                }
+                                if (canApply)
+                                {
+                                    _logger.Log($"\t\t\t Resist with defaultValue {resistValue}, setting to {averageResist} (averageResist)");
+                                    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref averageResist, finalModifier, increase, out outOldValue, out outNewValue);
+                                    itemRecord.SetResist(resistName, averageResist);
+                                    averageResistApplied = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref resistValue, finalModifier, increase, out outOldValue, out outNewValue);
+                            itemRecord.SetResist(resistName, outNewValue);
+                        }
+                    break;
+
+                default:
+                    base.ApplyStat(finalModifier, increase, stat, genericRecord);
+                    return;
+
             }
 
             Plugin.Logger.Log($"\t\t old value {outOldValue}");
