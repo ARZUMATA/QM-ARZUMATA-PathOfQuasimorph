@@ -28,15 +28,6 @@ namespace QM_PathOfQuasimorph.Processors
             _parameters["resist_cold"] = true;
         }
 
-        internal override void ProcessRecord(ref string boostedParamString)
-        {
-            if (itemRarity == ItemRarity.Standard)
-            {
-                return;
-            }
-
-            ApplyParameters(ref boostedParamString);
-        }
         protected override void ApplyParameters(ref string boostedParamString)
         {
             float baseModifier, finalModifier;

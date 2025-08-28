@@ -19,12 +19,10 @@ namespace QM_PathOfQuasimorph.Processors
             _parameters["SlotCapacity"] = true;
             _parameters["ReloadTurnMod"] = false;
         }
-
         internal override void ProcessRecord(ref string boostedParamString)
         {
             ApplyParameters(ref boostedParamString);
         }
-
         protected override void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging

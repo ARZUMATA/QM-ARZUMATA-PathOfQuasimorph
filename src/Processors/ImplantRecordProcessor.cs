@@ -80,28 +80,10 @@ namespace QM_PathOfQuasimorph.Processors
         public ImplantRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
-
-        internal override void ProcessRecord(ref string boostedParamString)
-        {
-            //if (itemRarity == ItemRarity.Standard)
-            //{
-            //    return;
-            //}
-
-            // We got perk records now
-            //if (itemRecord.IsActive == true)
-            //{
-            //    return;
-            //}
-
-            ApplyParameters();
-        }
-
-        private void ApplyParameters()
+        protected override void ApplyParameters(ref string boostedParamString)
         {
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
-            string boostedParamString;
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 

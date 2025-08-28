@@ -19,6 +19,12 @@ namespace QM_PathOfQuasimorph.Processors
         {
             _parameters["Weight"] = true;
         }
+
+        internal override void ProcessRecord(ref string boostedParamString)
+        {
+            ApplyParameters(ref boostedParamString);
+        }
+
         protected virtual void ApplyParameters(ref string boostedParamString)
         {
             float baseModifier, finalModifier;

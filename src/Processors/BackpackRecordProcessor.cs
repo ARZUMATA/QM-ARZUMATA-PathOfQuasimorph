@@ -31,10 +31,6 @@ namespace QM_PathOfQuasimorph.Processors
             _parameters["AddServoArm"] = true;
             _parameters["BackpackWeightMult"] = false;
         }
-        internal override void ProcessRecord(ref string boostedParamString)
-        {
-            ApplyParameters(ref boostedParamString);
-        }
 
         protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {

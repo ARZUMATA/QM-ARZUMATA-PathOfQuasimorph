@@ -81,7 +81,6 @@ namespace QM_PathOfQuasimorph.Processors
         protected override ItemTraitType? GetTraitType() => ItemTraitType.AmmoTrait;
         protected override List<HashSet<string>> GetMutuallyExclusiveGroups() => traitsMutuallyExclusiveGroups;
 
-
         internal override void ProcessRecord(ref string boostedParamString)
         {
             if (itemRarity == ItemRarity.Standard)
