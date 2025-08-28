@@ -54,7 +54,7 @@ namespace QM_PathOfQuasimorph.Core
                 }
                 
                 //Plugin.Logger.Log($"ItemTooltipBuilder_Build_Patch_BasePickupItemRecord");
-                PathOfQuasimorph.tooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec);
+                TooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec);
 
                 return false;
             }
@@ -86,7 +86,7 @@ namespace QM_PathOfQuasimorph.Core
                         return true;
                     }
 
-                     PathOfQuasimorph.tooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec);
+                     TooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec);
 
                     return false;
                 }
@@ -131,7 +131,7 @@ namespace QM_PathOfQuasimorph.Core
 
                 if (synRec != null)
                 {
-                    PathOfQuasimorph.tooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec, true);
+                    TooltipGeneratorPoq.BuildSynthraformerTooltip(__instance, synRec, true);
                     return false;
                 }
                 else
