@@ -475,6 +475,12 @@ namespace QM_PathOfQuasimorph.Controllers
 
         private void ApplyResists(Monster monster, float baseModifier, MonsterMasteryTier rarity)
         {
+            PathOfQuasimorph.raritySystem.ShuffleList(resistsToModify);
+
+            // Apply average resist first
+            var resistSheet = monster.CreatureData.ResistSheet._currentResist;
+            ApplyAverageResistToZeroEntry(resistSheet, resistsToModify);
+
             int improvedCount = 0;
             int hinderedCount = 0;
             bool hinder = false;
@@ -486,7 +492,6 @@ namespace QM_PathOfQuasimorph.Controllers
             PathOfQuasimorph.raritySystem.ShuffleList(resistsToModify);
             int boostedParam = Helpers._random.Next(resistsToModify.Count);
 
-            var resistSheet = monster.CreatureData.ResistSheet._currentResist;
             float averageResist = 0;
             int resistCount = 0;
             bool averageResistApplied = false;
@@ -661,6 +666,46 @@ namespace QM_PathOfQuasimorph.Controllers
                 Plugin.Logger.Log($"\t\t old value {outOldValue}");
                 Plugin.Logger.Log($"\t\t new value {outNewValue}");
             }
+        }
+
+        private void ApplyAverageResistToZeroEntry(Dictionary<string, float> resistSheet, List<string> resistsToModify)
+        {
+            // Calculate average of selected resists
+            float totalResist = 0f;
+            int resistCount = 0;
+
+            foreach (var resistType in resistsToModify)
+            {
+                if (resistSheet.TryGetValue(resistType, out float value))
+                {
+                    totalResist += value;
+                    resistCount++;
+                }
+            }
+
+            if (resistCount == 0)
+            {
+                return;
+            }
+
+            float averageResist = Math.Max((float)Math.Round(totalResist / resistCount, 2), 1.0f); // Ensure average resist is at least 1.0
+            Plugin.Logger.Log($"Getting average resist: {averageResist}");
+
+            // Find zero-value resists
+            var zeroResists = resistSheet
+                .Where(x => resistsToModify.Contains(x.Key) && x.Value == 0f)
+                .ToList();
+
+            if (zeroResists.Count == 0)
+            {
+                return;
+            }
+
+            // Pick one at random
+            var target = zeroResists[Helpers._random.Next(zeroResists.Count)];
+            resistSheet[target.Key] = averageResist;
+
+            Plugin.Logger.Log($"Set {target.Key} resist to {averageResist} (was 0)");
         }
 
         internal void CleanCreatureDataPoq()
