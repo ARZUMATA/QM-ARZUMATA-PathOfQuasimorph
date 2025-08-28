@@ -25,27 +25,6 @@ namespace QM_PathOfQuasimorph.Processors
             ApplyParameters(ref boostedParamString);
         }
 
-        private void ApplyParameters(ref string boostedParamString)
-        {
-            float baseModifier, finalModifier;
-            int numToHinder, numToImprove, improvedCount, hinderedCount;
-            //string boostedParamString;
-            bool increase;
-
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
-
-            float averageResist;
-            bool averageResistApplied;
-            GetAverageResists(out averageResist, out averageResistApplied);
-
-            // Apply modifiers
-            foreach (var stat in parameters)
-            {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-                ApplyStat(finalModifier, increase, ref averageResist, ref averageResistApplied, stat);
-            }
-        }
-
         protected override void ApplyStat(float finalModifier, bool increase, ref float averageResist, ref bool averageResistApplied, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging

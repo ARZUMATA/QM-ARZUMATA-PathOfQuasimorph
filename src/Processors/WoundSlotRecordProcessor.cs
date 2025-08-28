@@ -120,6 +120,9 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             ApplyParameters();
+
+            itemRecord.BareHandWeapon = CreateBareHandWeapon();
+            _logger.Log($"itemRecord.BareHandWeapon now {itemRecord.BareHandWeapon}");
         }
 
         private void ApplyParameters()
@@ -130,30 +133,45 @@ namespace QM_PathOfQuasimorph.Processors
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
-            // Simply for logging
-            float outOldValue = -1;
-            float outNewValue = -1;
+            // Convert to list to avoid enumeration errors during modification
+            var bonusEffects = itemRecord.ImplicitBonusEffects.ToList();
+            var penaltyEffects = itemRecord.ImplicitPenaltyEffects.ToList();
+            var coreEffects = itemRecord.CoreEffects.ToList();
 
-            // Even though we're updating a value (not adding a new key), in some contexts this can still be considered a modification that invalidates the enumerator.//
-            // More importantly, any write operation to the dictionary during foreach enumeration is unsafe and can throw this exception.
-            // Capture all entries safely for this case
+            ApplyEffectModifiers(itemRecord.ImplicitBonusEffects, bonusEffects, true, boostedParamString, baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, ref increase);
+            ApplyEffectModifiers(itemRecord.ImplicitPenaltyEffects, penaltyEffects, false, boostedParamString, baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, ref increase);
+            ApplyEffectModifiers(itemRecord.CoreEffects, coreEffects, true, string.Empty, baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, ref increase);
+        }
 
-            var entriesImplicitBonusEffects = itemRecord.ImplicitBonusEffects.ToList();
-            var entriesImplicitPenaltyEffects = itemRecord.ImplicitPenaltyEffects.ToList();
-            var entriesCoreEffects = itemRecord.CoreEffects.ToList();
+        private void ApplyEffectModifiers(
+            Dictionary<string, float> sourceEffects,
+            List<KeyValuePair<string, float>> targetEffects,
+            bool isBonus,
+            string boostedParamString,
+            float baseModifier,
+            int numToHinder,
+            int numToImprove,
+            ref int improvedCount,
+            ref int hinderedCount,
+            ref bool increase)
+        {
+            float outOldValue, outNewValue;
 
-            itemRecord.BareHandWeapon = CreateBareHandWeapon();
-            _logger.Log($"itemRecord.BareHandWeapon now {itemRecord.BareHandWeapon}");
-
-            foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitBonusEffects)
+            foreach (var kvp in targetEffects)
             {
-                _logger.Log($"Apply BonusEffect: {keyValuePair.Key}");
+                string key = kvp.Key;
+                float value = kvp.Value;
 
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, true, _logger);
+                float finalModifier = GetFinalModifier(
+                    baseModifier, numToHinder, numToImprove,
+                    ref improvedCount, ref hinderedCount,
+                    boostedParamString, ref increase,
+                    key, isBonus, _logger);
 
                 float valueFinal = 0;
-
-                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
+                WoundEffectRecord record = Data.WoundEffects.GetRecord(key, true);
+                outOldValue = value;
+                outNewValue = value;
 
                 switch (record.ValueFormat)
                 {
@@ -161,117 +179,28 @@ namespace QM_PathOfQuasimorph.Processors
                     case EffectViewShowValueFormat.MinusInt:
                     case EffectViewShowValueFormat.MinusDamage:
                     case EffectViewShowValueFormat.ReverseInt:
-                        var value = (int)keyValuePair.Value;
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                        valueFinal = value;
-                        break;
+                        {
+                            int intValue = (int)value;
+                            PathOfQuasimorph.raritySystem.ApplyModifier(ref intValue, finalModifier, increase, out outOldValue, out outNewValue);
+                            valueFinal = intValue;
+                            break;
+                        }
                     case EffectViewShowValueFormat.Percent100:
                     case EffectViewShowValueFormat.Percent100NoPlus:
                     case EffectViewShowValueFormat.Percent100Abs:
-                        var value2 = keyValuePair.Value;
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
-                        valueFinal = value2;
-                        break;
-                }
-
-                //if (record.ValueFormat.ToString().Contains("int"))
-                //{
-                //    var value = (int)keyValuePair.Value;
-                //    PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                //    valueFinal = value;
-                //}
-                //else
-                //{
-                //    var value = keyValuePair.Value;
-                //    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                //    valueFinal = value;
-                //}
-
-                itemRecord.ImplicitBonusEffects[keyValuePair.Key] = (float)valueFinal;
-
-                _logger.Log($"\t\t old value {outOldValue}");
-                _logger.Log($"\t\t new value {outNewValue}");
-            }
-
-            foreach (KeyValuePair<string, float> keyValuePair in entriesImplicitPenaltyEffects)
-            {
-                _logger.Log($"Apply PenaltyEffect: {keyValuePair.Key}");
-
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, keyValuePair.Key, false, _logger);
-
-                float valueFinal = 0;
-
-                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
-
-                switch (record.ValueFormat)
-                {
-                    case EffectViewShowValueFormat.Raw:
-                    case EffectViewShowValueFormat.MinusInt:
-                    case EffectViewShowValueFormat.MinusDamage:
-                    case EffectViewShowValueFormat.ReverseInt:
-                        var value = (int)keyValuePair.Value;
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
+                        {
+                            float floatValue = value;
+                            PathOfQuasimorph.raritySystem.ApplyModifier(ref floatValue, finalModifier, increase, out outOldValue, out outNewValue);
+                            valueFinal = floatValue;
+                            break;
+                        }
+                    default:
                         valueFinal = value;
                         break;
-                    case EffectViewShowValueFormat.Percent100:
-                    case EffectViewShowValueFormat.Percent100NoPlus:
-                    case EffectViewShowValueFormat.Percent100Abs:
-                        var value2 = keyValuePair.Value;
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
-                        valueFinal = value2;
-                        break;
                 }
 
-                //if (record.ValueFormat.ToString().Contains("int"))
-                //{
-                //    var value = (int)keyValuePair.Value;
-                //    PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                //    valueFinal = value;
-                //}
-                //else
-                //{
-                //    var value = keyValuePair.Value;
-                //    PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                //    valueFinal = value;
-                //}
-
-                itemRecord.ImplicitPenaltyEffects[keyValuePair.Key] = (float)valueFinal;
-
-                _logger.Log($"\t\t old value {outOldValue}");
-                _logger.Log($"\t\t new value {outNewValue}");
-            }
-
-            foreach (KeyValuePair<string, float> keyValuePair in entriesCoreEffects)
-            {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, string.Empty, true, _logger);
-
-                float valueFinal = 0;
-
-                WoundEffectRecord record = Data.WoundEffects.GetRecord(keyValuePair.Key, true);
-
-                switch (record.ValueFormat)
-                {
-                    case EffectViewShowValueFormat.Raw:
-                    case EffectViewShowValueFormat.MinusInt:
-                    case EffectViewShowValueFormat.MinusDamage:
-                    case EffectViewShowValueFormat.ReverseInt:
-                        var value = (int)keyValuePair.Value;
-                        PathOfQuasimorph.raritySystem.ApplyModifier<int>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-                        valueFinal = value;
-                        break;
-                    case EffectViewShowValueFormat.Percent100:
-                    case EffectViewShowValueFormat.Percent100NoPlus:
-                    case EffectViewShowValueFormat.Percent100Abs:
-                        var value2 = keyValuePair.Value;
-                        PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value2, finalModifier, increase, out outOldValue, out outNewValue);
-                        valueFinal = value2;
-                        break;
-                }
-
-                //var value = keyValuePair.Value;
-                //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref value, finalModifier, increase, out outOldValue, out outNewValue);
-
-                itemRecord.CoreEffects[keyValuePair.Key] = (float)valueFinal;
+                // Update original dictionary
+                sourceEffects[key] = valueFinal;
 
                 _logger.Log($"\t\t old value {outOldValue}");
                 _logger.Log($"\t\t new value {outNewValue}");
@@ -331,7 +260,7 @@ namespace QM_PathOfQuasimorph.Processors
             //while (int i = 0; i < totalEffectsPerSlot; i++)
             while (addedEffectsPerSlot <= totalEffectsPerSlot)
             {
-                var success = AddRandomImplicitEffect((ItemRarity)(mastery + 1), bonusEffects, penaltyEffects,false, true);
+                var success = AddRandomImplicitEffect((ItemRarity)(mastery + 1), bonusEffects, penaltyEffects, false, true);
 
                 if (success)
                 {

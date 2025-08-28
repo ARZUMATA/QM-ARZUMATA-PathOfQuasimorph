@@ -37,8 +37,7 @@ namespace QM_PathOfQuasimorph.Processors
 
             ApplyParameters(ref boostedParamString);
         }
-
-        private void ApplyParameters(ref string boostedParamString)
+        protected override void ApplyParameters(ref string boostedParamString)
         {
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
