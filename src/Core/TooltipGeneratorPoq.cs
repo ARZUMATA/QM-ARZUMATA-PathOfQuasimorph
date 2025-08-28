@@ -4,6 +4,7 @@ using QM_PathOfQuasimorph.PoqHelpers;
 using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -231,18 +232,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"InitVest");
             _logger.Log($"genericId: {metadata.Id}");
 
-            var genericRecord = Data.Items.GetSimpleRecord<VestRecord>(metadata.Id, true);
-
-            if (metadata.IsMagnumProduced)
-            {
-                // Compare against magnum project item.
-                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<VestRecord>($"{metadata.Id}_custom", true);
-
-                if (isMagnumProducedRecord != null)
-                {
-                    genericRecord = isMagnumProducedRecord;
-                }
-            }
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, vestRecord);
 
             string value;
 
@@ -280,18 +270,7 @@ namespace QM_PathOfQuasimorph.Core
             _logger.Log($"InitBackpackRecord");
             _logger.Log($"genericId: {metadata.Id}");
 
-            var genericRecord = Data.Items.GetSimpleRecord<BackpackRecord>(metadata.Id, true);
-
-            if (metadata.IsMagnumProduced)
-            {
-                // Compare against magnum project item.
-                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<BackpackRecord>($"{metadata.Id}_custom", true);
-
-                if (isMagnumProducedRecord != null)
-                {
-                    genericRecord = isMagnumProducedRecord;
-                }
-            }
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, backpackRecord);
 
             // AddServoArm
 
@@ -346,7 +325,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitAmmo(AmmoRecord ammoRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<AmmoRecord>(metadata.Id, true);
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, ammoRecord);
 
             if (ammoRecord.BallisticType != genericRecord.BallisticType)
             {
@@ -373,7 +352,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitImplant(ImplantRecord implantRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<ImplantRecord>(metadata.Id, true);
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, implantRecord);
 
             _logger.Log($"genericRecord ImplantRecord is null {genericRecord == null}");
 
@@ -430,15 +409,7 @@ namespace QM_PathOfQuasimorph.Core
         private static void InitAugmentation(AugmentationRecord augmentationRecord, MetadataWrapper metadata, PickupItem item)
         {
             _logger.Log($"InitAugmentation");
-            var genericRecord = Data.Items.GetSimpleRecord<AugmentationRecord>(metadata.Id, true);
-
-            if (genericRecord == null)
-            {
-                // It can be null if we create our own augmentation so the generic record is simply missing from vanilla records.
-                // Since we got nothing to compare againts, we just quit.
-                //return;
-                genericRecord = augmentationRecord;
-            }
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, augmentationRecord);
 
             _logger.Log($"genericRecord AugmentationRecord is {genericRecord == null}");
             _logger.Log($"metadata.Id {metadata.Id}");
@@ -550,18 +521,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitResist(ResistRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<ResistRecord>(metadata.Id, true);
-
-            if (metadata.IsMagnumProduced)
-            {
-                // Compare against magnum project item.
-                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<ResistRecord>($"{metadata.Id}_custom", true);
-
-                if (isMagnumProducedRecord != null)
-                {
-                    genericRecord = isMagnumProducedRecord;
-                }
-            }
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, recordPoq);
 
             _logger.Log($"genericRecord ResistRecord is {genericRecord == null}");
 
@@ -587,7 +547,8 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitTraits(WeaponRecord weaponRecord, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, weaponRecord);
+
             var component = item.Comp<WeaponComponent>();
 
             foreach (var id in genericRecord.Traits)
@@ -638,18 +599,7 @@ namespace QM_PathOfQuasimorph.Core
         {
             if (item.TotalWeight > 0)
             {
-                var genericRecord = Data.Items.GetSimpleRecord<ItemRecord>(metadata.Id, true);
-
-                if (metadata.IsMagnumProduced)
-                {
-                    // Compare against magnum project item.
-                    var isMagnumProducedRecord = Data.Items.GetSimpleRecord<ItemRecord>($"{metadata.Id}_custom", true);
-
-                    if (isMagnumProducedRecord != null)
-                    {
-                        genericRecord = isMagnumProducedRecord;
-                    }
-                }
+                var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, itemRecord);
 
                 float singleWeightPoq = itemRecord.Weight;
                 float singleWeightGeneric = genericRecord.Weight;
@@ -670,18 +620,8 @@ namespace QM_PathOfQuasimorph.Core
         {
             _logger.Log($"InitWeapon");
             _logger.Log($"genericId: {metadata.Id}");
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
 
-            if (metadata.IsMagnumProduced)
-            {
-                // Compare against magnum project item.
-                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<WeaponRecord>($"{metadata.Id}_custom", true);
-
-                if (isMagnumProducedRecord != null)
-                {
-                    genericRecord = isMagnumProducedRecord;
-                }
-            }
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, recordPoq);
 
             bool grenadeLauncher = recordPoq.WeaponClass == WeaponClass.GrenadeLauncher;
             string value;
@@ -885,18 +825,7 @@ namespace QM_PathOfQuasimorph.Core
 
         private static void InitBreakable(BreakableItemRecord recordPoq, MetadataWrapper metadata, PickupItem item)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>(metadata.Id, true);
-
-            if (metadata.IsMagnumProduced)
-            {
-                // Compare against magnum project item.
-                var isMagnumProducedRecord = Data.Items.GetSimpleRecord<BreakableItemRecord>($"{metadata.Id}_custom", true);
-
-                if (isMagnumProducedRecord != null)
-                {
-                    genericRecord = isMagnumProducedRecord;
-                }
-            }
+            var genericRecord = GetBaseRecord(metadata.Id, metadata.IsMagnumProduced, recordPoq);
 
             // Max durability
             var durabilityDifference = recordPoq.MaxDurability - genericRecord.MaxDurability;
@@ -1194,6 +1123,24 @@ namespace QM_PathOfQuasimorph.Core
             }
 
             __instance._tooltip.ShowAdditionalBlock();
+        }
+
+        private static T GetBaseRecord<T>(string itemId, bool isMagnumProduced, T existingRecord) where T : ItemRecord
+        {
+            T baseRecord = Data.Items.GetSimpleRecord<T>(itemId, true);
+
+            if (isMagnumProduced)
+            {
+                baseRecord = Data.Items.GetSimpleRecord<T>($"{itemId}_custom", true);
+            }
+
+            if (baseRecord == null)
+            {
+                _logger.LogError($"Base record not found for {itemId}");
+                baseRecord = existingRecord;
+            }
+
+            return baseRecord;
         }
     }
 }
