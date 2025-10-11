@@ -349,7 +349,7 @@ namespace QM_PathOfQuasimorph.Processors
             augmentationRecord.Weight = itemRecord.Weight;
             augmentationRecord.InventoryWidthSize = itemRecord.InventoryWidthSize;
             augmentationRecord.ItemClass = itemRecord.ItemClass;
-            augmentationRecord.AugmentationClass = AugmentationClass.Combat;
+            augmentationRecord.AugmentationClass = AugmentationClass.Weapon;
             augmentationRecord.WoundSlotIds = new List<string>();
             augmentationRecord.TooltipIconTag = "aug_type_arm";
 
