@@ -23,32 +23,38 @@ namespace QM_PathOfQuasimorph.Controllers
 {
     internal class ItemRecordsControllerPoq
     {
-        internal AmmoRecordProcessorPoq ammoRecordProcessorPoq;
-        internal BreakableItemProcessorPoq breakableItemProcessorPoq;
-        internal AugmentationRecordProcessorPoq augmentationRecordProcessorPoq;
-        internal ImplantRecordProcessorPoq implantRecordProcessorPoq;
-        internal WeaponRecordProcessorPoq weaponRecordProcessorPoq;
-        internal HelmetRecordProcessorPoq helmetRecordProcessorPoq;
-        internal ArmorRecordProcessorPoq armorRecordProcessorPoq;
-        internal LeggingsRecordProcessorPoq leggingsRecordProcessorPoq;
-        internal BootsRecordProcessorPoq bootsRecordProcessorPoq;
-        internal WoundSlotRecordProcessorPoq woundSlotRecordProcessorPoq;
+        internal AmmoRecordProcessor<AmmoRecord> ammoRecordProcessor;
+        internal BreakableItemProcessor<BreakableItemRecord> breakableItemProcessor;
+        internal AugmentationRecordProcessor<AugmentationRecord> augmentationRecordProcessor;
+        internal ImplantRecordProcessor<ImplantRecord> implantRecordProcessor;
+        internal WeaponRecordProcessor<WeaponRecord> weaponRecordProcessor;
+        internal HelmetRecordProcessor<HelmetRecord> helmetRecordProcessor;
+        internal ArmorRecordProcessor<ArmorRecord> armorRecordProcessor;
+        internal LeggingsRecordProcessor<LeggingsRecord> leggingsRecordProcessor;
+        internal BootsRecordProcessor<BootsRecord> bootsRecordProcessor;
+        internal WoundSlotRecordProcessor<WoundSlotRecord> woundSlotRecordProcessor;
+        internal VestRecordProcessor<VestRecord> vestRecordProcessor;
+        internal BackpackRecordProcessor<BackpackRecord> backpackRecordProcessor;
+
         public ItemProduceReceipt itemProduceReceiptPlaceHolder = null;
 
         private Logger _logger = new Logger(null, typeof(ItemRecordsControllerPoq));
 
         internal ItemRecordsControllerPoq()
         {
-            ammoRecordProcessorPoq = new AmmoRecordProcessorPoq(this);
-            augmentationRecordProcessorPoq = new AugmentationRecordProcessorPoq(this);
-            breakableItemProcessorPoq = new BreakableItemProcessorPoq(this);
-            implantRecordProcessorPoq = new ImplantRecordProcessorPoq(this);
-            weaponRecordProcessorPoq = new WeaponRecordProcessorPoq(this);
-            helmetRecordProcessorPoq = new HelmetRecordProcessorPoq(this);
-            armorRecordProcessorPoq = new ArmorRecordProcessorPoq(this);
-            leggingsRecordProcessorPoq = new LeggingsRecordProcessorPoq(this);
-            bootsRecordProcessorPoq = new BootsRecordProcessorPoq(this);
-            woundSlotRecordProcessorPoq = new WoundSlotRecordProcessorPoq(this);
+            ammoRecordProcessor = new AmmoRecordProcessor<AmmoRecord>(this);
+            augmentationRecordProcessor = new AugmentationRecordProcessor<AugmentationRecord>(this);
+            breakableItemProcessor = new BreakableItemProcessor<BreakableItemRecord>(this);
+            implantRecordProcessor = new ImplantRecordProcessor<ImplantRecord>(this);
+            weaponRecordProcessor = new WeaponRecordProcessor<WeaponRecord>(this);
+            helmetRecordProcessor = new HelmetRecordProcessor<HelmetRecord>(this);
+            armorRecordProcessor = new ArmorRecordProcessor<ArmorRecord>(this);
+            leggingsRecordProcessor = new LeggingsRecordProcessor<LeggingsRecord>(this);
+            bootsRecordProcessor = new BootsRecordProcessor<BootsRecord>(this);
+            woundSlotRecordProcessor = new WoundSlotRecordProcessor<WoundSlotRecord>(this);
+            vestRecordProcessor = new VestRecordProcessor<VestRecord>(this);
+            backpackRecordProcessor = new BackpackRecordProcessor<BackpackRecord>(this);
+
         }
 
         internal string InterceptAndReplaceItemId(string Id, bool mobRarityBoost, ItemRarity itemRarity, bool selectRarity, bool applyRarity, bool ignoreBlacklist, string randomUidInjected)
@@ -251,8 +257,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     WeaponRecord weaponRecordNew = ItemRecordHelpers.CloneWeaponRecord(weaponRecord, itemId);
                     //WeaponRecord weaponRecordNew = weaponRecord.Clone(itemId);
                     // WeaponRecord weaponRecordNew = weaponRecord.Clone($"*{itemId}");
-                    weaponRecordProcessorPoq.Init(weaponRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    weaponRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    weaponRecordProcessor.Init(weaponRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    weaponRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(weaponRecordNew);
                 }
 
@@ -263,8 +269,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"helmetRecord processing");
 
                     HelmetRecord helmetRecordNew = helmetRecord.Clone(itemId);
-                    helmetRecordProcessorPoq.Init(helmetRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    helmetRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    helmetRecordProcessor.Init(helmetRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    helmetRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(helmetRecordNew);
                 }
 
@@ -275,8 +281,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"armorRecord processing");
 
                     ArmorRecord armorRecordNew = armorRecord.Clone(itemId);
-                    armorRecordProcessorPoq.Init(armorRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    armorRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    armorRecordProcessor.Init(armorRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    armorRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(armorRecordNew);
                 }
 
@@ -287,8 +293,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"leggingsRecord processing");
 
                     LeggingsRecord leggingsRecordNew = leggingsRecord.Clone(itemId);
-                    leggingsRecordProcessorPoq.Init(leggingsRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    leggingsRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    leggingsRecordProcessor.Init(leggingsRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    leggingsRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(leggingsRecordNew);
                 }
 
@@ -299,8 +305,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"bootsRecord processing");
 
                     BootsRecord bootsRecordNew = bootsRecord.Clone(itemId);
-                    bootsRecordProcessorPoq.Init(bootsRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    bootsRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    bootsRecordProcessor.Init(bootsRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    bootsRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(bootsRecordNew);
                 }
 
@@ -311,8 +317,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"breakableItemRecord processing");
 
                     BreakableItemRecord breakableItemRecordNew = ItemRecordHelpers.CloneBreakableRecord(breakableItemRecord, itemId);
-                    breakableItemProcessorPoq.Init(breakableItemRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    breakableItemProcessorPoq.ProcessRecord(ref boostedParamString);
+                    breakableItemProcessor.Init(breakableItemRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    breakableItemProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(breakableItemRecordNew);
                 }
 
@@ -323,8 +329,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"implantRecord processing");
 
                     ImplantRecord implantRecordNew = ItemRecordHelpers.CloneImplantRecord(implantRecord, itemId);
-                    implantRecordProcessorPoq.Init(implantRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    implantRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    implantRecordProcessor.Init(implantRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    implantRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(implantRecordNew);
                 }
 
@@ -335,8 +341,8 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"augmentationRecord processing");
 
                     AugmentationRecord augmentationRecordNew = ItemRecordHelpers.CloneAugmentationRecord(augmentationRecord, itemId);
-                    augmentationRecordProcessorPoq.Init(augmentationRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    augmentationRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    augmentationRecordProcessor.Init(augmentationRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    augmentationRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(augmentationRecordNew);
                 }
 
@@ -347,10 +353,35 @@ namespace QM_PathOfQuasimorph.Controllers
                     _logger.Log($"ammoRecord processing");
 
                     AmmoRecord ammoRecordNew = ItemRecordHelpers.CloneAmmoRecord(ammoRecord, itemId);
-                    ammoRecordProcessorPoq.Init(ammoRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
-                    ammoRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    ammoRecordProcessor.Init(ammoRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    ammoRecordProcessor.ProcessRecord(ref boostedParamString);
                     records.Add(ammoRecordNew);
                 }
+                
+                VestRecord vestRecord = basePickupItemRecord as VestRecord;
+
+                if (vestRecord != null)
+                {
+                    _logger.Log($"vestRecord processing");
+
+                    VestRecord vestRecordNew = ItemRecordHelpers.CloneVestRecord(vestRecord, itemId);
+                    vestRecordProcessor.Init(vestRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    vestRecordProcessor.ProcessRecord(ref boostedParamString);
+                    records.Add(vestRecordNew);
+                }
+
+                BackpackRecord backpackRecord = basePickupItemRecord as BackpackRecord;
+
+                if (backpackRecord != null)
+                {
+                    _logger.Log($"backpackRecord processing");
+
+                    BackpackRecord backpackRecordNew = ItemRecordHelpers.CloneBackpackRecord(backpackRecord, itemId);
+                    backpackRecordProcessor.Init(backpackRecordNew, itemRarity, mobRarityBoost, false, itemId, oldId);
+                    backpackRecordProcessor.ProcessRecord(ref boostedParamString);
+                    records.Add(backpackRecordNew);
+                }
+
             }
         }
 

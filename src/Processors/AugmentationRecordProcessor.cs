@@ -19,17 +19,13 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class AugmentationRecordProcessorPoq : ItemRecordProcessor<AugmentationRecord>
+    internal class AugmentationRecordProcessor<T> : ItemRecordProcessor<T> where T : AugmentationRecord
     {
-        private new Logger _logger = new Logger(null, typeof(AugmentationRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(AugmentationRecordProcessor));
 
         public override Dictionary<string, bool> parameters => _parameters;
 
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>
-        {
-        };
-
-        public AugmentationRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        public AugmentationRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
 
@@ -43,6 +39,9 @@ namespace QM_PathOfQuasimorph.Processors
             ApplyParameters();
         }
 
+        private bool ShouldAddNewSlots() => false;
+        private bool ShouldRandomizeSlotStats() => true;
+
         private void ApplyParameters()
         {
             float baseModifier, finalModifier;
@@ -51,121 +50,110 @@ namespace QM_PathOfQuasimorph.Processors
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 
-            // Simply for logging
-            float outOldValue = -1;
-            float outNewValue = -1;
-
-            Plugin.Logger.Log($"itemRecord.WoundSlotIds Count: {itemRecord.WoundSlotIds.Count}");
             List<string> newWoundSlotIds = new List<string>();
+            _logger.Log($"itemRecord.WoundSlotIds Count: {itemRecord.WoundSlotIds.Count}");
 
-            bool addNewSlots = false; // I don't like how it works.
-            bool randomizeSlotsStats = true;
-
-            int howManySlotsToAdd = (int)itemRarity;
-            int howManySlotsAdded = 0;
-
-            // Add new wound slots with matched type based on rarity
-
-            if (addNewSlots)
+            // Optional: Add new wound slots based on rarity and slot type
+            if (ShouldAddNewSlots())
             {
-                foreach (var woundSlot in itemRecord.WoundSlotIds)
+                AddMatchingWoundSlots(newWoundSlotIds, (int)itemRarity);
+                itemRecord.WoundSlotIds.AddRange(newWoundSlotIds);
+            }
+
+            // Always: Randomize stats on current wound slots
+            if (ShouldRandomizeSlotStats())
+            {
+                RandomizeAndReplaceWoundSlotStats(newWoundSlotIds, boostedParamString);
+                itemRecord.WoundSlotIds = newWoundSlotIds;
+            }
+        }
+
+        private void AddMatchingWoundSlots(List<string> newWoundSlotIds, int maxSlotsToAdd)
+        {
+            // We a not doing any boosts here neither creating new would slots, just chosing random slot that fits our SlotType.
+
+            int slotsAdded = 0;
+
+            foreach (var woundSlot in itemRecord.WoundSlotIds)
+            {
+                var originalSlot = Data.WoundSlots.GetRecord(woundSlot, false);
+
+                if (originalSlot == null)
                 {
-                    Plugin.Logger.Log($"woundSlot: {woundSlot}, itemRecord.Id: {itemRecord.Id}");
+                    continue;
+                }
 
-                    // We a not doing any boosts here neither creating new would slots, just chosing random slot that fits our SlotType.
+                string slotType = originalSlot.SlotType;
 
-                    var originalSlot = Data.WoundSlots.GetRecord(woundSlot, false);
-
-                    Plugin.Logger.Log($"originalSlot == null {originalSlot == null}");
-
-                    if (originalSlot == null)
-                    {
-                        continue;
-                    }
-
-                    string slotType = originalSlot.SlotType;
-
-                    // Get all available slots with matching SlotType
-                    var matchingSlots = Data.WoundSlots.Records
+                // Find all available slots with same SlotType, not already used, and with valid effects
+                var matchingSlots = Data.WoundSlots.Records
                     .Where(x => x.SlotType == slotType &&
                                 !itemRecord.WoundSlotIds.Contains(x.Id) &&
                                 x.ImplicitBonusEffects?.Count > 0 &&
                                 x.ImplicitPenaltyEffects?.Count > 0)
                     .ToList();
 
-                    if (matchingSlots.Count == 0)
-                    {
-                        Plugin.Logger.Log($"No wound slots found for type: {slotType}");
-                        continue;
-                    }
-
-                    // Pick a random slot from the matching ones
-                    var newSlot = matchingSlots[Helpers._random.Next(matchingSlots.Count)];
-
-                    _logger.Log($"newSlot {newSlot.Id}:");
-
-                    _logger.Log($"ImplicitBonusEffects:");
-                    foreach (var effect in newSlot.ImplicitBonusEffects)
-                    {
-                        _logger.Log($"\t\t {effect.Key} - {effect.Value}");
-                    }
-
-                    _logger.Log($"ImplicitPenaltyEffects:");
-                    foreach (var effect in newSlot.ImplicitPenaltyEffects)
-                    {
-                        _logger.Log($"\t\t {effect.Key} - {effect.Value}");
-                    }
-
-                    newWoundSlotIds.Add(newSlot.Id);
-                    howManySlotsAdded++;
-
-                    Plugin.Logger.Log($"Added new wound slot: {newSlot.Id} (type: {newSlot.SlotType})");
-
-                    if (howManySlotsToAdd == howManySlotsAdded)
-                    {
-                        Plugin.Logger.Log($"Added slots {howManySlotsToAdd}");
-
-                        break;
-                    }
+                if (!matchingSlots.Any())
+                {
+                    Plugin.Logger.Log($"No matching wound slots found for type: {slotType}");
+                    continue;
                 }
 
-                Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");
+                // Pick a random slot from the matching ones
+                var newSlot = matchingSlots[Helpers._random.Next(matchingSlots.Count)];
 
-                //if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
-                //{
-                itemRecord.WoundSlotIds.AddRange(newWoundSlotIds);
-                //}
+                _logger.Log($"Added new wound slot: {newSlot.Id} (type: {newSlot.SlotType})");
+                
+                _logger.Log($"ImplicitBonusEffects:");
+                foreach (var effect in newSlot.ImplicitBonusEffects)
+                {
+                    _logger.Log($"\t\t {effect.Key} - {effect.Value}");
+                }
+
+                _logger.Log($"ImplicitPenaltyEffects:");
+                foreach (var effect in newSlot.ImplicitPenaltyEffects)
+                {
+                    _logger.Log($"\t\t {effect.Key} - {effect.Value}");
+                }
+
+                newWoundSlotIds.Add(newSlot.Id);
+                slotsAdded++;
+
+                if (slotsAdded >= maxSlotsToAdd)
+                {
+                    Plugin.Logger.Log($"Added slots {slotsAdded}");
+                    break;
+                } 
             }
+        }
 
-            if (randomizeSlotsStats)
+        private void RandomizeAndReplaceWoundSlotStats(List<string> newWoundSlotIds, string boostedParamString)
+        {
+            foreach (var woundSlot in itemRecord.WoundSlotIds)
             {
-                Plugin.Logger.Log($"\t randomizeSlotsStats");
-
-                foreach (var woundSlot in itemRecord.WoundSlotIds)
+                var originalRecord = Data.WoundSlots.GetRecord(woundSlot);
+                
+                if (originalRecord == null)
                 {
-                    Plugin.Logger.Log($"\t processing wouldSlot: {woundSlot}");
-
-                    var newId = $"{woundSlot}_{itemId}";
-                    Plugin.Logger.Log($"\t new name will be {newId}");
-
-                    var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlot);
-                    WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(woundSlotRecord, $"{newId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
-
-                    newWoundSlotIds.Add($"{newId}");
-
-                    Data.WoundSlots.AddRecord($"{newId}", woundSlotRecordNew);
-                    RecordCollection.WoundSlotRecords.Add($"{newId}", woundSlotRecordNew);
-                    Localization.DuplicateKey("woundslot." + woundSlot + ".name", "woundslot." + newId + ".name");
+                     continue;
                 }
 
-                Plugin.Logger.Log($"counts should match. {itemRecord.WoundSlotIds.Count} == {newWoundSlotIds.Count}");
+                Plugin.Logger.Log($"\t processing wouldSlot: {woundSlot}");
 
-                if (itemRecord.WoundSlotIds.Count == newWoundSlotIds.Count)
-                {
-                    itemRecord.WoundSlotIds = newWoundSlotIds;
-                }
+                string newId = $"{woundSlot}_{itemId}";
+                var clonedRecord = ItemRecordHelpers.CloneWoundSlotRecord(originalRecord, newId);
+
+                _logger.Log($"Creating randomized wound slot: {newId}");
+
+                itemRecordsControllerPoq.woundSlotRecordProcessor.Init(
+                    clonedRecord, itemRarity, mobRarityBoost, false, newId, oldId);
+                itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
+
+                newWoundSlotIds.Add(newId);
+                Data.WoundSlots.AddRecord(newId, clonedRecord);
+                RecordCollection.WoundSlotRecords.Add(newId, clonedRecord);
+
+                Localization.DuplicateKey($"woundslot.{woundSlot}.name", $"woundslot.{newId}.name");
             }
         }
 
@@ -189,8 +177,8 @@ namespace QM_PathOfQuasimorph.Processors
                     var woundSlotString = itemRecord.WoundSlotIds[i];
                     var woundSlotRecord = Data.WoundSlots.GetRecord(woundSlotString);
 
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
-                    var success = itemRecordsControllerPoq.woundSlotRecordProcessorPoq.AddRandomImplicitEffect(metadata.RarityClass, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects, true, false);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.Init(woundSlotRecord, itemRarity, mobRarityBoost, false, woundSlotRecord.Id, oldId);
+                    var success = itemRecordsControllerPoq.woundSlotRecordProcessor.AddRandomImplicitEffect(metadata.RarityClass, woundSlotRecord.ImplicitBonusEffects, woundSlotRecord.ImplicitPenaltyEffects, true, false);
 
                     if (!success)
                     {
@@ -295,8 +283,8 @@ namespace QM_PathOfQuasimorph.Processors
                     Plugin.Logger.Log($"\t replacementSlot.Id will be: {newId}");
 
                     WoundSlotRecord woundSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(replacementSlotRecord, $"{newId}");
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
-                    itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.Init(woundSlotRecordNew, itemRarity, mobRarityBoost, false, $"{newId}", oldId);
+                    itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
                     newSlotIds.Add($"{newId}");
 

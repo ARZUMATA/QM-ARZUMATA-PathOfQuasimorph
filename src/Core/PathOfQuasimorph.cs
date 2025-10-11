@@ -77,14 +77,14 @@ namespace QM_PathOfQuasimorph.Core
             //Logger._excludedTypes.Add(typeof(RecordCollection));
 
             // Record processors
-            //Logger._excludedTypes.Add(typeof(ArmorRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(AugmentationRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(BootsRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(HelmetRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(ImplantRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(LeggingsRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(WeaponRecordProcessorPoq));
-            //Logger._excludedTypes.Add(typeof(WoundSlotRecordProcessorPoq));
+            //Logger._excludedTypes.Add(typeof(ArmorRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(AugmentationRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(BootsRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(HelmetRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(ImplantRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(LeggingsRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(WeaponRecordProcessor));
+            //Logger._excludedTypes.Add(typeof(WoundSlotRecordProcessor));
 
         }
 

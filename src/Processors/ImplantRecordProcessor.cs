@@ -17,15 +17,11 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class ImplantRecordProcessorPoq : ItemRecordProcessor<ImplantRecord>
+    internal class ImplantRecordProcessor<T> : ItemRecordProcessor<T> where T : ImplantRecord
     {
-        private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessorPoq));
+        //private new Logger _logger = new Logger(null, typeof(ImplantRecordProcessor));
 
         public override Dictionary<string, bool> parameters => _parameters;
-
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-        };
 
         // True - increase, False - decreqse
         // They al lcome from wound records
@@ -81,31 +77,13 @@ namespace QM_PathOfQuasimorph.Processors
             { "wound_chance_mult",            true },
         };
 
-        public ImplantRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        public ImplantRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
         }
-
-        internal override void ProcessRecord(ref string boostedParamString)
-        {
-            //if (itemRarity == ItemRarity.Standard)
-            //{
-            //    return;
-            //}
-
-            // We got perk records now
-            //if (itemRecord.IsActive == true)
-            //{
-            //    return;
-            //}
-
-            ApplyParameters();
-        }
-
-        private void ApplyParameters()
+        protected override void ApplyParameters(ref string boostedParamString)
         {
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
-            string boostedParamString;
             bool increase;
             PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
 

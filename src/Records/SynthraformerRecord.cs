@@ -69,6 +69,8 @@ namespace QM_PathOfQuasimorph.Records
                         AllowAll(typeof(AmmoRecord)),
                         AllowAll(typeof(ImplantRecord)),
                         AllowAll(typeof(AugmentationRecord)),
+                        AllowAll(typeof(VestRecord)),
+                        AllowAll(typeof(BackpackRecord)),
                     }
                 },
                 {
@@ -83,6 +85,8 @@ namespace QM_PathOfQuasimorph.Records
                         AllowAll(typeof(AmmoRecord)),
                         AllowAll(typeof(ImplantRecord)),
                         AllowAll(typeof(AugmentationRecord)),
+                        AllowAll(typeof(VestRecord)),
+                        AllowAll(typeof(BackpackRecord)),
                     }
                 },
                 {
@@ -116,6 +120,8 @@ namespace QM_PathOfQuasimorph.Records
                         BlockStandard(typeof(ArmorRecord)),
                         BlockStandard(typeof(LeggingsRecord)),
                         BlockStandard(typeof(BootsRecord)),
+                        BlockStandard(typeof(VestRecord)),
+                        BlockStandard(typeof(BackpackRecord)),
                         //BlockStandard(typeof(AmmoRecord)),
                         //typeof(ImplantRecord),
                         //typeof(AugmentationRecord),

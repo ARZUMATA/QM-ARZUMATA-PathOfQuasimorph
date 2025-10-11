@@ -1,460 +1,227 @@
 ﻿using MGSC;
-using Newtonsoft.Json;
 using QM_PathOfQuasimorph.Controllers;
 using QM_PathOfQuasimorph.Core;
 using QM_PathOfQuasimorph.Records;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using static MGSC.SpawnSystem;
 using static MGSC.TurnDebugLogger;
-using static QM_PathOfQuasimorph.Contexts.PathOfQuasimorph;
-using static QM_PathOfQuasimorph.Core.PathOfQuasimorph;
-using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal abstract class ItemRecordProcessor<T>
+    internal abstract class ItemRecordProcessor<T> : BasePickupItemRecordProcessor<T> where T : ItemRecord
     {
-        protected T itemRecord;
-        protected ItemRecordsControllerPoq itemRecordsControllerPoq;
-        protected Logger _logger = new Logger(null, typeof(ItemRecordProcessor<T>));
+        //private new Logger _logger = new Logger(null, typeof(ItemRecordProcessor<T>));
+        public override Dictionary<string, bool> parameters => _parameters;
 
-        public abstract Dictionary<string, bool> parameters { get; }
-        protected ItemRarity itemRarity;
-        protected bool mobRarityBoost;
-        protected string itemId;
-        protected string oldId;
-
-        public struct WoundEffectData
+        protected ItemRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
         {
-            // By default WoundEffectData data is a positive bonus.
-            // If sign is inverted it becomes negative and added as negative effect.
-            // bool sign helps determining that, if it's null it's a toggle.
+            _parameters["Weight"] = true;
+        }
 
-            public bool? Sign { get; set; }   // null: flag/toggle
-            public float Value { get; set; }
-            public int Weight { get; set; }   // selection weight — higher = more common
-            public List<Type> ApplicableTypes { get; set; }
-            public bool AllowMobs { get; set; }
+        internal override void ProcessRecord(ref string boostedParamString)
+        {
+            ApplyParameters(ref boostedParamString);
+        }
 
-            public WoundEffectData(bool? sign, float value, int weight, bool allowMobs)
+        protected virtual void ApplyParameters(ref string boostedParamString)
+        {
+            float baseModifier, finalModifier;
+            int numToHinder, numToImprove, improvedCount, hinderedCount;
+            //string boostedParamString;
+            bool increase;
+            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
+
+            foreach (var stat in parameters)
             {
-                Sign = sign;
-                Value = value;
-                Weight = weight;
-                AllowMobs = allowMobs;
-                ApplicableTypes = new List<Type>
-                {
-                    typeof(ImplantRecord),
-                    typeof(AugmentationRecord)
-                };
+                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
+                ApplyStat(finalModifier, increase, stat);
             }
         }
 
-        // Very strong / game-changing effects > low weight (rare)
-        // Moderate bonuses > medium weight
-        // Minor tweaks or situational perks > higher weight (common)
-
-        public static Dictionary<string, WoundEffectData> woundEffects = new Dictionary<string, WoundEffectData>()
+        protected virtual void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
-            // -----------------------------------------------------------------------------
-            // CORE SURVIVAL & SUSTENANCE (Food, Health, Regen)
-            // -----------------------------------------------------------------------------
-            { "max_health",                   new WoundEffectData(true,  20f,   30, true) }, // Maximum Health
-            { "passive_regen",                new WoundEffectData(true,  1f,    25, true) }, // HP/turn, sustained healing
-            { "regen_efficacy",               new WoundEffectData(true,  0.2f,  35, true) }, // Meds HP Regeneration
-            { "food_calories",                new WoundEffectData(false, -0.7f, 40, true) }, // Calorie consumption, reduces food consumption — useful
-            { "satiety",                      new WoundEffectData(true,  0.5f,  40, true) }, // Calorie gain, More calories from food — decent
-            { "vomiting",                     new WoundEffectData(false, -0.1f, 50, true) }, // Reduces puke chance — minor quality of life
-            { "hallucinations",               new WoundEffectData(false, -0.3f, 45, true) }, // Reduces hallucination chance — situational
-            { "pain_threshold_regen",         new WoundEffectData(true,  1f,    30, true) }, // Pain per turn, faster pain threshold recovery
+            // Simply for logging
+            float outOldValue = -1;
+            float outNewValue = -1;
 
-            // -----------------------------------------------------------------------------
-            // DAMAGE MODIFIERS (Incoming & Outgoing)
-            // -----------------------------------------------------------------------------
-            { "income_dmg",                   new WoundEffectData(false, -0.2f, 30, true) }, // Incoming damage — strong defensive stat
-            { "income_pain",                  new WoundEffectData(false, -0.3f, 35, true) }, // Pain reduction
-            { "melee_dmg_reduce",             new WoundEffectData(true,  0.3f,  40, true) }, // Strike Damage, Increases melee damage
-            { "critchance_reduce",            new WoundEffectData(true,  0.05f, 35, true) }, // Crit chance bonus
-            { "crit_damage",                  new WoundEffectData(true,  0.2f,  30, true) }, // Multiplier on crits
-            { "pain_to_melee_dmg",            new WoundEffectData(true,  4f,    20, true) }, // Pain into Melee Damage
-            { "move_dmg",                     new WoundEffectData(false, -1f,   50, false) }, // Damage on move
-            { "dot_dmg",                      new WoundEffectData(false, -1f,   50, false) }, // Damage per turn
-            { "action_dmg",                   new WoundEffectData(false, -1f,   50, false) }, // Damage per Action
-            { "eat_dmg",                      new WoundEffectData(false, -1f,   50, false) }, // Damage per eating — anti-heal debuff
-            { "apoint_dmg",                   new WoundEffectData(false, -1f,   50, false) }, // Damage per AP
-
-            // -----------------------------------------------------------------------------
-            // ACCURACY, COMBAT & WEAPON BEHAVIOR
-            // -----------------------------------------------------------------------------
-            { "accuracy_reduce",              new WoundEffectData(true,  0.1f,    40, true) }, // Ranged accuracy
-            { "melee_accuracy",               new WoundEffectData(true,  0.05f,   45, true) }, // Melee Accuracy,
-            { "ranged_accuracy",              new WoundEffectData(true,  0.2f,    35, true) }, // Ranged Accuracy
-            { "firearm_range",                new WoundEffectData(true,  1f,      30, true) }, // Weapon range, extended range
-            { "scatter_angle",                new WoundEffectData(false, -0.2f,   40, true) }, // Scatter, Tighter spread
-            { "multi_hit",                    new WoundEffectData(true,  1f,      25, true) }, // Extra hit
-            { "added_projectile",             new WoundEffectData(true,  1f,      25, true) }, // Extra projectile
-            { "reload_duration",              new WoundEffectData(false, -1f,     35, true) }, // Weapon Reload Duration, faster reload
-            { "income_critchance",              new WoundEffectData(false, -0.1f, 35, true) }, // Incoming crit. chance
-            { "dodge_reduce",                   new WoundEffectData(true,  0.15f, 40, true) }, // Dodge chance
-            { "melee_throw_range",              new WoundEffectData(true,  1f,    45, true) }, // Throw Range
-            { "fov_angle",                      new WoundEffectData(true,  0.2f,  50, true) }, // Field of view
-
-            // -----------------------------------------------------------------------------
-            // RESISTANCES (All Damage Types)
-            // -----------------------------------------------------------------------------
-            { "resist_blunt",                 new WoundEffectData(true,  15f,  25, true) }, // Blunt resist
-            { "resist_pierce",                new WoundEffectData(true,  15f,  25, true) }, // Pierce resist
-            { "resist_lacer",                 new WoundEffectData(true,  15f,  25, true) }, // Cut resist
-            { "resist_fire",                  new WoundEffectData(true,  15f,  25, true) }, // Fire resist
-            { "resist_beam",                  new WoundEffectData(true,  15f,  25, true) }, // Beam resist
-            { "resist_shock",                 new WoundEffectData(true,  15f,  25, true) }, // Shock resist
-            { "resist_poison",                new WoundEffectData(true,  15f,  25, true) }, // Poison resist
-            { "resist_cold",                  new WoundEffectData(true,  15f,  25, true) }, // Cold resist
-
-            // -----------------------------------------------------------------------------
-            // MOVEMENT, STEALTH & DETECTION
-            // -----------------------------------------------------------------------------
-            { "stealth_ap",                   new WoundEffectData(true,  2f,   15, true) }, // More AP in stealth
-            { "walk_ap",                      new WoundEffectData(true,  3f,   25, true) }, // More walking AP 
-            { "run_ap",                       new WoundEffectData(true,  4f,   35, true) }, // Run AP
-            { "los_reduce",                   new WoundEffectData(true,  1f,   45, true) }, // Vision range — situational
-            { "spotted_radius",               new WoundEffectData(false, -1f,  50, true) }, // Smaller player detection radius
-            { "no_spotted_signal",            new WoundEffectData(null,  0f,   35, false) }, // No enemy detection (>1 = Enabled - negative stat)
-            { "run_spotted_signal",           new WoundEffectData(null,  1f,   35, true) }, // Detect others when running (>1 = Enabled - positive stat))
-            { "walk_spotted_signal",          new WoundEffectData(null,  1f,   40, true) }, // Detection while walking — (>1 = Enabled - positive stat)
-
-            // -----------------------------------------------------------------------------
-            // INVENTORY & UTILITY
-            // -----------------------------------------------------------------------------
-            { "items_weight",                 new WoundEffectData(false, -0.1f,   45, true) }, // Weight modifier, lighter items — QoL
-            { "backpack_weight",              new WoundEffectData(false, -0.15f,  40, true) }, //  Load weight, carry more — useful
-            { "bonus_vest_slot",              new WoundEffectData(true,  1f,      15, true) }, // Extra vest slot
-            { "perk_exp_modifier",            new WoundEffectData(true,  0.8f,    35, false) }, // Faster perk XP
-            { "perk_cooldown",                new WoundEffectData(false, -0.2f,   30, false) }, // Shorter cooldowns
-            { "implant_cooldown",             new WoundEffectData(false, -8f,     20, false) }, // Implant Cooldown, major reduction 
-
-            // -----------------------------------------------------------------------------
-            // CHANCE-BASED EFFECTS (Wounds, Crits, Addiction)
-            // -----------------------------------------------------------------------------
-            { "wound_chance",                 new WoundEffectData(false, -0.1f,   40, true) }, // Reduce self-wounding
-            { "wound_heal_chance",            new WoundEffectData(true,  0.1f,    45, true) }, // Wound healing chance
-            { "wound_chance_mult",            new WoundEffectData(false, -0.2f,   35, true) }, // Getting Wound Chance
-            { "added_wound_chance_mult",      new WoundEffectData(true,  0.15f,   30, true) }, // Inflict Wound Chance
-            { "addiction_chance",             new WoundEffectData(false, -0.15f,  45, true) }, // Addiction Chance, avoid addiction
-            { "qmorph_summon",                new WoundEffectData(false, -0.01f,  25, true) }, // Chance to break through quasimorphs
-            { "qmorph",                       new WoundEffectData(false, -1f,     20, true) }, // Quasimorphosis gain
-
-            // -----------------------------------------------------------------------------
-            // PROGRESSION & REWARD SYSTEMS
-            // -----------------------------------------------------------------------------
-            { "mission_points",                 new WoundEffectData(true,  0.1f,  40, false) }, // Mission Points
-
-            // -----------------------------------------------------------------------------
-            // SPECIAL / TOGGLE EFFECTS (bool? = null > flags)
-            // -----------------------------------------------------------------------------
-            // These are commented out as they are binary flags, not numeric bonuses
-            // But you can uncomment and assign weight if used in random rolls
-            
-            // { "arm_slot_unavailable",       new WoundEffectData(null,  1f,   5) },  // Weapon slot blocked
-            // { "food_unavailable",           new WoundEffectData(null,  1f,   10) }, // Food unavailable
-            { "throwback_immune",           new WoundEffectData(null,  1f,   15, true) }, // Knockback immunity
-            { "no_stealth",                 new WoundEffectData(null,  0f,   10, true) }, // Stealth is unavailable
-            // { "frozen_stun",                new WoundEffectData(null,  0f,   5)  }, // Freeze
-            // { "shock_stun",                 new WoundEffectData(null,  0f,   5)  }, // Shock
-            { "self_heal",                  new WoundEffectData(null,  1f,   10, false) }, // Self-healing regen toggle — strong
-            // { "death",                      new WoundEffectData(null,  0f,   1)  }, // Instant death — extremely rare
-            { "run_unavailable",            new WoundEffectData(null,  0f,   10, true) }, // Running is unavailable          >1 = Enabled
-            { "consume_regen",              new WoundEffectData(null,  0f,   15, true) }, // Regeneration is unavailable     0 = Unavail
-            
-            // Immunities (very rare / powerful)
-            { "wound_immune_blunt",         new WoundEffectData(null,  1f,  8, true)  },  // Immune to Blunt Wounds
-            { "wound_immune_pierce",        new WoundEffectData(null,  1f,  8, true)  },  // Immune to Pierce Wounds
-            { "wound_immune_lacer",         new WoundEffectData(null,  1f,  8, true)  },  // Immune to Lacer Wounds
-            { "wound_immune_fire",          new WoundEffectData(null,  1f,  8, true)  },  // Immune to Fire Wounds
-            { "wound_immune_beam",          new WoundEffectData(null,  1f,  8, true)  },  // Immune to Beam Wounds
-            { "wound_immune_shock",         new WoundEffectData(null,  1f,  8, true)  },  // Immune to Shock Wounds
-            { "wound_immune_poison",        new WoundEffectData(null,  1f,  8, true)  },  // Immune to Poison Wounds
-            { "wound_immune_cold",          new WoundEffectData(null,  1f,  8, true)  },  // Immune to Cold Wounds
-            
-            // Full damage immunities
-            { "immune_blunt",               new WoundEffectData(null,  1f,  5, true)  }, // blunt immunity
-            { "immune_pierce",              new WoundEffectData(null,  1f,  5, true)  }, // pierce immunity
-            { "immune_lacer",               new WoundEffectData(null,  1f,  5, true)  }, // cut immunity
-            { "immune_fire",                new WoundEffectData(null,  1f,  5, true)  }, // fire immunity
-            { "immune_beam",                new WoundEffectData(null,  1f,  5, true)  }, // beam immunity
-            { "immune_shock",               new WoundEffectData(null,  1f,  5, true)  }, // shock immunity
-            { "immune_poison",              new WoundEffectData(null,  1f,  5, true)  }, // poison immunity
-            { "immune_cold",                new WoundEffectData(null,  1f,  5, true)  }, // cold immunity
-            
-            // Status immunities
-            { "status_immune_infectionEffect",    new WoundEffectData(null,  1f,  10, true) }, // Immune to Infection
-            { "status_immune_poisonEffect",       new WoundEffectData(null,  1f,  10, true) }, // Immune to Poisoning
-            { "status_immune_morphineAddiction",  new WoundEffectData(null,  1f,  15, true) }, // Immune to Drug Addiction
-            { "status_immune_alcoholAddiction",   new WoundEffectData(null,  1f,  15, true) }, // Immune to Alcohol Addiction
-            { "status_immune_nicotineAddiction",  new WoundEffectData(null,  1f,  15, true) }, // Immune to Nicotine Addiction
-            { "status_immune_gavaahAddiction",    new WoundEffectData(null,  1f,  15, true) }, // Immune to Gavaakh Addiction
-            { "status_immune_coldEffect",         new WoundEffectData(null,  1f,  12, true) }, // Immune to Hypothermia
-            { "status_immune_beamEffect",         new WoundEffectData(null,  1f,  12, true) }, // Immune to ARS
-            { "status_immune_shockEffect",        new WoundEffectData(null,  1f,  12, true) }, // Immune to Shock Status
-        };
-
-
-        public List<HashSet<string>> woundEffectsExclusiveGroups = new List<HashSet<string>>
-        {
-            new HashSet<string>
+            // If we got declared generic we take their values for reroll, and if not, use it as actual item record.
+            if (genericRecord == null)
             {
-                "immune_blunt",
-                "immune_pierce",
-                "immune_lacer",
-                "immune_fire",
-                "immune_beam",
-                "immune_shock",
-                "immune_poison",
-                "immune_cold"
-            },
-             new HashSet<string>
-            {
-                "wound_immune_blunt",
-                "wound_immune_pierce",
-                "wound_immune_lacer",
-                "wound_immune_fire",
-                "wound_immune_beam",
-                "wound_immune_shock",
-                "wound_immune_poison",
-                "wound_immune_cold"
-            },
-            new HashSet<string>
-            {
-                "status_immune_infectionEffect",
-                "status_immune_poisonEffect",
-                "status_immune_morphineAddiction",
-                "status_immune_alcoholAddiction",
-                "status_immune_nicotineAddiction",
-                "status_immune_gavaahAddiction",
-                "status_immune_coldEffect",
-                "status_immune_beamEffect",
-                "status_immune_shockEffect"
-            },
-            new HashSet<string>
-            {
-                "stealth_ap",
-                "walk_ap",
-                "run_ap"
-            },
-            new HashSet<string>
-            {
-                "no_spotted_signal",
-                "run_spotted_signal",
-                "walk_spotted_signal"
-            },
-        };
-
-        public static Dictionary<string, (int positive, int negative)> effectsPerSlot = new Dictionary<string, (int positive, int negative)>()
-        {
-            // Average number of effects slot for vanilla items i.e. we can increase the number with the rarity.
-            { "Arm",      (2, 1) },
-            { "Body",     (2, 1) },
-            { "Chest",    (3, 3) },
-            { "Feet",     (1, 1) },
-            { "Head",     (1, 1) },
-            { "Knee",     (2, 2) },
-            { "Shoulder", (2, 2) },
-            { "Stomach",  (2, 1) },
-            { "Thigh",    (1, 2) },
-        };
-
-
-        public Dictionary<ItemRarity, (int Min, int Max)> extraEffectsPerRarity = new Dictionary<ItemRarity, (int Min, int Max)>
-        {
-            // Extra slots we can add but don't exceed total sum of negatives/positives per slot type.
-            { ItemRarity.Standard,  (0,  0) },     // 
-            { ItemRarity.Enhanced,  (0,  0) },     // 
-            { ItemRarity.Advanced,  (1,  3) },     // 
-            { ItemRarity.Premium,   (2,  4) },     // 
-            { ItemRarity.Prototype, (3,  5) },     // 
-            { ItemRarity.Quantum,   (4,  6) },     // 
-        };
-
-
-
-        internal ItemRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq)
-        {
-            this.itemRecordsControllerPoq = itemRecordsControllerPoq;
-        }
-
-        internal virtual void Init(T itemRecord, ItemRarity itemRarity, bool mobRarityBoost, bool amplifierRarityBoost, string itemId, string oldId)
-        {
-            this.itemRecord = itemRecord;
-            this.itemRarity = itemRarity;
-            this.mobRarityBoost = mobRarityBoost;
-            this.itemId = itemId;
-            this.oldId = oldId;
-        }
-
-        internal abstract void ProcessRecord(ref string boostedParamString);
-
-        internal float GetFinalModifier(float baseModifier, int numToHinder, int numToImprove, ref int improvedCount, ref int hinderedCount, string boostedParamString, ref bool increase, string statStr, bool statBool, Logger _logger)
-        {
-            float finalModifier;
-
-            if (statBool == false)
-            {
-                increase = false;
-            }
-            else if (statBool == true)
-            {
-                increase = true;
+                genericRecord = itemRecord;
             }
 
-            _logger.Log($"Updating {statStr}");
-
-            _logger.Log($"\t\t boostedParamString: {boostedParamString}");
-
-            // Apply boost
-            if (statStr != string.Empty && statStr == boostedParamString)
+            switch (stat.Key)
             {
-                finalModifier = baseModifier * (float)Math.Round(Helpers._random.NextDouble() * (RaritySystem.PARAMETER_BOOST_MAX - RaritySystem.PARAMETER_BOOST_MIN) + RaritySystem.PARAMETER_BOOST_MIN, 2);
+                case "Weight":
+                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.Weight = v, () => genericRecord.Weight, finalModifier, increase, out outOldValue, out outNewValue);
+                    break;
+            }
 
-                _logger.Log($"\t\t boostedParamString exist, boosting final modifier from {baseModifier} to {finalModifier}");
+            Plugin.Logger.Log($"\t\t old value {outOldValue}");
+            Plugin.Logger.Log($"\t\t new value {outNewValue}");
+        }
+
+
+        protected virtual List<string> GetTraitsList() => null;
+        protected virtual T GetGenericRecord() => null;
+        protected virtual ItemTraitType? GetTraitType() => null;
+        protected virtual List<HashSet<string>> GetMutuallyExclusiveGroups() => new();
+        protected virtual bool IsMelee() => false;
+        protected virtual HashSet<string> GetBlacklist() => new();
+
+        protected virtual Dictionary<string, int> BuildTraitWeightsDictionary(IEnumerable<string> allowedTraits)
+        {
+            // Default: flat weight of 5 for each allowed trait
+            return allowedTraits.ToDictionary(trait => trait, trait => 5);
+        }
+
+        internal virtual void ApplyTraits(bool clearTraits, float removeChance = 0.2f, bool tryToKeepGeneric = false)
+        {
+            Plugin.Logger.Log($"ApplyTraits: clearTraits={clearTraits}, removeChance={removeChance}, tryToKeepGeneric={tryToKeepGeneric}");
+
+            var traitsList = GetTraitsList();
+            var genericRecord = GetGenericRecord();
+            var traitType = GetTraitType();
+
+            if (traitsList == null || traitType == null)
+            {
+                Plugin.Logger.Log($"ApplyTraits: Not supported for this item type.");
+                return;
+            }
+
+            var extraTraitCount = 0;
+            bool keepGeneric = false;
+
+            // Only attempt to keep generic traits if:
+            // - Caller wants to try, AND
+            // - There are generic traits available (weaponRecordGeneric exists)
+            if (tryToKeepGeneric && genericRecord != null)
+            {
+                // Roll the dice: chance to actually keep them is based on `removeChance`
+                // Example: removeChance = 0.2 → 20% chance to keep, 80% to strip
+                keepGeneric = Helpers._random.NextDouble() < removeChance;
+                Plugin.Logger.Log($"Rolled to keep generic traits: {keepGeneric} (chance: {removeChance})");
             }
             else
             {
-                finalModifier = baseModifier;
+                Plugin.Logger.Log("Not attempting to keep generic traits.");
             }
 
-            // Determine if we should hinder this parameter
-            bool hinder = PathOfQuasimorph.raritySystem.ShouldHinderParameter(ref hinderedCount, ref improvedCount, numToHinder, numToImprove);
+            Plugin.Logger.Log($"Final keepGeneric: {keepGeneric}");
 
-            if (hinder)
+            // Log existing traits
+            Plugin.Logger.Log($"\tExisting traits: {traitsList.Count}");
+            foreach (var trait in traitsList)
             {
-                increase = !increase;
+                Plugin.Logger.Log($"\t\t {trait}");
             }
 
-            _logger.Log($"\t\t finalModifier: {finalModifier} hinder: {hinder}, boosted: {finalModifier != baseModifier}");
-            return finalModifier;
+            // Log generic traits
+            if (genericRecord != null)
+            {
+                var genericTraits = GetTraitsFromRecord(genericRecord);
+                Plugin.Logger.Log($"\tGeneric traits: {genericTraits.Count}");
+
+                foreach (var trait in genericTraits)
+                {
+                    Plugin.Logger.Log($"\t\t {trait}");
+                }
+
+                extraTraitCount = keepGeneric ? 0 : genericTraits.Count;
+                Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
+            }
+
+            // Clear existing traits based on rules
+            if (clearTraits)
+            {
+                traitsList.Clear();
+                if (keepGeneric && genericRecord != null)
+                {
+                    Plugin.Logger.Log("Re-adding generic traits.");
+                    traitsList.AddRange(GetTraitsFromRecord(genericRecord));
+                }
+                else
+                {
+                    Plugin.Logger.Log("Not re-adding generic traits.");
+                }
+            }
+            else if (Helpers._random.NextDouble() < removeChance)
+            {
+                // 20% chance to remove existing traits even if not clearing
+                Plugin.Logger.Log("Randomly clearing existing traits.");
+                traitsList.Clear();
+            }
+            else
+            {
+                Plugin.Logger.Log("Preserving existing traits.");
+            }
+
+            // Select and apply new traits
+            var selectedTraits = PrepareTraits(extraTraitCount);
+            Plugin.Logger.Log($"\tSelected traits: {selectedTraits.Count}");
+            foreach (var trait in selectedTraits)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
+
+            // Add traits
+            traitsList.AddRange(selectedTraits);
+            Plugin.Logger.Log($"\tFinal trait count: {traitsList.Count}");
+            foreach (var trait in traitsList)
+            {
+                Plugin.Logger.Log($"\t\t {trait}");
+            }
         }
 
-        internal void PrepGenericData(out float baseModifier, out float finalModifier, out int numToHinder, out int numToImprove, out string boostedParamString, out int improvedCount, out int hinderedCount, out bool increase)
+        private List<string> PrepareTraits(int extraTraitCount)
         {
-            baseModifier = PathOfQuasimorph.raritySystem.GetRarityModifier(itemRarity, PathOfQuasimorph.raritySystem._rarityModifiers);
+            // Allowed traits for item type
+            var allowedTraits = itemRecordsControllerPoq.GetAddeableTraits((ItemTraitType)GetTraitType());
 
-            if (mobRarityBoost)
+            if (!allowedTraits.Any())
             {
-                float mobModifier = baseModifier * PathOfQuasimorph.raritySystem.GetRarityModifier(MobContext.Rarity, PathOfQuasimorph.creaturesControllerPoq._masteryModifiers);
-                _logger.Log($"\t\t mobRarityBoost exist, MobContext Rarity: {MobContext.Rarity}, CurrentMobId: {MobContext.CurrentMobId}");
-                _logger.Log($"\t\t boosting final modifier from {baseModifier} to {mobModifier}");
-
-                baseModifier = mobModifier;
+                Plugin.Logger.Log("PrepareTraits: No allowed traits found.");
+                return new List<string>();
             }
 
-            finalModifier = 0;
-            var (Min, Max) = PathOfQuasimorph.raritySystem.rarityParamPercentages[itemRarity];
+            // Combined dictionary of traits
+            // Let subclass decide how to assign weights (flat, positive/negative, etc.)
+            var allTraitsCombined = BuildTraitWeightsDictionary(allowedTraits);
 
-            int minParams = Math.Max(0, (int)Math.Floor(Min * parameters.Count));
-            int maxParams = (int)Math.Ceiling(Max * parameters.Count);
+            Helpers.ShuffleDictionary(allTraitsCombined);
 
-            // Calculate the number of parameters to adjust based on the percentage
-            int numToAdjust = Helpers._random.Next(minParams, maxParams + 1);
+            // Warn about missing allowed traits
+            foreach (var trait in allowedTraits)
+            {
+                if (!allTraitsCombined.ContainsKey(trait))
+                {
+                    Plugin.Logger.LogWarning($"[WARNING] Allowed trait '{trait}' not in positive/negative trait weights.");
+                }
+            }
 
-            numToHinder = (int)Math.Floor(numToAdjust * PathOfQuasimorph.raritySystem.PARAMETER_HINDER_PERCENT / 100f);
-            numToImprove = numToAdjust - numToHinder;
+            // Determine total number of traits to add based on rarity
+            //var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
+            var totalTraitCount = (int)itemRarity + extraTraitCount;
 
-            // Shuffle the list
-            Helpers.ShuffleDictionary(parameters);
+             // Select traits based on weights
+            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, GetTraitsList(), GetMutuallyExclusiveGroups());
 
-            // Select one parameter to boost more.
-            // This parameter will be boosted more than the others.
-            // We return index of parameter that was boosted for UID
-            var boostedParam = parameters.Count == 0 ? 99 : Helpers._random.Next(parameters.Count);
+            // Apply blacklist (e.g., ranged vs melee)
+            var blacklist = GetBlacklist();
+            selectedTraits.RemoveAll(t => blacklist.Contains(t));
 
-            _logger.Log($"\t\t boostedParam: {boostedParam}, parameters.Count: {parameters.Count}");
-
-            boostedParamString = boostedParam == 99 ? string.Empty : parameters.Keys.ToList()[boostedParam];
-
-            // Counters to track how many parameters we've improved or hindered
-            improvedCount = 0;
-            hinderedCount = 0;
-
-            // Determine if we need increase or decrease
-            increase = true;
+            // Final filter, all traits if they are not in allowed list (just in case)
+            selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
+            return selectedTraits;
         }
 
-        internal List<string> SelectWeightedWoundEffects(int count, Dictionary<string, WoundEffectData> eligibleEffects, List<string> existingEffects, List<HashSet<string>> exclusiveGroups = null)
+        private List<string> GetTraitsFromRecord(T record)
         {
-            Helpers.ShuffleDictionary(eligibleEffects);
-
-            var available = new Dictionary<string, int>();
-            foreach (var kvp in eligibleEffects)
-            {
-                if (existingEffects.Contains(kvp.Key))
-                {
-                    continue;
-                }
-
-                available[kvp.Key] = kvp.Value.Weight;
-            }
-
-            var result = new List<string>();
-
-            foreach (var group in exclusiveGroups ?? new List<HashSet<string>>())
-            {
-                // Remove any key from available if another in group was picked
-                if (result.Intersect(group).Any())
-                {
-                    foreach (var key in group)
-                    {
-                        available.Remove(key);
-                    }
-                }
-            }
-
-            // Weighted random pick (simple version)
-            while (count > 0 && available.Count > 0)
-            {
-                var totalWeight = available.Values.Sum();
-                var roll = Helpers._random.Next(0, totalWeight);
-                string selected = null;
-
-                foreach (var kvp in available)
-                {
-                    roll -= kvp.Value;
-
-                    if (roll < 0)
-                    {
-                        selected = kvp.Key;
-                        break;
-                    }
-                }
-
-                if (selected == null)
-                {
-                    break;
-                }
-
-                result.Add(selected);
-                available.Remove(selected);
-
-                // Enforce exclusivity: remove all from same group
-                foreach (var group in exclusiveGroups ?? new List<HashSet<string>>())
-                {
-                    if (group.Contains(selected))
-                    {
-                        foreach (var key in group)
-                        {
-                            available.Remove(key);
-                        }
-                    }
-                }
-
-                count--;
-            }
-
-            return result;
+            // Assumes T has a `.Traits` field — unsafe but acceptable if all T do
+            return typeof(T).GetProperty("Traits")?.GetValue(record) as List<string>
+                   ?? new List<string>();
         }
 
         internal List<string> SelectWeightedTraits(Dictionary<string, int> traitWeights, int count, List<string> itemTraitsExisting, List<HashSet<string>> exclusiveGroups = null)
@@ -472,18 +239,6 @@ namespace QM_PathOfQuasimorph.Processors
             }
 
             var selected = new List<string>();
-
-            // for (int i = 0; i < count && availableTraits.Count > 0; i++)
-            // {
-            //     string selectedTrait = PathOfQuasimorph.raritySystem.SelectRarityWeighted<string>(availableTraits);
-            //     selected.Add(selectedTrait);
-
-            //     // Remove already selected trait to prevent duplicates
-            //     availableTraits = availableTraits
-            //         .Where(t => t.Key != selectedTrait)
-            //         .ToDictionary(t => t.Key, t => t.Value);
-            // }
-
 
             while (selected.Count < count && availableTraits.Count > 0)
             {
@@ -515,164 +270,9 @@ namespace QM_PathOfQuasimorph.Processors
                 }
 
                 // Even if it exists, we still remove it and it's group members as we don't need them no more.
-
             }
 
             return selected;
-        }
-
-        private interface IHasSlotType
-        {
-            string SlotType { get; }
-        }
-
-        internal virtual bool AddRandomImplicitEffect(
-            ItemRarity rarity,
-            IDictionary<string, float> bonusEffects,
-            IDictionary<string, float> penaltyEffects,
-            bool canRemoveRandom, bool isForMobs)
-        {
-            _logger.Log($"AddRandomImplicitEffect");
-
-            var positive = Helpers._random.NextDouble() > 0.5f;
-
-            _logger.Log($"\t is positive effect: {positive}");
-
-            var genericCount = 0;
-
-            MetadataWrapper.TryGetBaseId(this.itemId, out string baseId);
-            baseId = baseId.Split('_')[0];
-
-            _logger.Log($"\t baseId: {baseId}");
-
-            // Try to get generic record
-            var genericRecord = Data.WoundSlots.GetRecord(baseId);
-            _logger.Log($"\t genericRecord == null: {genericRecord == null}");
-
-            if (genericRecord != null)
-            {
-                genericCount = positive
-                    ? genericRecord.ImplicitBonusEffects.Count
-                    : genericRecord.ImplicitPenaltyEffects.Count;
-            }
-
-            // Get extra count based on rarity and slot
-            // Get extra count of slots per specified rarity
-            // Add positive or negative count for average number of effects slot per vanilla item so we get total slots we can add
-            var extraEffectsAvailableCount = Helpers._random.Next(
-                extraEffectsPerRarity[rarity].Min,
-                extraEffectsPerRarity[rarity].Max + 1);
-
-            if (itemRecord is IHasSlotType hasSlot)
-            {
-                extraEffectsAvailableCount += positive
-                    ? effectsPerSlot[hasSlot.SlotType].positive
-                    : effectsPerSlot[hasSlot.SlotType].negative;
-            }
-
-            _logger.Log($"\t genericCount: {genericCount}");
-            _logger.Log($"\t extraEffectsAvailableCount: {extraEffectsAvailableCount}");
-
-            // Substract generic countto not overexceed amount of effects
-            extraEffectsAvailableCount -= genericCount;
-
-            var removeRandom = Helpers._random.NextDouble() > 0.8f;
-            _logger.Log($"\t remove random effect: {removeRandom}");
-
-            // Remove random effect right away so it doesn't interfere
-            if (removeRandom && canRemoveRandom)
-            {
-                var effects = positive ? bonusEffects : penaltyEffects;
-                if (effects != null && effects.Count > 0)
-                {
-                    var keys = effects.Keys.ToArray();
-                    var randomKey = keys[Helpers._random.Next(keys.Length)];
-                    effects.Remove(randomKey);
-                    extraEffectsAvailableCount += 1; // Add count as we have free slot
-                }
-            }
-
-            _logger.Log($"\t extraEffectsAvailableCount Final: {extraEffectsAvailableCount}");
-
-            if (extraEffectsAvailableCount < 0)
-            {
-                _logger.LogError($"Can't add effect, above limit. {extraEffectsAvailableCount}");
-                extraEffectsAvailableCount = 0;
-                //return false;
-            }
-
-            // Now chose random effect that will be either positive or negative based on the roll
-            var combinedList = new List<string>();
-            combinedList.AddRange(bonusEffects.Keys);
-            combinedList.AddRange(penaltyEffects.Keys);
-
-            Helpers.ShuffleDictionary(woundEffects);
-            var eligibleEffects = woundEffects.Where(x => x.Value.AllowMobs == isForMobs).ToDictionary(x => x.Key, x => x.Value);
-
-            var selectedEffectName = SelectWeightedWoundEffects(1, eligibleEffects, combinedList, woundEffectsExclusiveGroups).First();
-            var selectedEffect = woundEffects[selectedEffectName];
-
-            _logger.Log($"\t selectedEffect: {selectedEffectName}");
-
-            float finalValue = selectedEffect.Value;
-
-            // Now pick random value in [finalValue * 0.5, finalValue * 1.5]
-            float minValue = finalValue * 0.5f;
-            float maxValue = finalValue * 1.5f;
-            _logger.Log($"\t minValue: {minValue}");
-            _logger.Log($"\t maxValue: {maxValue}");
-
-            // Handle negative values: ensure min/max are correctly ordered
-            float lowerBound = Math.Min(minValue, maxValue);
-            float upperBound = Math.Max(minValue, maxValue);
-
-            float randomizedValue = (float)(Helpers._random.NextDouble() * (upperBound - lowerBound) + lowerBound);
-
-            // We got boolean value, override.
-            if (selectedEffect.Sign == null)
-            {
-                if (positive)
-                {
-                    randomizedValue = selectedEffect.Value;
-                }
-                else
-                {
-                    // invert: 0 becomes 1, 1 becomes 0
-                    randomizedValue = 1 - selectedEffect.Value;
-                }
-            }
-            else
-            {
-                randomizedValue = positive ? randomizedValue : -randomizedValue;
-            }
-
-            _logger.Log($"\t\t randomizedValue ({(positive ? "bonus" : "penalty")}): {randomizedValue}");
-
-            var targetEffects = positive ? bonusEffects : penaltyEffects;
-
-            if (targetEffects.ContainsKey(selectedEffectName))
-            {
-                // Effect already exists, let's fail.
-                return false;
-            }
-
-            // Enforce cap: remove random if at limit
-            _logger.LogWarning($"\t\t targetEffects.Count: {targetEffects.Count}");
-            _logger.LogWarning($"\t\t extraEffectsAvailableCount: {extraEffectsAvailableCount}");
-
-            while (targetEffects.Count > extraEffectsAvailableCount)
-            {
-                var keys = targetEffects.Keys.ToArray();
-                var randomKey = keys[Helpers._random.Next(keys.Length)];
-                targetEffects.Remove(randomKey);
-
-                _logger.Log($"\t targetEffects > extraEffectsAvailableCount {targetEffects.Count} {extraEffectsAvailableCount}");
-                _logger.LogWarning($"\t\t REMOVING: {randomKey}");
-            }
-
-            targetEffects[selectedEffectName] = randomizedValue;
-
-            return true;
         }
     }
 }

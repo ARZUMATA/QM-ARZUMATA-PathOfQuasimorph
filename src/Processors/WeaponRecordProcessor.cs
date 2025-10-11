@@ -19,11 +19,20 @@ using Random = System.Random;
 
 namespace QM_PathOfQuasimorph.Processors
 {
-    internal class WeaponRecordProcessorPoq : ItemRecordProcessor<WeaponRecord>
+    internal class WeaponRecordProcessor<T> : BreakableItemProcessor<T> where T : WeaponRecord
     {
-        private new Logger _logger = new Logger(null, typeof(WeaponRecordProcessorPoq));
-
         public override Dictionary<string, bool> parameters => _parameters;
+
+        public WeaponRecordProcessor(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        {
+            // bool = should we increase the stat or decrease for benefits
+            _parameters["damage"] = true;
+            _parameters["crit_damage"] = true;
+            _parameters["accuracy"] = true;
+            _parameters["scatter_angle"] = false;
+            _parameters["reload_duration"] = false;
+            _parameters["magazine_capacity"] = true;
+        }
 
         private List<string> rangedTraitsBlacklist = new List<string> {
             "perfect_throw",
@@ -86,29 +95,6 @@ namespace QM_PathOfQuasimorph.Processors
             { "overheat", 350 },
         };
 
-        // bool = should we increase the stat or decrease for benefits
-        internal Dictionary<string, bool> _parameters = new Dictionary<string, bool>()
-        {
-           { "weight", false },
-           { "max_durability", true },
-           { "damage", true },
-           { "crit_damage", true },
-           { "accuracy", true },
-           { "scatter_angle", false },
-           { "reload_duration", false },
-           { "magazine_capacity", true },
-            //"special_ability",
-            //"none",
-
-            //"Damage_MinMax",
-            //"Damage_CritChance",
-            //"Damage_CritDmg",
-            //"ReloadDuration",
-            //"MagazineCapacity",
-            //"BonusAccuracy",
-            //"BonusScatterAngle",
-        };
-
         internal Dictionary<string, int> rangedNatures = new Dictionary<string, int>()
         {
             { "moon_fist_1",                          100 },
@@ -158,8 +144,17 @@ namespace QM_PathOfQuasimorph.Processors
             new HashSet<string> { "piercing", "full_piercing" },
         };
 
-        public WeaponRecordProcessorPoq(ItemRecordsControllerPoq itemRecordsControllerPoq) : base(itemRecordsControllerPoq)
+        protected override List<string> GetTraitsList() => itemRecord.Traits;
+        protected override T GetGenericRecord() => Data.Items.GetSimpleRecord<T>(oldId, true);
+        protected override ItemTraitType? GetTraitType() => ItemTraitType.WeaponTrait;
+        protected override List<HashSet<string>> GetMutuallyExclusiveGroups() => traitsMutuallyExclusiveGroups;
+        protected override bool IsMelee() => itemRecord.IsMelee;
+
+        protected override HashSet<string> GetBlacklist()
         {
+            return itemRecord.IsMelee
+                ? new HashSet<string>(meleeTraitsBlacklist)
+                : new HashSet<string>(rangedTraitsBlacklist);
         }
 
         internal override void ProcessRecord(ref string boostedParamString)
@@ -173,22 +168,7 @@ namespace QM_PathOfQuasimorph.Processors
             ApplyParameters(ref boostedParamString);
         }
 
-        private void ApplyParameters(ref string boostedParamString)
-        {
-            float baseModifier, finalModifier;
-            int numToHinder, numToImprove, improvedCount, hinderedCount;
-            //string boostedParamString;
-            bool increase;
-            PrepGenericData(out baseModifier, out finalModifier, out numToHinder, out numToImprove, out boostedParamString, out improvedCount, out hinderedCount, out increase);
-
-            foreach (var stat in parameters)
-            {
-                finalModifier = GetFinalModifier(baseModifier, numToHinder, numToImprove, ref improvedCount, ref hinderedCount, boostedParamString, ref increase, stat.Key, stat.Value, _logger);
-                ApplyStat(finalModifier, increase, stat);
-            }
-        }
-
-        private void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, WeaponRecord genericRecord = null)
+        protected override void ApplyStat(float finalModifier, bool increase, KeyValuePair<string, bool> stat, T genericRecord = null)
         {
             // Simply for logging
             float outOldValue = -1;
@@ -202,18 +182,6 @@ namespace QM_PathOfQuasimorph.Processors
 
             switch (stat.Key)
             {
-
-                case "weight":
-                    //var weight = genericRecord.Weight;
-                    //PathOfQuasimorph.raritySystem.ApplyModifier<float>(ref weight, finalModifier, increase, out outOldValue, out outNewValue);
-                    PathOfQuasimorph.raritySystem.Apply<float>(v => itemRecord.Weight = v, () => genericRecord.Weight, finalModifier, increase, out outOldValue, out outNewValue);
-                    //itemRecord.Weight = weight;
-                    break;
-
-                case "max_durability":
-                    PathOfQuasimorph.raritySystem.Apply<int>(v => itemRecord.MaxDurability = v, () => genericRecord.MaxDurability, finalModifier, increase, out outOldValue, out outNewValue);
-                    break;
-
                 case "damage":
                     var dmgInfo = genericRecord.Damage;
                     PathOfQuasimorph.raritySystem.Apply<int>(v => dmgInfo.minDmg = v, () => dmgInfo.minDmg, finalModifier, increase, out outOldValue, out outNewValue);
@@ -254,161 +222,44 @@ namespace QM_PathOfQuasimorph.Processors
                     break;
                 case "none":
                     break;
+
+                default:
+                    base.ApplyStat(finalModifier, increase, stat, genericRecord);
+                    return;
             }
 
             Plugin.Logger.Log($"\t\t old value {outOldValue}");
             Plugin.Logger.Log($"\t\t new value {outNewValue}");
         }
 
-        internal void ApplyTraits(bool clearTraits, float removeChance = 0.2f, bool keepGeneric = false)
+        protected override Dictionary<string, int> BuildTraitWeightsDictionary(IEnumerable<string> allowedTraits)
         {
-            if (itemRarity == ItemRarity.Standard)
+            var combined = new Dictionary<string, int>();
+
+            // Add positive traits (only if in allowed list)
+            foreach (var kvp in positiveTraits)
             {
-                return;
-            }
-
-            Plugin.Logger.Log($"ApplyTraits: clearTraits args: {clearTraits}, removeChance: {removeChance}, keepGeneric: {keepGeneric}");
-
-            var weaponRecord = Data.Items.GetSimpleRecord<WeaponRecord>(oldId, true);
-
-            Plugin.Logger.Log($"weaponRecord null: {weaponRecord == null}");
-            Plugin.Logger.Log($"itemRecord null: {itemRecord.Id}");
-
-            var extraTraitCount = 0;
-
-            // If we keep generic, recheck chance.
-            if (keepGeneric && weaponRecord != null)
-            {
-                keepGeneric = Helpers._random.NextDouble() < removeChance;
-            }
-            else
-            {
-                keepGeneric = false;
-            }
-
-            Plugin.Logger.Log($"Keeping generic? {keepGeneric}");
-
-            // Existing traits
-            Plugin.Logger.Log($"\tExisting traits: {itemRecord.Traits.Count}");
-
-            foreach (var trait in itemRecord.Traits)
-            {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-
-            // Generic traits
-            if (weaponRecord != null)
-            {
-                Plugin.Logger.Log($"\tGeneric traits: {weaponRecord.Traits.Count}");
-
-                foreach (var trait in weaponRecord.Traits)
+                if (allowedTraits.Contains(kvp.Key))
                 {
-                    Plugin.Logger.Log($"\t\t {trait}");
-                }
-
-                extraTraitCount = keepGeneric ? 0 : weaponRecord.Traits.Count;
-                Plugin.Logger.Log($"\textraTraitCount: {extraTraitCount}");
-            }
-
-            // Apply traits to record
-            // Should we remove existing traits?
-            if (clearTraits)
-            {
-                itemRecord.Traits.Clear();
-
-                if (keepGeneric && weaponRecord != null)
-                {
-                    Plugin.Logger.Log($"Keeping generic? Yes.");
-                    itemRecord.Traits.AddRange(weaponRecord.Traits);
-                }
-                else
-                {
-                    Plugin.Logger.Log($"Keeping generic? No.");
-                }
-            }
-            else
-            {
-                // Randomly decide whether to remove existing traits (20% chance)
-                if (Helpers._random.NextDouble() < removeChance)
-                {
-                    Plugin.Logger.Log($"Keeping existing? Yes.");
-                    itemRecord.Traits.Clear();
-                }
-                else
-                {
-                    Plugin.Logger.Log($"Keeping existing? No.");
-
+                    combined[kvp.Key] = kvp.Value;
                 }
             }
 
-            // Select traits
-            List<string> selectedTraits = PrepareTraits(extraTraitCount);
-
-            Plugin.Logger.Log($"\tSelectedTraits traits: {selectedTraits.Count}");
-
-            foreach (var trait in selectedTraits)
+            // Add negative traits (only if in allowed list)
+            foreach (var kvp in negativeTraits)
             {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-
-
-            // Add traits
-            for (int i = 0; i < selectedTraits.Count; i++)
-            {
-                itemRecord.Traits.Add(selectedTraits[i]);
-            }
-
-            Plugin.Logger.Log($"\tNew traits: {itemRecord.Traits.Count}");
-
-            foreach (var trait in itemRecord.Traits)
-            {
-                Plugin.Logger.Log($"\t\t {trait}");
-            }
-        }
-
-        private List<string> PrepareTraits(int extraTraitCount)
-        {
-            // Determine if the item is a melee weapon
-            _logger.Log($"\t\t  isMelee: {itemRecord.IsMelee}");
-
-            // Allowed traits for item type
-            var allowedTraits = itemRecordsControllerPoq.GetAddeableTraits(ItemTraitType.WeaponTrait);
-
-            // Combined dict of positive and negative traits
-            Dictionary<string, int> allTraitsCombined = positiveTraits.Concat(negativeTraits).ToDictionary(pair => pair.Key, pair => pair.Value);
-
-            // Log traits in allowedTraits not present in allTraitsCombined
-            foreach (var trait in allowedTraits)
-            {
-                if (!allTraitsCombined.ContainsKey(trait))
+                if (allowedTraits.Contains(kvp.Key))
                 {
-                    _logger.LogWarning($"[WARNING] Allowed trait '{trait}' is not present in allTraitsCombined.");
+                    combined[kvp.Key] = kvp.Value;
                 }
             }
 
-            // Determine total number of traits to add based on rarity
-            //var totalTraitCount = PathOfQuasimorph.raritySystem.GetTraitCountByRarity(itemRarity, allTraitsCombined.Count + extraTraitCount);
-            var totalTraitCount = (int)itemRarity + extraTraitCount; // Avoid percentages
-
-            // Select traits based on weights
-            var selectedTraits = SelectWeightedTraits(allTraitsCombined, totalTraitCount, itemRecord.Traits, traitsMutuallyExclusiveGroups);
-
-            // Apply blacklists
-            selectedTraits.RemoveAll(t =>
-                (itemRecord.IsMelee && meleeTraitsBlacklist.Contains(t)) ||
-                (!itemRecord.IsMelee && rangedTraitsBlacklist.Contains(t)));
-
-            // // Remove already present traits
-            // selectedTraits.RemoveAll(t => itemRecord.Traits.Contains(t));
-
-            // Filter all traits if they are not in allowed list (just in case)
-            selectedTraits.RemoveAll(t => !allowedTraits.Contains(t));
-            return selectedTraits;
+            return combined;
         }
 
         internal void RerollRandomStat(SynthraformerRecord ampRecord, MetadataWrapper metadata, bool blockHinder)
         {
-            var genericRecord = Data.Items.GetSimpleRecord<WeaponRecord>(metadata.Id, true);
+            var genericRecord = Data.Items.GetSimpleRecord<T>(metadata.Id, true);
 
             float baseModifier, finalModifier;
             int numToHinder, numToImprove, improvedCount, hinderedCount;
@@ -515,8 +366,8 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\tarmSlot_NewId: {armSlot_NewId}");
 
             WoundSlotRecord armSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(armSlotRecord, $"{armSlot_NewId}");
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(armSlotRecordNew, itemRarity, mobRarityBoost, false, $"{armSlot_NewId}", oldId);
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.Init(armSlotRecordNew, itemRarity, mobRarityBoost, false, $"{armSlot_NewId}", oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
             Data.WoundSlots.AddRecord($"{armSlot_NewId}", armSlotRecordNew);
             RecordCollection.WoundSlotRecords.Add($"{armSlot_NewId}", armSlotRecordNew);
@@ -538,8 +389,8 @@ namespace QM_PathOfQuasimorph.Processors
             _logger.Log($"\tashoulderSlot_NewId: {shoulderSlot_NewId}");
 
             WoundSlotRecord shoulderSlotRecordNew = ItemRecordHelpers.CloneWoundSlotRecord(shoulderSlotRecord, $"{shoulderSlot_NewId}");
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.Init(shoulderSlotRecordNew, itemRarity, mobRarityBoost, false, $"{shoulderSlot_NewId}", oldId);
-            itemRecordsControllerPoq.woundSlotRecordProcessorPoq.ProcessRecord(ref boostedParamString);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.Init(shoulderSlotRecordNew, itemRarity, mobRarityBoost, false, $"{shoulderSlot_NewId}", oldId);
+            itemRecordsControllerPoq.woundSlotRecordProcessor.ProcessRecord(ref boostedParamString);
 
             Data.WoundSlots.AddRecord($"{shoulderSlot_NewId}", shoulderSlotRecordNew);
             RecordCollection.WoundSlotRecords.Add($"{shoulderSlot_NewId}", shoulderSlotRecordNew);
